@@ -12,6 +12,24 @@ import { TipoVehiculoModule } from './tipo-vehiculo/tipo-vehiculo.module';
 import { VehiculosModule } from './vehiculos/vehiculos.module';
 import { TipoDonanteModule } from './tipo-donante/tipo-donante.module';
 import { DonantesModule } from './donantes/donantes.module';
+import { EstadoTurnoModule } from './estado-turno/estado-turno.module';
+import { TipoMaterialModule } from './tipo-material/tipo-material.module';
+import { CondicionMaterialModule } from './condicion-material/condicion-material.module';
+import { GestorAmbientalModule } from './gestor-ambiental/gestor-ambiental.module';
+import { RackModule } from './rack/rack.module';
+import { TurnoModule } from './turno/turno.module';
+import { EmpleadoTransportistaModule } from './empleado-transportista/empleado-transportista.module';
+import { DonacionModule } from './donacion/donacion.module';
+import { LoteModule } from './lote/lote.module';
+import { RetiroModule } from './retiro/retiro.module';
+import { MaterialModule } from './material/material.module';
+import { ClasificacionModule } from './clasificacion/clasificacion.module';
+import { MedioAlmacenamientoModule } from './medio-almacenamiento/medio-almacenamiento.module';
+import { PalletModule } from './pallet/pallet.module';
+import { CertificadoDisposicionModule } from './certificado-disposicion/certificado-disposicion.module';
+import { ConstanciaRetiroModule } from './constancia-retiro/constancia-retiro.module';
+import { RegistroFotograficoModule } from './registro-fotografico/registro-fotografico.module';
+import { ProcesoDestruccionModule } from './proceso-destruccion/proceso-destruccion.module';
 
 @Module({
   imports: [
@@ -42,6 +60,24 @@ import { DonantesModule } from './donantes/donantes.module';
     VehiculosModule,
     TipoDonanteModule,
     DonantesModule,
+    EstadoTurnoModule,
+    TipoMaterialModule,
+    CondicionMaterialModule,
+    GestorAmbientalModule,
+    RackModule,
+    TurnoModule,
+    EmpleadoTransportistaModule,
+    DonacionModule,
+    LoteModule,
+    RetiroModule,
+    MaterialModule,
+    ClasificacionModule,
+    MedioAlmacenamientoModule,
+    PalletModule,
+    CertificadoDisposicionModule,
+    ConstanciaRetiroModule,
+    RegistroFotograficoModule,
+    ProcesoDestruccionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
