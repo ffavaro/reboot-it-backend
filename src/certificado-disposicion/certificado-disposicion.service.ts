@@ -20,14 +20,14 @@ export class CertificadoDisposicionService {
   findAll() {
     return this.certificadoDisposicionRepository.find({
       where: { isActive: true },
-      relations: ['lote', 'gestorCertificado'],
+      relations: ['lote', 'gestorAmbiental'],
     });
   }
 
   async findOne(id: number) {
     const certificadoDisposicion = await this.certificadoDisposicionRepository.findOne({
       where: { id },
-      relations: ['lote', 'gestorCertificado'],
+      relations: ['lote', 'gestorAmbiental'],
     });
     if (!certificadoDisposicion) throw new NotFoundException(`CertificadoDisposicion ${id} no encontrado`);
     return certificadoDisposicion;

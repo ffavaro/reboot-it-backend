@@ -1,5 +1,8 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Material } from '../material/material.entity';
+import { Tipo } from '../tipo/tipo.entity';
+import { Marca } from '../marca/marca.entity';
+import { Modelo } from '../modelo/modelo.entity';
 
 @Entity('medio_almacenamiento')
 export class MedioAlmacenamiento {
@@ -9,17 +12,14 @@ export class MedioAlmacenamiento {
   @Column({ name: 'material_id' })
   materialId: number;
 
-  @Column({ length: 50, nullable: true })
-  tipo: string;
+  @Column({ name: 'tipo_id', nullable: true })
+  tipoId: number;
 
-  @Column({ length: 100, nullable: true })
-  marca: string;
+  @Column({ name: 'marca_id', nullable: true })
+  marcaId: number;
 
-  @Column({ length: 100, nullable: true })
-  modelo: string;
-
-  @Column({ name: 'terminos_uso', length: 500, nullable: true })
-  terminosUso: string;
+  @Column({ name: 'modelo_id', nullable: true })
+  modeloId: number;
 
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
@@ -33,4 +33,16 @@ export class MedioAlmacenamiento {
   @ManyToOne(() => Material)
   @JoinColumn({ name: 'material_id' })
   material: Material;
+
+  @ManyToOne(() => Tipo, { nullable: true })
+  @JoinColumn({ name: 'tipo_id' })
+  tipo: Tipo;
+
+  @ManyToOne(() => Marca, { nullable: true })
+  @JoinColumn({ name: 'marca_id' })
+  marca: Marca;
+
+  @ManyToOne(() => Modelo, { nullable: true })
+  @JoinColumn({ name: 'modelo_id' })
+  modelo: Modelo;
 }

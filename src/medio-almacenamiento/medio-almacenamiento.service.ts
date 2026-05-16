@@ -20,14 +20,14 @@ export class MedioAlmacenamientoService {
   findAll() {
     return this.medioAlmacenamientoRepository.find({
       where: { isActive: true },
-      relations: ['material'],
+      relations: ['material', 'tipo', 'marca', 'modelo'],
     });
   }
 
   async findOne(id: number) {
     const medioAlmacenamiento = await this.medioAlmacenamientoRepository.findOne({
       where: { id },
-      relations: ['material'],
+      relations: ['material', 'tipo', 'marca', 'modelo'],
     });
     if (!medioAlmacenamiento) throw new NotFoundException(`MedioAlmacenamiento ${id} no encontrado`);
     return medioAlmacenamiento;

@@ -6,20 +6,20 @@ export class CreateMedioAlmacenamientoDto {
   @IsNumber()
   materialId: number;
 
-  @ApiPropertyOptional({ example: 'Pallet' })
-  @IsString()
+  @ApiPropertyOptional({ example: 1, description: 'ID del tipo de medio' })
+  @IsNumber()
   @IsOptional()
-  tipo?: string;
+  tipoId?: number;
 
-  @ApiPropertyOptional({ example: 'Genérico' })
-  @IsString()
+  @ApiPropertyOptional({ example: 1, description: 'ID de la marca' })
+  @IsNumber()
   @IsOptional()
-  marca?: string;
+  marcaId?: number;
 
-  @ApiPropertyOptional({ example: 'Estándar 1200x1000' })
-  @IsString()
+  @ApiPropertyOptional({ example: 1, description: 'ID del modelo' })
+  @IsNumber()
   @IsOptional()
-  modelo?: string;
+  modeloId?: number;
 
   @ApiPropertyOptional({ example: 'Uso en ambiente seco' })
   @IsString()

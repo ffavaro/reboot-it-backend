@@ -13,8 +13,8 @@ export class EmpleadoTransportista {
   @Column({ name: 'vehiculo_id', nullable: true })
   vehiculoId: number;
 
-  @Column({ name: 'tiene_asignacion', type: 'tinyint', default: 0 })
-  tieneAsignacion: boolean;
+  @Column({ name: 'fecha_asignacion', type: 'datetime', nullable: true })
+  fechaAsignacion: Date;
 
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
