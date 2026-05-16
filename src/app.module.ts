@@ -30,6 +30,9 @@ import { CertificadoDisposicionModule } from './certificado-disposicion/certific
 import { ConstanciaRetiroModule } from './constancia-retiro/constancia-retiro.module';
 import { RegistroFotograficoModule } from './registro-fotografico/registro-fotografico.module';
 import { ProcesoDestruccionModule } from './proceso-destruccion/proceso-destruccion.module';
+import { TipoModule } from './tipo/tipo.module';
+import { MarcaModule } from './marca/marca.module';
+import { ModeloModule } from './modelo/modelo.module';
 
 @Module({
   imports: [
@@ -78,6 +81,9 @@ import { ProcesoDestruccionModule } from './proceso-destruccion/proceso-destrucc
     ConstanciaRetiroModule,
     RegistroFotograficoModule,
     ProcesoDestruccionModule,
+    TipoModule,
+    MarcaModule,
+    ModeloModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,12 +1,12 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity('tipo_vehiculo')
-export class TipoVehiculo {
+@Entity('tipo')
+export class Tipo {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 100 })
-  descripcion: string;
+  @Column({ length: 50, unique: true })
+  nombre: string;
 
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
