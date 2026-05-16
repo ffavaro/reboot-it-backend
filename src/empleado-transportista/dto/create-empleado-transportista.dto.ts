@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
+import { IsDateString, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateEmpleadoTransportistaDto {
   @ApiProperty({ example: 1, description: 'ID del empleado' })
@@ -11,8 +11,8 @@ export class CreateEmpleadoTransportistaDto {
   @IsOptional()
   vehiculoId?: number;
 
-  @ApiPropertyOptional({ example: false, description: 'Indica si tiene una asignación activa' })
-  @IsBoolean()
+  @ApiPropertyOptional({ example: '2025-06-01T10:00:00Z', description: 'Fecha de asignación' })
+  @IsDateString()
   @IsOptional()
-  tieneAsignacion?: boolean;
+  fechaAsignacion?: string;
 }

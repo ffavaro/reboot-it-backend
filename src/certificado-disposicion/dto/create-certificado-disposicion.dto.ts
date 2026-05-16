@@ -6,9 +6,9 @@ export class CreateCertificadoDisposicionDto {
   @IsNumber()
   loteId: number;
 
-  @ApiProperty({ example: 1, description: 'ID del gestor ambiental certificador' })
+  @ApiProperty({ example: 1, description: 'ID del gestor ambiental' })
   @IsNumber()
-  gestorCertificadoId: number;
+  gestorAmbientalId: number;
 
   @ApiPropertyOptional({ example: '2024-06-15', description: 'Fecha de emisión' })
   @IsDateString()
@@ -23,5 +23,5 @@ export class CreateCertificadoDisposicionDto {
   @ApiPropertyOptional({ example: 'Material procesado conforme normativa vigente' })
   @IsString()
   @IsOptional()
-  terminosCod?: string;
+  terminosCondiciones?: string;
 }

@@ -10,8 +10,8 @@ export class CertificadoDisposicion {
   @Column({ name: 'lote_id' })
   loteId: number;
 
-  @Column({ name: 'gestor_certificado_id' })
-  gestorCertificadoId: number;
+  @Column({ name: 'gestor_ambiental_id' })
+  gestorAmbientalId: number;
 
   @Column({ name: 'fecha_emision', type: 'date', nullable: true })
   fechaEmision: Date;
@@ -19,8 +19,8 @@ export class CertificadoDisposicion {
   @Column({ name: 'numero_certificado', length: 100, nullable: true })
   numeroCertificado: string;
 
-  @Column({ name: 'terminos_cod', length: 500, nullable: true })
-  terminosCod: string;
+  @Column({ name: 'terminos_condiciones', type: 'text', nullable: true })
+  terminosCondiciones: string;
 
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
@@ -36,6 +36,6 @@ export class CertificadoDisposicion {
   lote: Lote;
 
   @ManyToOne(() => GestorAmbiental)
-  @JoinColumn({ name: 'gestor_certificado_id' })
-  gestorCertificado: GestorAmbiental;
+  @JoinColumn({ name: 'gestor_ambiental_id' })
+  gestorAmbiental: GestorAmbiental;
 }
