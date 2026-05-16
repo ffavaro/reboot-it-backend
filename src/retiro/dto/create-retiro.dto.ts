@@ -14,14 +14,10 @@ export class CreateRetiroDto {
   @IsNumber()
   vehiculoId: number;
 
-  @ApiProperty({ example: '2024-06-15T08:00:00Z', description: 'Fecha de inicio del retiro' })
-  @IsDateString()
-  fechaInicio: Date;
-
-  @ApiPropertyOptional({ example: '2024-06-15T12:00:00Z', description: 'Fecha estimada de llegada' })
+  @ApiPropertyOptional({ example: '2024-06-15T08:00:00Z', description: 'Fecha de inicio del retiro' })
   @IsDateString()
   @IsOptional()
-  fechaEstimacion?: Date;
+  fechaInicio?: Date;
 
   @ApiPropertyOptional({ example: 'Av. Corrientes 1234, CABA' })
   @IsString()

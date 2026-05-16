@@ -17,11 +17,8 @@ export class Retiro {
   @Column({ name: 'vehiculo_id' })
   vehiculoId: number;
 
-  @Column({ name: 'fecha_inicio', type: 'datetime' })
+  @Column({ name: 'fecha_inicio', type: 'datetime', nullable: true })
   fechaInicio: Date;
-
-  @Column({ name: 'fecha_estimacion', type: 'datetime', nullable: true })
-  fechaEstimacion: Date;
 
   @Column({ length: 255, nullable: true })
   direccion: string;
