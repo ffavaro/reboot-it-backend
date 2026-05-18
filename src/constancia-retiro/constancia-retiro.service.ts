@@ -20,14 +20,14 @@ export class ConstanciaRetiroService {
   findAll() {
     return this.constanciaRetiroRepository.find({
       where: { isActive: true },
-      relations: ['retiro'],
+      relations: ['retiro', 'tecnico'],
     });
   }
 
   async findOne(id: number) {
     const constanciaRetiro = await this.constanciaRetiroRepository.findOne({
       where: { id },
-      relations: ['retiro'],
+      relations: ['retiro', 'tecnico'],
     });
     if (!constanciaRetiro) throw new NotFoundException(`ConstanciaRetiro ${id} no encontrada`);
     return constanciaRetiro;

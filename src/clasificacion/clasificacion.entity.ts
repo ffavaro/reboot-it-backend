@@ -13,8 +13,8 @@ export class Clasificacion {
   @Column({ type: 'date', nullable: true })
   fecha: Date;
 
-  @Column({ name: 'inspector_id', nullable: true })
-  inspectorId: number;
+  @Column({ name: 'empleado_id', nullable: true })
+  empleadoId: number;
 
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
@@ -30,6 +30,6 @@ export class Clasificacion {
   lote: Lote;
 
   @ManyToOne(() => Empleado)
-  @JoinColumn({ name: 'inspector_id' })
-  inspector: Empleado;
+  @JoinColumn({ name: 'empleado_id' })
+  empleado: Empleado;
 }

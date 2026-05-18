@@ -4,8 +4,8 @@ import { ClasificacionService } from './clasificacion.service';
 import { CreateClasificacionDto } from './dto/create-clasificacion.dto';
 import { UpdateClasificacionDto } from './dto/update-clasificacion.dto';
 
-@ApiTags('clasificaciones')
-@Controller('clasificaciones')
+@ApiTags('clasificacion')
+@Controller('clasificacion')
 export class ClasificacionController {
   constructor(private readonly clasificacionService: ClasificacionService) {}
 

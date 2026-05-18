@@ -9,15 +9,15 @@ export class CreateConstanciaRetiroDto {
   @ApiPropertyOptional({ example: '2024-06-15', description: 'Fecha de emisión' })
   @IsDateString()
   @IsOptional()
-  fechaEmision?: Date;
+  fechaEmision?: string;
 
-  @ApiPropertyOptional({ example: '2024-12-31', description: 'Fecha de archivo' })
-  @IsDateString()
-  @IsOptional()
-  fechaArchivo?: Date;
-
-  @ApiPropertyOptional({ example: 'https://storage.wastech.com/constancias/CR-001.pdf' })
+  @ApiPropertyOptional({ example: 'Material recibido conforme. Sin observaciones.' })
   @IsString()
   @IsOptional()
-  archivoUrl?: string;
+  observaciones?: string;
+
+  @ApiPropertyOptional({ example: 1, description: 'ID del técnico responsable' })
+  @IsNumber()
+  @IsOptional()
+  tecnicoId?: number;
 }

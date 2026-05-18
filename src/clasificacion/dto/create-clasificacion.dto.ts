@@ -14,5 +14,5 @@ export class CreateClasificacionDto {
   @ApiPropertyOptional({ example: 1, description: 'ID del empleado inspector' })
   @IsNumber()
   @IsOptional()
-  inspectorId?: number;
+  empleadoId?: number;
 }

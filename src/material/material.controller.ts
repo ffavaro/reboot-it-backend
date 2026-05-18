@@ -4,8 +4,8 @@ import { MaterialService } from './material.service';
 import { CreateMaterialDto } from './dto/create-material.dto';
 import { UpdateMaterialDto } from './dto/update-material.dto';
 
-@ApiTags('materiales')
-@Controller('materiales')
+@ApiTags('material')
+@Controller('material')
 export class MaterialController {
   constructor(private readonly materialService: MaterialService) {}
 

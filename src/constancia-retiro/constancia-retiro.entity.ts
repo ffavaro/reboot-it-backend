@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Retiro } from '../retiro/retiro.entity';
+import { Empleado } from '../empleados/empleado.entity';
 
 @Entity('constancia_retiro')
 export class ConstanciaRetiro {
@@ -12,11 +13,11 @@ export class ConstanciaRetiro {
   @Column({ name: 'fecha_emision', type: 'date', nullable: true })
   fechaEmision: Date;
 
-  @Column({ name: 'fecha_archivo', type: 'date', nullable: true })
-  fechaArchivo: Date;
+  @Column({ type: 'text', nullable: true })
+  observaciones: string;
 
-  @Column({ name: 'archivo_url', length: 500, nullable: true })
-  archivoUrl: string;
+  @Column({ name: 'tecnico_id', nullable: true })
+  tecnicoId: number;
 
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
@@ -30,4 +31,8 @@ export class ConstanciaRetiro {
   @ManyToOne(() => Retiro)
   @JoinColumn({ name: 'retiro_id' })
   retiro: Retiro;
+
+  @ManyToOne(() => Empleado, { nullable: true })
+  @JoinColumn({ name: 'tecnico_id' })
+  tecnico: Empleado;
 }
