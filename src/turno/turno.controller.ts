@@ -4,8 +4,8 @@ import { TurnoService } from './turno.service';
 import { CreateTurnoDto } from './dto/create-turno.dto';
 import { UpdateTurnoDto } from './dto/update-turno.dto';
 
-@ApiTags('turnos')
-@Controller('turnos')
+@ApiTags('turno')
+@Controller('turno')
 export class TurnoController {
   constructor(private readonly turnoService: TurnoService) {}
 

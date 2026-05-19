@@ -16,7 +16,7 @@ export class Turno {
   @Column({ name: 'fecha_hora', type: 'datetime' })
   fechaHora: Date;
 
-  @Column({ length: 255, nullable: true })
+  @Column({ name: 'observaciones', length: 255, nullable: true })
   descripcion: string;
 
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })

@@ -4,8 +4,8 @@ import { DonacionService } from './donacion.service';
 import { CreateDonacionDto } from './dto/create-donacion.dto';
 import { UpdateDonacionDto } from './dto/update-donacion.dto';
 
-@ApiTags('donaciones')
-@Controller('donaciones')
+@ApiTags('donacion')
+@Controller('donacion')
 export class DonacionController {
   constructor(private readonly donacionService: DonacionService) {}
 
