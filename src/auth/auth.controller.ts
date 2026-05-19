@@ -15,6 +15,6 @@ export class AuthController {
     @HttpCode(HttpStatus.CREATED)
     @Post('register')
     signUp(@Body() signUpDto: Record<string, any>) {
-        return this.authService.signUp(signUpDto.name, signUpDto.email, signUpDto.password);
+        return this.authService.signUp(signUpDto.name, signUpDto.email, signUpDto.password, signUpDto.cuitDni);
     }
 }

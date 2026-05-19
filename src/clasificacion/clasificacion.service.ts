@@ -20,14 +20,14 @@ export class ClasificacionService {
   findAll() {
     return this.clasificacionRepository.find({
       where: { isActive: true },
-      relations: ['lote', 'empleado'],
+      relations: ['lote', 'empleado', 'items', 'items.tipoMaterial', 'items.condicionMaterial'],
     });
   }
 
   async findOne(id: number) {
     const clasificacion = await this.clasificacionRepository.findOne({
       where: { id },
-      relations: ['lote', 'empleado'],
+      relations: ['lote', 'empleado', 'items', 'items.tipoMaterial', 'items.condicionMaterial'],
     });
     if (!clasificacion) throw new NotFoundException(`Clasificacion ${id} no encontrada`);
     return clasificacion;

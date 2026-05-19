@@ -13,6 +13,10 @@ import { VehiculosModule } from './vehiculos/vehiculos.module';
 import { TipoDonanteModule } from './tipo-donante/tipo-donante.module';
 import { DonantesModule } from './donantes/donantes.module';
 import { EstadoTurnoModule } from './estado-turno/estado-turno.module';
+import { EstadoDonacionModule } from './estado-donacion/estado-donacion.module';
+import { DonacionDetalleModule } from './donacion-detalle/donacion-detalle.module';
+import { TurnoDetalleModule } from './turno-detalle/turno-detalle.module';
+import { ItemClasificadoModule } from './item-clasificado/item-clasificado.module';
 import { TipoMaterialModule } from './tipo-material/tipo-material.module';
 import { CondicionMaterialModule } from './condicion-material/condicion-material.module';
 import { GestorAmbientalModule } from './gestor-ambiental/gestor-ambiental.module';
@@ -64,6 +68,10 @@ import { ModeloModule } from './modelo/modelo.module';
     TipoDonanteModule,
     DonantesModule,
     EstadoTurnoModule,
+    EstadoDonacionModule,
+    DonacionDetalleModule,
+    TurnoDetalleModule,
+    ItemClasificadoModule,
     TipoMaterialModule,
     CondicionMaterialModule,
     GestorAmbientalModule,

@@ -22,6 +22,9 @@ export class Usuario {
   @Column({ name: 'empleado_id', nullable: true })
   empleadoId: number;
 
+  @Column({ name: 'cuit_dni', length: 20, unique: true, nullable: true })
+  cuitDni: string;
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 
