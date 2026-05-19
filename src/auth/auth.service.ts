@@ -20,8 +20,8 @@ export class AuthService {
         return { access_token };
     }
 
-    async signUp(name: string, email: string, password: string): Promise<{access_token: string}> {
-        const user = await this.usersService.create({ nombre: name, email, password, rolId: 7, isActive: true, empleadoId: undefined });
+    async signUp(name: string, email: string, password: string, cuitDni: string): Promise<{access_token: string}> {
+        const user = await this.usersService.create({ nombre: name, email, password, cuitDni, rolId: 7, isActive: true, empleadoId: undefined });
         const { password: _, ...result } = user;
         const access_token = this.jwtService.sign(result);
         return { access_token };

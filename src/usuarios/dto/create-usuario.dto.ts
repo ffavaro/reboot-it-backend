@@ -25,6 +25,11 @@ export class CreateUsuarioDto {
   @IsOptional()
   empleadoId?: number;
 
+  @ApiPropertyOptional({ example: '20123456789' })
+  @IsString()
+  @IsOptional()
+  cuitDni?: string;
+
   @IsOptional()
   @IsString()
   @ApiProperty({ example: true })

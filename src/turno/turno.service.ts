@@ -20,14 +20,14 @@ export class TurnoService {
   findAll() {
     return this.turnoRepository.find({
       where: { isActive: true },
-      relations: ['donante', 'estadoTurno'],
+      relations: ['donante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial'],
     });
   }
 
   async findOne(id: number) {
     const turno = await this.turnoRepository.findOne({
       where: { id },
-      relations: ['donante', 'estadoTurno'],
+      relations: ['donante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial'],
     });
     if (!turno) throw new NotFoundException(`Turno ${id} no encontrado`);
     return turno;

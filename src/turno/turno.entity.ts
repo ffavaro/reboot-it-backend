@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Donante } from '../donantes/donante.entity';
 import { EstadoTurno } from '../estado-turno/estado-turno.entity';
+import { TurnoDetalle } from '../turno-detalle/turno-detalle.entity';
 
 @Entity('turno')
 export class Turno {
@@ -35,4 +36,7 @@ export class Turno {
   @ManyToOne(() => EstadoTurno)
   @JoinColumn({ name: 'estado_turno_id' })
   estadoTurno: EstadoTurno;
+
+  @OneToMany(() => TurnoDetalle, (detalle) => detalle.turno)
+  detalles: TurnoDetalle[];
 }

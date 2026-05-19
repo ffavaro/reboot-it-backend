@@ -4,8 +4,8 @@ import { RetiroService } from './retiro.service';
 import { CreateRetiroDto } from './dto/create-retiro.dto';
 import { UpdateRetiroDto } from './dto/update-retiro.dto';
 
-@ApiTags('retiros')
-@Controller('retiros')
+@ApiTags('retiro')
+@Controller('retiro')
 export class RetiroController {
   constructor(private readonly retiroService: RetiroService) {}
 
