@@ -1,5 +1,28 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+
+export class DetalleInlineDto {
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  tipoMaterialId: number;
+
+  @ApiPropertyOptional({ example: 'Laptops en buen estado' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  descripcion?: string;
+
+  @ApiPropertyOptional({ example: 5 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  cantidadEstimada?: number;
+
+  @ApiPropertyOptional({ example: 'Sin cargador' })
+  @IsOptional()
+  @IsString()
+  observaciones?: string;
+}
 
 export class CreateDonacionDto {
   @ApiProperty({ example: 1, description: 'ID del donante' })
@@ -19,4 +42,9 @@ export class CreateDonacionDto {
   @IsString()
   @IsOptional()
   descripcion?: string;
+
+  @ApiPropertyOptional({ type: [DetalleInlineDto] })
+  @IsOptional()
+  @IsArray()
+  detalles?: DetalleInlineDto[];
 }
