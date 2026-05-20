@@ -5,6 +5,7 @@ import { Donacion } from './donacion.entity';
 import { CreateDonacionDto } from './dto/create-donacion.dto';
 import { UpdateDonacionDto } from './dto/update-donacion.dto';
 import { TurnoService } from '../turno/turno.service';
+import { DonacionDetalleService } from '../donacion-detalle/donacion-detalle.service';
 
 @Injectable()
 export class DonacionService {
@@ -12,12 +13,21 @@ export class DonacionService {
     @InjectRepository(Donacion)
     private readonly donacionRepository: Repository<Donacion>,
     private readonly turnoService: TurnoService,
+    private readonly donacionDetalleService: DonacionDetalleService,
   ) {}
 
   async create(dto: CreateDonacionDto) {
-    const { fechaHora, ...donacionData } = dto;
+    const { fechaHora, detalles, ...donacionData } = dto;
     const donacion = this.donacionRepository.create(donacionData);
-    const savedDonacion = await this.donacionRepository.save(donacion);
+    const saved = await this.donacionRepository.save(donacion);
+
+    if (detalles?.length) {
+      await Promise.all(
+        detalles.map((d) =>
+          this.donacionDetalleService.create({ ...d, donacionId: saved.id }),
+        ),
+      );
+    }
 
     await this.turnoService.create({
       donanteId: dto.donanteId,
@@ -26,7 +36,7 @@ export class DonacionService {
       descripcion: dto.descripcion,
     });
 
-    return this.findOne(savedDonacion.id);
+    return this.findOne(saved.id);
   }
 
   findAll() {
@@ -47,7 +57,21 @@ export class DonacionService {
 
   async update(id: number, dto: UpdateDonacionDto) {
     await this.findOne(id);
-    await this.donacionRepository.update(id, dto);
+    const { detalles, ...donacionData } = dto;
+    if (Object.keys(donacionData).length) {
+      await this.donacionRepository.update(id, donacionData);
+    }
+
+    if (detalles !== undefined) {
+      const existing = await this.donacionDetalleService.findByDonacion(id);
+      await Promise.all(existing.map((d) => this.donacionDetalleService.remove(d.id)));
+      await Promise.all(
+        detalles.map((d) =>
+          this.donacionDetalleService.create({ ...d, donacionId: id }),
+        ),
+      );
+    }
+
     return this.findOne(id);
   }
 
