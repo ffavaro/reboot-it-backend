@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Donacion } from '../donacion/donacion.entity';
-import { TipoMaterial } from '../tipo-material/tipo-material.entity';
+import { TipoMaterial } from '../../inventario/tipo-material/tipo-material.entity';
 
 @Entity('donacion_detalle')
 export class DonacionDetalle {

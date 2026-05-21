@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Empleado } from '../empleados/empleado.entity';
+import { Empleado } from '../../acceso/empleados/empleado.entity';
 import { Vehiculo } from '../vehiculos/vehiculo.entity';
 
 @Entity('empleado_transportista')

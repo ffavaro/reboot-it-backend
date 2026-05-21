@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Lote } from '../lote/lote.entity';
+import { Lote } from '../../inventario/lote/lote.entity';
 import { GestorAmbiental } from '../gestor-ambiental/gestor-ambiental.entity';
 
 @Entity('certificado_disposicion')

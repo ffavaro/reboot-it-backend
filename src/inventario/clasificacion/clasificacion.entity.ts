@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Lote } from '../lote/lote.entity';
-import { Empleado } from '../empleados/empleado.entity';
+import { Empleado } from '../../acceso/empleados/empleado.entity';
 import { ItemClasificado } from '../item-clasificado/item-clasificado.entity';
 
 @Entity('clasificacion')

@@ -1,4 +1,4 @@
-import { UsuariosService } from '@app/usuarios/usuarios.service';
+import { UsuariosService } from '../usuarios/usuarios.service';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';

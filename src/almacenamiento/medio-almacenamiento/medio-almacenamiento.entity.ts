@@ -1,8 +1,8 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Material } from '../material/material.entity';
-import { Tipo } from '../tipo/tipo.entity';
-import { Marca } from '../marca/marca.entity';
-import { Modelo } from '../modelo/modelo.entity';
+import { Material } from '../../inventario/material/material.entity';
+import { Tipo } from '../../inventario/tipo/tipo.entity';
+import { Marca } from '../../inventario/marca/marca.entity';
+import { Modelo } from '../../inventario/modelo/modelo.entity';
 
 @Entity('medio_almacenamiento')
 export class MedioAlmacenamiento {

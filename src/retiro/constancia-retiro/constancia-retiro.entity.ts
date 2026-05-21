@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Retiro } from '../retiro/retiro.entity';
-import { Empleado } from '../empleados/empleado.entity';
+import { Empleado } from '../../acceso/empleados/empleado.entity';
 
 @Entity('constancia_retiro')
 export class ConstanciaRetiro {

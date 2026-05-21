@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { Turno } from '../turno/turno.entity';
 import { DonacionDetalle } from '../donacion-detalle/donacion-detalle.entity';
-import { TipoMaterial } from '../tipo-material/tipo-material.entity';
+import { TipoMaterial } from '../../inventario/tipo-material/tipo-material.entity';
 
 @Entity('turno_detalle')
 export class TurnoDetalle {

@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Clasificacion } from '../clasificacion/clasificacion.entity';
-import { TurnoDetalle } from '../turno-detalle/turno-detalle.entity';
+import { TurnoDetalle } from '../../donaciones/turno-detalle/turno-detalle.entity';
 import { TipoMaterial } from '../tipo-material/tipo-material.entity';
 import { CondicionMaterial } from '../condicion-material/condicion-material.entity';
 
