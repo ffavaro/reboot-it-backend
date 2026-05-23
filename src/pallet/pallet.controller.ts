@@ -4,8 +4,8 @@ import { PalletService } from './pallet.service';
 import { CreatePalletDto } from './dto/create-pallet.dto';
 import { UpdatePalletDto } from './dto/update-pallet.dto';
 
-@ApiTags('pallets')
-@Controller('pallets')
+@ApiTags('pallet')
+@Controller('pallet')
 export class PalletController {
   constructor(private readonly palletService: PalletService) {}
 

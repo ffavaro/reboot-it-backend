@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Donacion } from '../donacion/donacion.entity';
+import { Pallet } from '../pallet/pallet.entity';
 
 @Entity('lote')
 export class Lote {
@@ -27,4 +28,7 @@ export class Lote {
   @ManyToOne(() => Donacion)
   @JoinColumn({ name: 'donacion_id' })
   donacion: Donacion;
+
+  @OneToMany(() => Pallet, (pallet) => pallet.lote)
+  pallets: Pallet[];
 }

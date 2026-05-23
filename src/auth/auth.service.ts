@@ -21,6 +21,10 @@ export class AuthService {
     }
 
     async signUp(name: string, email: string, password: string, cuitDni: string): Promise<{access_token: string}> {
+        const existingUser = await this.usersService.findByEmail(email);
+        if (existingUser) {
+            throw new UnauthorizedException('Email ya registrado');
+        }
         const user = await this.usersService.create({ nombre: name, email, password, cuitDni, rolId: 7, isActive: true, empleadoId: undefined });
         const { password: _, ...result } = user;
         const access_token = this.jwtService.sign(result);

@@ -6,18 +6,18 @@ export class CreatePalletDto {
   @IsNumber()
   rackId: number;
 
-  @ApiPropertyOptional({ example: 1, description: 'ID del medio de almacenamiento' })
+  @ApiPropertyOptional({ example: 1, description: 'ID del lote' })
   @IsNumber()
   @IsOptional()
-  mdcId?: number;
+  loteId?: number;
 
   @ApiPropertyOptional({ example: 'PLT-001' })
   @IsString()
   @IsOptional()
   codigo?: string;
 
-  @ApiPropertyOptional({ example: 500.0, description: 'Capacidad/estado en kg' })
+  @ApiPropertyOptional({ example: 500.0, description: 'Peso en kg' })
   @IsNumber()
   @IsOptional()
-  statusKg?: number;
+  peso_kg?: number;
 }

@@ -20,14 +20,14 @@ export class PalletService {
   findAll() {
     return this.palletRepository.find({
       where: { isActive: true },
-      relations: ['rack', 'medioAlmacenamiento'],
+      relations: ['rack', 'lote'],
     });
   }
 
   async findOne(id: number) {
     const pallet = await this.palletRepository.findOne({
       where: { id },
-      relations: ['rack', 'medioAlmacenamiento'],
+      relations: ['rack', 'lote'],
     });
     if (!pallet) throw new NotFoundException(`Pallet ${id} no encontrado`);
     return pallet;
