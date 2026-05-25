@@ -5,9 +5,10 @@ import { DonacionController } from './donacion.controller';
 import { DonacionService } from './donacion.service';
 import { TurnoModule } from '../turno/turno.module';
 import { DonacionDetalleModule } from '../donacion-detalle/donacion-detalle.module';
+import { TurnoDetalleModule } from '../turno-detalle/turno-detalle.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Donacion]), TurnoModule, DonacionDetalleModule],
+  imports: [TypeOrmModule.forFeature([Donacion]), TurnoModule, DonacionDetalleModule, TurnoDetalleModule],
   controllers: [DonacionController],
   providers: [DonacionService],
   exports: [DonacionService],

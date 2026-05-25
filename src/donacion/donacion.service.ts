@@ -6,6 +6,7 @@ import { CreateDonacionDto } from './dto/create-donacion.dto';
 import { UpdateDonacionDto } from './dto/update-donacion.dto';
 import { TurnoService } from '../turno/turno.service';
 import { DonacionDetalleService } from '../donacion-detalle/donacion-detalle.service';
+import { TurnoDetalleService } from '../turno-detalle/turno-detalle.service';
 
 @Injectable()
 export class DonacionService {
@@ -14,6 +15,7 @@ export class DonacionService {
     private readonly donacionRepository: Repository<Donacion>,
     private readonly turnoService: TurnoService,
     private readonly donacionDetalleService: DonacionDetalleService,
+    private readonly turnoDetalleService: TurnoDetalleService,
   ) {}
 
   async create(dto: CreateDonacionDto) {
@@ -21,20 +23,35 @@ export class DonacionService {
     const donacion = this.donacionRepository.create(donacionData);
     const saved = await this.donacionRepository.save(donacion);
 
-    if (detalles?.length) {
-      await Promise.all(
-        detalles.map((d) =>
-          this.donacionDetalleService.create({ ...d, donacionId: saved.id }),
-        ),
-      );
-    }
+    const savedDetalles = detalles?.length
+      ? await Promise.all(
+          detalles.map((d) =>
+            this.donacionDetalleService.create({ ...d, donacionId: saved.id }),
+          ),
+        )
+      : [];
 
-    await this.turnoService.create({
+    const turno = await this.turnoService.create({
       donanteId: dto.donanteId,
       estadoTurnoId: 1,
       fechaHora: fechaHora as unknown as Date,
       descripcion: dto.descripcion,
     });
+
+    if (savedDetalles.length) {
+      await Promise.all(
+        savedDetalles.map((detalle) =>
+          this.turnoDetalleService.create({
+            turnoId: turno.id,
+            donacionDetalleId: detalle.id,
+            tipoMaterialId: detalle.tipoMaterialId,
+            descripcion: detalle.descripcion ?? undefined,
+            cantidadConfirmada: detalle.cantidadEstimada ?? undefined,
+            observaciones: detalle.observaciones ?? undefined,
+          }),
+        ),
+      );
+    }
 
     return this.findOne(saved.id);
   }
