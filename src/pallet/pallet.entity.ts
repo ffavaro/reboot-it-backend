@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Rack } from '../rack/rack.entity';
-import { MedioAlmacenamiento } from '../medio-almacenamiento/medio-almacenamiento.entity';
+import { Lote } from '../lote/lote.entity';
 
 @Entity('pallet')
 export class Pallet {
@@ -10,14 +10,14 @@ export class Pallet {
   @Column({ name: 'rack_id' })
   rackId: number;
 
-  @Column({ name: 'mdc_id', nullable: true })
-  mdcId: number;
+  @Column({ name: 'lote_id', nullable: true })
+  loteId: number;
 
   @Column({ length: 50, nullable: true })
   codigo: string;
 
-  @Column({ name: 'status_kg', type: 'decimal', precision: 10, scale: 2, nullable: true })
-  statusKg: number;
+  @Column({ name: 'peso_kg', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  peso_kg: number;
 
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
@@ -32,7 +32,7 @@ export class Pallet {
   @JoinColumn({ name: 'rack_id' })
   rack: Rack;
 
-  @ManyToOne(() => MedioAlmacenamiento)
-  @JoinColumn({ name: 'mdc_id' })
-  medioAlmacenamiento: MedioAlmacenamiento;
+  @ManyToOne(() => Lote, { nullable: true })
+  @JoinColumn({ name: 'lote_id' })
+  lote: Lote;
 }

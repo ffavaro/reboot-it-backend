@@ -3,6 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MaterialService } from './material.service';
 import { CreateMaterialDto } from './dto/create-material.dto';
 import { UpdateMaterialDto } from './dto/update-material.dto';
+import { ClasificarMaterialDto } from './dto/clasificar-material.dto';
 
 @ApiTags('material')
 @Controller('material')
@@ -31,6 +32,12 @@ export class MaterialController {
   @ApiOperation({ summary: 'Actualizar un material' })
   update(@Param('id') id: string, @Body() dto: UpdateMaterialDto) {
     return this.materialService.update(+id, dto);
+  }
+
+  @Patch(':id/clasificar')
+  @ApiOperation({ summary: 'Clasificar material: actualizar condición y crear proceso de destrucción si aplica' })
+  clasificar(@Param('id') id: string, @Body() dto: ClasificarMaterialDto) {
+    return this.materialService.clasificarMaterial(+id, dto);
   }
 
   @Delete(':id')

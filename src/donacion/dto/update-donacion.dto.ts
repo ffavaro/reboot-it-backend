@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 import { DetalleInlineDto } from './create-donacion.dto';
 
 export class UpdateDonacionDto {
@@ -17,6 +17,11 @@ export class UpdateDonacionDto {
   @IsOptional()
   @IsString()
   descripcion?: string;
+
+  @ApiPropertyOptional({ example: false })
+  @IsBoolean()
+  @IsOptional()
+  necesitaRetiro?: boolean;
 
   @ApiPropertyOptional({ type: [DetalleInlineDto] })
   @IsOptional()

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateProcesoDestruccionDto {
   @ApiProperty({ example: 1, description: 'ID del medio de almacenamiento' })
@@ -11,10 +11,15 @@ export class CreateProcesoDestruccionDto {
   @IsOptional()
   fecha?: Date;
 
-  @ApiPropertyOptional({ example: 'Trituración mecánica' })
-  @IsString()
+  @ApiPropertyOptional({ example: 1, description: 'ID del método de destrucción' })
+  @IsNumber()
   @IsOptional()
-  metodo?: string;
+  metodoDestruccionId?: number;
+
+  @ApiPropertyOptional({ example: 1, description: 'ID del estado del proceso (default: 1 = Iniciado)' })
+  @IsNumber()
+  @IsOptional()
+  estadoId?: number;
 
   @ApiPropertyOptional({ example: 1, description: 'ID del empleado responsable' })
   @IsNumber()

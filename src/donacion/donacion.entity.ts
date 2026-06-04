@@ -17,6 +17,9 @@ export class Donacion {
   @Column({ length: 255, nullable: true })
   descripcion: string;
 
+  @Column({ name: 'necesita_retiro', type: 'tinyint', default: 0 })
+  necesitaRetiro: boolean;
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 

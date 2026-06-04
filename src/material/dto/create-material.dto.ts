@@ -2,9 +2,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateMaterialDto {
-  @ApiProperty({ example: 1, description: 'ID del lote' })
+  @ApiPropertyOptional({ example: 1, description: 'ID del lote' })
   @IsNumber()
-  loteId: number;
+  @IsOptional()
+  loteId?: number;
 
   @ApiProperty({ example: 1, description: 'ID del tipo de material' })
   @IsNumber()
