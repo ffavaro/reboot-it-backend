@@ -9,9 +9,13 @@ import { EmpleadoTransportista } from '../empleado-transportista/empleado-transp
 import { RegistroFotografico } from '../registro-fotografico/registro-fotografico.entity';
 import { Material } from '../material/material.entity';
 import { CondicionMaterial } from '../condicion-material/condicion-material.entity';
+import { Donacion } from '../donacion/donacion.entity';
+import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
+import { Lote } from '../lote/lote.entity';
+import { Retiro } from '../retiro/retiro.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Turno, EstadoTurno, Empleado, EmpleadoTransportista, RegistroFotografico, Material, CondicionMaterial])],
+  imports: [TypeOrmModule.forFeature([Turno, EstadoTurno, Empleado, EmpleadoTransportista, RegistroFotografico, Material, CondicionMaterial, Donacion, EstadoDonacion, Lote, Retiro])],
   controllers: [TurnoController],
   providers: [TurnoService],
   exports: [TurnoService],

@@ -6,6 +6,11 @@ export class CreateTurnoDto {
   @IsNumber()
   donanteId: number;
 
+  @ApiPropertyOptional({ example: 1, description: 'ID de la donación asociada' })
+  @IsNumber()
+  @IsOptional()
+  donacionId?: number;
+
   @ApiProperty({ example: 1, description: 'ID del estado del turno' })
   @IsNumber()
   estadoTurnoId: number;

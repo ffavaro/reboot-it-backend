@@ -7,6 +7,7 @@ import { UpdateDonacionDto } from './dto/update-donacion.dto';
 import { TurnoService } from '../turno/turno.service';
 import { DonacionDetalleService } from '../donacion-detalle/donacion-detalle.service';
 import { TurnoDetalleService } from '../turno-detalle/turno-detalle.service';
+import { LoteService } from '../lote/lote.service';
 
 @Injectable()
 export class DonacionService {
@@ -16,6 +17,7 @@ export class DonacionService {
     private readonly turnoService: TurnoService,
     private readonly donacionDetalleService: DonacionDetalleService,
     private readonly turnoDetalleService: TurnoDetalleService,
+    private readonly loteService: LoteService,
   ) {}
 
   async create(dto: CreateDonacionDto) {
@@ -25,6 +27,10 @@ export class DonacionService {
     const saved = await this.donacionRepository.save(donacion).catch((error:any) => {
       console.log('Error al guardar donación', { error });
       throw new InternalServerErrorException('No se pudo registrar la donación. Intentá nuevamente.');
+    });
+
+    await this.loteService.create({ donacionId: saved.id }).catch(() => {
+      throw new InternalServerErrorException('No se pudo crear el lote para la donación.');
     });
 
     const savedDetalles = detalles?.length
@@ -41,6 +47,7 @@ export class DonacionService {
     const turno = await this.turnoService
       .create({
         donanteId: dto.donanteId,
+        donacionId: saved.id,
         estadoTurnoId: 1,
         fechaHora: fechaHora as unknown as Date,
         descripcion: dto.descripcion,

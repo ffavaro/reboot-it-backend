@@ -20,6 +20,9 @@ export class Retiro {
   @Column({ name: 'fecha_inicio', type: 'datetime', nullable: true })
   fechaInicio: Date;
 
+  @Column({ name: 'fecha_retiro', type: 'datetime', nullable: true })
+  fechaRetiro: Date;
+
   @Column({ length: 255, nullable: true })
   direccion: string;
 

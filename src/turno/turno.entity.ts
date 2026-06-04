@@ -13,6 +13,9 @@ export class Turno {
   @Column({ name: 'donante_id' })
   donanteId: number;
 
+  @Column({ name: 'donacion_id', type: 'int', nullable: true })
+  donacionId: number | null;
+
   @Column({ name: 'estado_turno_id' })
   estadoTurnoId: number;
 

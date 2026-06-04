@@ -20,14 +20,14 @@ export class RetiroService {
   findAll() {
     return this.retiroRepository.find({
       where: { isActive: true },
-      relations: ['donacion', 'empleadoTransportista', 'vehiculo'],
+      relations: ['donacion', 'empleadoTransportista', 'empleadoTransportista.empleado', 'vehiculo'],
     });
   }
 
   async findOne(id: number) {
     const retiro = await this.retiroRepository.findOne({
       where: { id },
-      relations: ['donacion', 'empleadoTransportista', 'vehiculo'],
+      relations: ['donacion', 'empleadoTransportista', 'empleadoTransportista.empleado', 'vehiculo'],
     });
     if (!retiro) throw new NotFoundException(`Retiro ${id} no encontrado`);
     return retiro;

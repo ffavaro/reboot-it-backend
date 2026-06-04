@@ -19,6 +19,11 @@ export class CreateRetiroDto {
   @IsOptional()
   fechaInicio?: Date;
 
+  @ApiPropertyOptional({ example: '2024-06-15T10:00:00Z', description: 'Fecha efectiva del retiro' })
+  @IsDateString()
+  @IsOptional()
+  fechaRetiro?: Date;
+
   @ApiPropertyOptional({ example: 'Av. Corrientes 1234, CABA' })
   @IsString()
   @IsOptional()
