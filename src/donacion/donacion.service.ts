@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donacion } from './donacion.entity';
@@ -20,23 +20,36 @@ export class DonacionService {
 
   async create(dto: CreateDonacionDto) {
     const { fechaHora, detalles, ...donacionData } = dto;
+
     const donacion = this.donacionRepository.create(donacionData);
-    const saved = await this.donacionRepository.save(donacion);
+    const saved = await this.donacionRepository.save(donacion).catch((error:any) => {
+      console.log('Error al guardar donación', { error });
+      throw new InternalServerErrorException('No se pudo registrar la donación. Intentá nuevamente.');
+    });
 
     const savedDetalles = detalles?.length
       ? await Promise.all(
           detalles.map((d) =>
             this.donacionDetalleService.create({ ...d, donacionId: saved.id }),
           ),
-        )
+        ).catch((err) => {
+          if (err instanceof HttpException) throw err;
+          throw new BadRequestException('Error al guardar los materiales de la donación.');
+        })
       : [];
 
-    const turno = await this.turnoService.create({
-      donanteId: dto.donanteId,
-      estadoTurnoId: 1,
-      fechaHora: fechaHora as unknown as Date,
-      descripcion: dto.descripcion,
-    });
+    const turno = await this.turnoService
+      .create({
+        donanteId: dto.donanteId,
+        estadoTurnoId: 1,
+        fechaHora: fechaHora as unknown as Date,
+        descripcion: dto.descripcion,
+        necesitaRetiro: dto.necesitaRetiro ?? false,
+      })
+      .catch((err) => {
+        if (err instanceof HttpException) throw err;
+        throw new BadRequestException('No se pudo crear el turno para el horario seleccionado.');
+      });
 
     if (savedDetalles.length) {
       await Promise.all(
@@ -50,7 +63,10 @@ export class DonacionService {
             observaciones: detalle.observaciones ?? undefined,
           }),
         ),
-      );
+      ).catch((err) => {
+        if (err instanceof HttpException) throw err;
+        throw new InternalServerErrorException('Error al vincular los materiales con el turno.');
+      });
     }
 
     return this.findOne(saved.id);

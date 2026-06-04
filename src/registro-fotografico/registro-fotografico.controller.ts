@@ -21,6 +21,12 @@ export class RegistroFotograficoController {
     return this.registroFotograficoService.findAll();
   }
 
+  @Get('by-turno/:turnoId')
+  @ApiOperation({ summary: 'Listar registros fotográficos de un turno' })
+  findByTurno(@Param('turnoId') turnoId: string) {
+    return this.registroFotograficoService.findByTurno(+turnoId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un registro fotográfico por ID' })
   findOne(@Param('id') id: string) {

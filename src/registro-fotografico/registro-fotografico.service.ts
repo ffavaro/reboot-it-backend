@@ -20,14 +20,21 @@ export class RegistroFotograficoService {
   findAll() {
     return this.registroFotograficoRepository.find({
       where: { isActive: true },
-      relations: ['lote'],
+      relations: ['lote', 'turno'],
+    });
+  }
+
+  findByTurno(turnoId: number) {
+    return this.registroFotograficoRepository.find({
+      where: { turnoId, isActive: true },
+      relations: ['turno'],
     });
   }
 
   async findOne(id: number) {
     const registroFotografico = await this.registroFotograficoRepository.findOne({
       where: { id },
-      relations: ['lote'],
+      relations: ['lote', 'turno'],
     });
     if (!registroFotografico) throw new NotFoundException(`RegistroFotografico ${id} no encontrado`);
     return registroFotografico;

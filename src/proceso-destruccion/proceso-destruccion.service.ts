@@ -20,14 +20,14 @@ export class ProcesoDestruccionService {
   findAll() {
     return this.procesoDestruccionRepository.find({
       where: { isActive: true },
-      relations: ['medioAlmacenamiento', 'empleado'],
+      relations: ['medioAlmacenamiento', 'medioAlmacenamiento.material', 'medioAlmacenamiento.material.tipoMaterial', 'empleado', 'metodoDestruccion', 'estado'],
     });
   }
 
   async findOne(id: number) {
     const procesoDestruccion = await this.procesoDestruccionRepository.findOne({
       where: { id },
-      relations: ['medioAlmacenamiento', 'empleado'],
+      relations: ['medioAlmacenamiento', 'medioAlmacenamiento.material', 'medioAlmacenamiento.material.tipoMaterial', 'empleado', 'metodoDestruccion', 'estado'],
     });
     if (!procesoDestruccion) throw new NotFoundException(`ProcesoDestruccion ${id} no encontrado`);
     return procesoDestruccion;

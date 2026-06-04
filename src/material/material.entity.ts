@@ -8,8 +8,8 @@ export class Material {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'lote_id' })
-  loteId: number;
+  @Column({ name: 'lote_id', nullable: true })
+  loteId: number | null;
 
   @Column({ name: 'tipo_material_id' })
   tipoMaterialId: number;
@@ -29,9 +29,9 @@ export class Material {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => Lote)
+  @ManyToOne(() => Lote, { nullable: true })
   @JoinColumn({ name: 'lote_id' })
-  lote: Lote;
+  lote: Lote | null;
 
   @ManyToOne(() => TipoMaterial)
   @JoinColumn({ name: 'tipo_material_id' })

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateTurnoDto {
   @ApiProperty({ example: 1, description: 'ID del donante' })
@@ -18,4 +18,9 @@ export class CreateTurnoDto {
   @IsString()
   @IsOptional()
   descripcion?: string;
+
+  @ApiPropertyOptional({ example: false, description: 'Indica si el turno requiere retiro a domicilio' })
+  @IsBoolean()
+  @IsOptional()
+  necesitaRetiro?: boolean;
 }
