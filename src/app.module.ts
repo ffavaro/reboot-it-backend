@@ -16,7 +16,6 @@ import { EstadoTurnoModule } from './estado-turno/estado-turno.module';
 import { EstadoDonacionModule } from './estado-donacion/estado-donacion.module';
 import { DonacionDetalleModule } from './donacion-detalle/donacion-detalle.module';
 import { TurnoDetalleModule } from './turno-detalle/turno-detalle.module';
-import { ItemClasificadoModule } from './item-clasificado/item-clasificado.module';
 import { TipoMaterialModule } from './tipo-material/tipo-material.module';
 import { CondicionMaterialModule } from './condicion-material/condicion-material.module';
 import { GestorAmbientalModule } from './gestor-ambiental/gestor-ambiental.module';
@@ -27,7 +26,6 @@ import { DonacionModule } from './donacion/donacion.module';
 import { LoteModule } from './lote/lote.module';
 import { RetiroModule } from './retiro/retiro.module';
 import { MaterialModule } from './material/material.module';
-import { ClasificacionModule } from './clasificacion/clasificacion.module';
 import { MedioAlmacenamientoModule } from './medio-almacenamiento/medio-almacenamiento.module';
 import { PalletModule } from './pallet/pallet.module';
 import { CertificadoDisposicionModule } from './certificado-disposicion/certificado-disposicion.module';
@@ -74,7 +72,6 @@ import { UploadModule } from './upload/upload.module';
     EstadoDonacionModule,
     DonacionDetalleModule,
     TurnoDetalleModule,
-    ItemClasificadoModule,
     TipoMaterialModule,
     CondicionMaterialModule,
     GestorAmbientalModule,
@@ -85,7 +82,6 @@ import { UploadModule } from './upload/upload.module';
     LoteModule,
     RetiroModule,
     MaterialModule,
-    ClasificacionModule,
     MedioAlmacenamientoModule,
     PalletModule,
     CertificadoDisposicionModule,
