@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -17,10 +17,18 @@ export class UsuariosService {
   ) {}
 
   async create(dto: CreateUsuarioDto) {
-    const plainPassword = dto.password || DEFAULT_PASSWORD;
-    const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
-    const usuario = this.usuarioRepository.create({ ...dto, password: hashedPassword });
-    return this.usuarioRepository.save(usuario);
+    try {
+      const plainPassword = dto.password || DEFAULT_PASSWORD;
+      const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
+      const usuario = this.usuarioRepository.create({ ...dto, password: hashedPassword });
+      return await this.usuarioRepository.save(usuario);
+    } catch (error) {
+      if (error?.code === 'ER_DUP_ENTRY') {
+        throw new ConflictException('El email ya está registrado');
+      }
+      console.error('Error al crear usuario:', error);
+      throw new InternalServerErrorException('Error al crear usuario');
+    }
   }
 
   findAll() {
