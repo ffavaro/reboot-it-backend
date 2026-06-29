@@ -48,6 +48,15 @@ export class CreateDonacionDto {
   @IsOptional()
   necesitaRetiro?: boolean;
 
+  @ApiPropertyOptional({
+    example: 'Av. Siempre Viva 742',
+    description: 'Dirección de retiro distinta a la registrada en el donante',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  direccionRetiro?: string;
+
   @ApiPropertyOptional({ type: [DetalleInlineDto] })
   @IsOptional()
   @IsArray()

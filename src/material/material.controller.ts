@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MaterialService } from './material.service';
 import { CreateMaterialDto } from './dto/create-material.dto';
 import { UpdateMaterialDto } from './dto/update-material.dto';
 import { ClasificarMaterialDto } from './dto/clasificar-material.dto';
+import { ReporteMaterialDto } from './dto/reporte-material.dto';
 
 @ApiTags('material')
 @Controller('material')
@@ -20,6 +21,12 @@ export class MaterialController {
   @ApiOperation({ summary: 'Listar todos los materiales activos' })
   findAll() {
     return this.materialService.findAll();
+  }
+
+  @Get('reporte')
+  @ApiOperation({ summary: 'Generar reporte de inventario (materiales) con filtros' })
+  reporte(@Query() query: ReporteMaterialDto) {
+    return this.materialService.reporte(query);
   }
 
   @Get(':id')

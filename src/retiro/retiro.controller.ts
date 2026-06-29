@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RetiroService } from './retiro.service';
 import { CreateRetiroDto } from './dto/create-retiro.dto';
 import { UpdateRetiroDto } from './dto/update-retiro.dto';
+import { ReporteRetiroDto } from './dto/reporte-retiro.dto';
 
 @ApiTags('retiro')
 @Controller('retiro')
@@ -19,6 +20,12 @@ export class RetiroController {
   @ApiOperation({ summary: 'Listar todos los retiros activos' })
   findAll() {
     return this.retiroService.findAll();
+  }
+
+  @Get('reporte')
+  @ApiOperation({ summary: 'Generar reporte de retiros a domicilio con filtros' })
+  reporte(@Query() query: ReporteRetiroDto) {
+    return this.retiroService.reporte(query);
   }
 
   @Get(':id')
