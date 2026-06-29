@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DonacionService } from './donacion.service';
 import { CreateDonacionDto } from './dto/create-donacion.dto';
 import { UpdateDonacionDto } from './dto/update-donacion.dto';
+import { ReporteDonacionDto } from './dto/reporte-donacion.dto';
 
 @ApiTags('donacion')
 @Controller('donacion')
@@ -19,6 +20,12 @@ export class DonacionController {
   @ApiOperation({ summary: 'Listar todas las donaciones activas' })
   findAll() {
     return this.donacionService.findAll();
+  }
+
+  @Get('reporte')
+  @ApiOperation({ summary: 'Generar reporte de donaciones con filtros' })
+  reporte(@Query() query: ReporteDonacionDto) {
+    return this.donacionService.reporte(query);
   }
 
   @Get(':id')

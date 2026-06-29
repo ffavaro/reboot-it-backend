@@ -20,6 +20,9 @@ export class Donacion {
   @Column({ name: 'necesita_retiro', type: 'tinyint', default: 0 })
   necesitaRetiro: boolean;
 
+  @Column({ type:"varchar", name: 'direccion_retiro', length: 255, nullable: true })
+  direccionRetiro: string | null;
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 

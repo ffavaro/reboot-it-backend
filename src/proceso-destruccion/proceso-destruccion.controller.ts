@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProcesoDestruccionService } from './proceso-destruccion.service';
 import { CreateProcesoDestruccionDto } from './dto/create-proceso-destruccion.dto';
 import { UpdateProcesoDestruccionDto } from './dto/update-proceso-destruccion.dto';
+import { ReporteProcesoDestruccionDto } from './dto/reporte-proceso-destruccion.dto';
 
 @ApiTags('proceso-destruccion')
 @Controller('proceso-destruccion')
@@ -19,6 +20,12 @@ export class ProcesoDestruccionController {
   @ApiOperation({ summary: 'Listar todos los procesos de destrucción activos' })
   findAll() {
     return this.procesoDestruccionService.findAll();
+  }
+
+  @Get('reporte')
+  @ApiOperation({ summary: 'Generar reporte de procesos de destrucción con filtros' })
+  reporte(@Query() query: ReporteProcesoDestruccionDto) {
+    return this.procesoDestruccionService.reporte(query);
   }
 
   @Get(':id')
