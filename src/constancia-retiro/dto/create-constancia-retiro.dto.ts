@@ -16,8 +16,7 @@ export class CreateConstanciaRetiroDto {
   @IsOptional()
   observaciones?: string;
 
-  @ApiPropertyOptional({ example: 1, description: 'ID del técnico responsable' })
+  @ApiProperty({ example: 1, description: 'ID del técnico responsable' })
   @IsNumber()
-  @IsOptional()
-  tecnicoId?: number;
+  tecnicoId: number;
 }

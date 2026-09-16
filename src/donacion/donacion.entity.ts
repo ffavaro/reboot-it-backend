@@ -23,6 +23,9 @@ export class Donacion {
   @Column({ type:"varchar", name: 'direccion_retiro', length: 255, nullable: true })
   direccionRetiro: string | null;
 
+  @Column({ name: 'peso_estimado_kg', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  pesoEstimadoKg: number | null;
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 

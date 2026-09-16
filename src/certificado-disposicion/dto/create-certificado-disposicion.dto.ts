@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateCertificadoDisposicionDto {
   @ApiProperty({ example: 1, description: 'ID del lote' })
@@ -10,15 +10,8 @@ export class CreateCertificadoDisposicionDto {
   @IsNumber()
   gestorAmbientalId: number;
 
-  @ApiPropertyOptional({ example: '2024-06-15', description: 'Fecha de emisión' })
-  @IsDateString()
-  @IsOptional()
-  fechaEmision?: Date;
-
-  @ApiPropertyOptional({ example: 'CERT-2024-0001' })
-  @IsString()
-  @IsOptional()
-  numeroCertificado?: string;
+  // fechaEmision y numeroCertificado no se reciben del cliente: el service
+  // los genera automáticamente (fecha del día y numeración correlativa).
 
   @ApiPropertyOptional({ example: 'Material procesado conforme normativa vigente' })
   @IsString()

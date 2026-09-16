@@ -6,22 +6,15 @@ export class DetalleInlineDto {
   @IsInt()
   tipoMaterialId: number;
 
-  @ApiPropertyOptional({ example: 'Laptops en buen estado' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(255)
-  descripcion?: string;
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  condicionMaterialId: number;
 
   @ApiPropertyOptional({ example: 5 })
   @IsOptional()
   @IsInt()
   @Min(1)
   cantidadEstimada?: number;
-
-  @ApiPropertyOptional({ example: 'Sin cargador' })
-  @IsOptional()
-  @IsString()
-  observaciones?: string;
 }
 
 export class CreateDonacionDto {
@@ -56,6 +49,14 @@ export class CreateDonacionDto {
   @IsOptional()
   @MaxLength(255)
   direccionRetiro?: string;
+
+  @ApiPropertyOptional({
+    example: 25.5,
+    description: 'Peso estimado (kg) de la donación, usado para asignar un transportista compatible',
+  })
+  @IsNumber()
+  @IsOptional()
+  pesoEstimadoKg?: number;
 
   @ApiPropertyOptional({ type: [DetalleInlineDto] })
   @IsOptional()

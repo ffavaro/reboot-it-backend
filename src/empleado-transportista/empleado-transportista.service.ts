@@ -20,14 +20,14 @@ export class EmpleadoTransportistaService {
   findAll() {
     return this.empleadoTransportistaRepository.find({
       where: { isActive: true },
-      relations: ['empleado', 'vehiculo'],
+      relations: ['empleado', 'vehiculo', 'vehiculo.tipoVehiculo'],
     });
   }
 
   async findOne(id: number) {
     const empleadoTransportista = await this.empleadoTransportistaRepository.findOne({
       where: { id },
-      relations: ['empleado', 'vehiculo'],
+      relations: ['empleado', 'vehiculo', 'vehiculo.tipoVehiculo'],
     });
     if (!empleadoTransportista) throw new NotFoundException(`EmpleadoTransportista ${id} no encontrado`);
     return empleadoTransportista;

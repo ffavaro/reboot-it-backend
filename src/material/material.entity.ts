@@ -14,8 +14,8 @@ export class Material {
   @Column({ name: 'tipo_material_id' })
   tipoMaterialId: number;
 
-  @Column({ name: 'condicion_material_id' })
-  condicionMaterialId: number;
+  @Column({ name: 'condicion_material_id', nullable: true })
+  condicionMaterialId: number | null;
 
   @Column({ length: 255, nullable: true })
   descripcion: string;
@@ -37,7 +37,7 @@ export class Material {
   @JoinColumn({ name: 'tipo_material_id' })
   tipoMaterial: TipoMaterial;
 
-  @ManyToOne(() => CondicionMaterial)
+  @ManyToOne(() => CondicionMaterial, { nullable: true })
   @JoinColumn({ name: 'condicion_material_id' })
-  condicionMaterial: CondicionMaterial;
+  condicionMaterial: CondicionMaterial | null;
 }

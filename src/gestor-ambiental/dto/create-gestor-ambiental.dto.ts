@@ -11,10 +11,9 @@ export class CreateGestorAmbientalDto {
   @IsOptional()
   cuit?: string;
 
-  @ApiPropertyOptional({ example: 'HAB-2024-001' })
+  @ApiProperty({ example: 'HAB-2024-001' })
   @IsString()
-  @IsOptional()
-  habilitacion?: string;
+  habilitacion: string;
 
   @ApiPropertyOptional({ example: 'info@reciclados.com' })
   @IsString()

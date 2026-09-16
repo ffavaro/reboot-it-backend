@@ -72,9 +72,7 @@ export class DonacionService {
             turnoId: turno.id,
             donacionDetalleId: detalle.id,
             tipoMaterialId: detalle.tipoMaterialId,
-            descripcion: detalle.descripcion ?? undefined,
             cantidadConfirmada: detalle.cantidadEstimada ?? undefined,
-            observaciones: detalle.observaciones ?? undefined,
           }),
         ),
       ).catch((err) => {
@@ -89,14 +87,14 @@ export class DonacionService {
   findAll() {
     return this.donacionRepository.find({
       where: { isActive: true },
-      relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial'],
+      relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial', 'detalles.condicionMaterial'],
     });
   }
 
   async findOne(id: number) {
     const donacion = await this.donacionRepository.findOne({
       where: { id },
-      relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial'],
+      relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial', 'detalles.condicionMaterial'],
     });
     if (!donacion) throw new NotFoundException(`Donacion ${id} no encontrada`);
     return donacion;
@@ -135,6 +133,7 @@ export class DonacionService {
       .leftJoinAndSelect('d.estadoDonacion', 'estadoDonacion')
       .leftJoinAndSelect('d.detalles', 'detalles')
       .leftJoinAndSelect('detalles.tipoMaterial', 'tipoMaterial')
+      .leftJoinAndSelect('detalles.condicionMaterial', 'condicionMaterial')
       .where('d.isActive = :active', { active: true });
 
     if (query.donanteId) {

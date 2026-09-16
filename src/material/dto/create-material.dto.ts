@@ -11,12 +11,12 @@ export class CreateMaterialDto {
   @IsNumber()
   tipoMaterialId: number;
 
-  @ApiProperty({ example: 1, description: 'ID de la condición del material' })
+  @ApiPropertyOptional({ example: 1, description: 'ID de la condición del material' })
   @IsNumber()
-  condicionMaterialId: number;
-
-  @ApiPropertyOptional({ example: 'Notebook Dell Latitude 5490' })
-  @IsString()
   @IsOptional()
-  descripcion?: string;
+  condicionMaterialId?: number;
+
+  @ApiProperty({ example: 'Notebook Dell Latitude 5490' })
+  @IsString()
+  descripcion: string;
 }

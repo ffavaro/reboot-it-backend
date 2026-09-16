@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Donacion } from '../donacion/donacion.entity';
 import { TipoMaterial } from '../tipo-material/tipo-material.entity';
+import { CondicionMaterial } from '../condicion-material/condicion-material.entity';
 
 @Entity('donacion_detalle')
 export class DonacionDetalle {
@@ -21,14 +22,11 @@ export class DonacionDetalle {
   @Column({ name: 'tipo_material_id' })
   tipoMaterialId: number;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  descripcion: string | null;
+  @Column({ name: 'condicion_material_id', nullable: true })
+  condicionMaterialId: number | null;
 
   @Column({ name: 'cantidad_estimada', type: 'int', nullable: true })
   cantidadEstimada: number | null;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  observaciones: string | null;
 
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
@@ -46,4 +44,8 @@ export class DonacionDetalle {
   @ManyToOne(() => TipoMaterial)
   @JoinColumn({ name: 'tipo_material_id' })
   tipoMaterial: TipoMaterial;
+
+  @ManyToOne(() => CondicionMaterial)
+  @JoinColumn({ name: 'condicion_material_id' })
+  condicionMaterial: CondicionMaterial;
 }
