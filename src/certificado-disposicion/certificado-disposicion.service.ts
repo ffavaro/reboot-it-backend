@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { CertificadoDisposicion } from './certificado-disposicion.entity';
 import { Lote } from '../lote/lote.entity';
 import { Donacion } from '../donacion/donacion.entity';
@@ -24,7 +24,14 @@ export class CertificadoDisposicionService {
   ) {}
 
   async create(dto: CreateCertificadoDisposicionDto) {
-    const certificadoDisposicion = this.certificadoDisposicionRepository.create(dto);
+    const fechaEmision = new Date();
+    const numeroCertificado = await this.generarNumeroCertificado(fechaEmision);
+
+    const certificadoDisposicion = this.certificadoDisposicionRepository.create({
+      ...dto,
+      fechaEmision,
+      numeroCertificado,
+    });
     const saved = await this.certificadoDisposicionRepository.save(certificadoDisposicion);
 
     const lote = await this.loteRepository.findOne({ where: { id: dto.loteId } });
@@ -66,5 +73,19 @@ export class CertificadoDisposicionService {
     await this.findOne(id);
     await this.certificadoDisposicionRepository.update(id, { isActive: false });
     return { message: 'CertificadoDisposicion desactivado' };
+  }
+
+  /**
+   * Genera el número correlativo del certificado con el formato CERT-{año}-{secuencia}.
+   * La secuencia reinicia cada año y se calcula contando todos los certificados
+   * (activos e inactivos) ya emitidos ese año, para no repetir números ante bajas lógicas.
+   */
+  private async generarNumeroCertificado(fecha: Date): Promise<string> {
+    const anio = fecha.getFullYear();
+    const prefijo = `CERT-${anio}-`;
+    const cantidadEmitidos = await this.certificadoDisposicionRepository.count({
+      where: { numeroCertificado: Like(`${prefijo}%`) },
+    });
+    return `${prefijo}${String(cantidadEmitidos + 1).padStart(4, '0')}`;
   }
 }

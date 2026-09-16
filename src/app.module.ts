@@ -1,12 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { RolesModule } from './roles/roles.module';
 import { EmpleadosModule } from './empleados/empleados.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
-import { LogAccesoModule } from './logacceso/logacceso.module';
 import { AuthModule } from './auth/auth.module';
 import { TipoVehiculoModule } from './tipo-vehiculo/tipo-vehiculo.module';
 import { VehiculosModule } from './vehiculos/vehiculos.module';
@@ -56,13 +53,12 @@ import { UploadModule } from './upload/upload.module';
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false,
+        synchronize: true,
       }),
     }),
     RolesModule,
     EmpleadosModule,
     UsuariosModule,
-    LogAccesoModule,
     AuthModule,
     TipoVehiculoModule,
     VehiculosModule,
@@ -95,8 +91,6 @@ import { UploadModule } from './upload/upload.module';
     ModeloModule,
     UploadModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
 

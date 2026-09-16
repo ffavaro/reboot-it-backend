@@ -8,6 +8,12 @@ export class TipoVehiculo {
   @Column({ length: 100 })
   descripcion: string;
 
+  @Column({ name: 'peso_minimo', type: 'decimal', precision: 4, scale: 2, nullable: true })
+  pesoMinimo: number;
+
+  @Column({ name: 'peso_maximo', type: 'decimal', precision: 5, scale: 2, nullable: true })
+  pesoMaximo: number;
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 

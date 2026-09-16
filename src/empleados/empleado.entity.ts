@@ -6,8 +6,6 @@ export class Empleado {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'usuario_id', nullable: true })
-  usuarioId: number;
 
   @Column({ name: 'rol_id' })
   rolId: number;

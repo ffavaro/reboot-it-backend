@@ -6,10 +6,9 @@ export class CreatePalletDto {
   @IsNumber()
   rackId: number;
 
-  @ApiPropertyOptional({ example: 1, description: 'ID del lote' })
+  @ApiProperty({ example: 1, description: 'ID del lote' })
   @IsNumber()
-  @IsOptional()
-  loteId?: number;
+  loteId: number;
 
   @ApiPropertyOptional({ example: 'PLT-001' })
   @IsString()

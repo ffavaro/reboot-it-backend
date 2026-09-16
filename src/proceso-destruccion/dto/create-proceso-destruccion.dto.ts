@@ -11,18 +11,16 @@ export class CreateProcesoDestruccionDto {
   @IsOptional()
   fecha?: Date;
 
-  @ApiPropertyOptional({ example: 1, description: 'ID del método de destrucción' })
+  @ApiProperty({ example: 1, description: 'ID del método de destrucción' })
   @IsNumber()
-  @IsOptional()
-  metodoDestruccionId?: number;
+  metodoDestruccionId: number;
 
   @ApiPropertyOptional({ example: 1, description: 'ID del estado del proceso (default: 1 = Iniciado)' })
   @IsNumber()
   @IsOptional()
   estadoId?: number;
 
-  @ApiPropertyOptional({ example: 1, description: 'ID del empleado responsable' })
+  @ApiProperty({ example: 1, description: 'ID del empleado responsable' })
   @IsNumber()
-  @IsOptional()
-  empleadoId?: number;
+  empleadoId: number;
 }

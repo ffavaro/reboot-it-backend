@@ -31,6 +31,14 @@ export class UpdateDonacionDto {
   @IsOptional()
   direccionRetiro?: string | null;
 
+  @ApiPropertyOptional({
+    example: 25.5,
+    description: 'Peso estimado (kg) de la donación, usado para asignar un transportista compatible',
+  })
+  @IsNumber()
+  @IsOptional()
+  pesoEstimadoKg?: number | null;
+
   @ApiPropertyOptional({ type: [DetalleInlineDto] })
   @IsOptional()
   @IsArray()

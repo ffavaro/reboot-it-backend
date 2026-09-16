@@ -5,7 +5,7 @@ import { DonacionDetalle } from './donacion-detalle.entity';
 import { CreateDonacionDetalleDto } from './dto/create-donacion-detalle.dto';
 import { UpdateDonacionDetalleDto } from './dto/update-donacion-detalle.dto';
 
-const RELATIONS = ['tipoMaterial'];
+const RELATIONS = ['tipoMaterial', 'condicionMaterial'];
 
 @Injectable()
 export class DonacionDetalleService {

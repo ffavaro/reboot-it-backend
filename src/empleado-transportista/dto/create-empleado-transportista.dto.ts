@@ -6,10 +6,9 @@ export class CreateEmpleadoTransportistaDto {
   @IsNumber()
   empleadoId: number;
 
-  @ApiPropertyOptional({ example: 1, description: 'ID del vehículo asignado' })
+  @ApiProperty({ example: 1, description: 'ID del vehículo asignado' })
   @IsNumber()
-  @IsOptional()
-  vehiculoId?: number;
+  vehiculoId: number;
 
   @ApiPropertyOptional({ example: '2025-06-01T10:00:00Z', description: 'Fecha de asignación' })
   @IsDateString()
