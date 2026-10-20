@@ -67,7 +67,9 @@ export class UsuariosService {
   async update(id: number, dto: UpdateUsuarioDto) {
     await this.findOne(id);
     await this.assertUnique(dto, id);
-    await this.usuarioRepository.update(id, dto);
+    // La contraseña nunca se guarda en texto plano: si viene en el PATCH, se hashea igual que al crear
+    const { password, ...resto } = dto;
+    await this.usuarioRepository.update(id, password ? { ...resto, password: await bcrypt.hash(password, SALT_ROUNDS) } : resto);
     return this.findOne(id);
   }
 
