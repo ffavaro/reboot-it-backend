@@ -1,5 +1,5 @@
 import { UsuariosService } from '@app/usuarios/usuarios.service';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
@@ -56,7 +56,7 @@ export class AuthService {
     async signUp({ name, apellido, email, password, cuitDni }: RegisterDto): Promise<{access_token: string}> {
         const existingUser = await this.usersService.findByEmail(email);
         if (existingUser) {
-            throw new UnauthorizedException('Email ya registrado');
+            throw new ConflictException('El email ya está registrado');
         }
         await this.usersService.create({ nombre: name, apellido, email, password, cuitDni, rolId: ROL_ID_DONANTE, isActive: true, empleadoId: undefined });
         const fullUser = await this.usersService.findByEmail(email);
