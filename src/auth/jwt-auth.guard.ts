@@ -21,11 +21,24 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const esPublica = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()]);
-    if (esPublica) return true;
-
     const request = context.switchToHttp().getRequest<RequestConUsuario>();
     const [tipo, token] = request.headers.authorization?.split(' ') ?? [];
-    if (tipo !== 'Bearer' || !token) {
+    const tieneToken = tipo === 'Bearer' && !!token;
+
+    if (esPublica) {
+      // Ruta abierta: no exige token, pero si llega uno válido se deja el usuario en request.user para que
+      // la auditoría sepa quién hizo la consulta (si no, se registraría como anónimo). Nunca se rechaza.
+      if (tieneToken) {
+        try {
+          request.user = await this.jwtService.verifyAsync<AuthUser>(token);
+        } catch {
+          // token inválido en una ruta abierta: se ignora
+        }
+      }
+      return true;
+    }
+
+    if (!tieneToken) {
       this.registrarRechazo(request, 'Acceso sin token rechazado');
       throw new UnauthorizedException('Falta el token de autenticación. Iniciá sesión para continuar.');
     }
