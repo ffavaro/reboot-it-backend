@@ -56,11 +56,17 @@ export class TurnoService {
     return this.turnoRepository.save(turno);
   }
 
-  findAll() {
-    return this.turnoRepository.find({
+  private soloDetallesActivos<T extends { detalles?: { isActive: boolean }[] }>(turno: T): T {
+    if (turno.detalles) turno.detalles = turno.detalles.filter((d) => d.isActive);
+    return turno;
+  }
+
+  async findAll() {
+    const turnos = await this.turnoRepository.find({
       where: { isActive: true },
       relations: RELATIONS,
     });
+    return turnos.map((t) => this.soloDetallesActivos(t));
   }
 
   async findOne(id: number) {
@@ -69,7 +75,7 @@ export class TurnoService {
       relations: RELATIONS,
     });
     if (!turno) throw new NotFoundException(`Turno ${id} no encontrado`);
-    return turno;
+    return this.soloDetallesActivos(turno);
   }
 
   async update(id: number, dto: UpdateTurnoDto) {

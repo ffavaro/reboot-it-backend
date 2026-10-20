@@ -27,6 +27,12 @@ export class DonacionService {
     private readonly loteService: LoteService,
   ) {}
 
+  // La relación "detalles" trae también los materiales dados de baja: se descartan para no mostrarlos ni duplicarlos
+  private soloDetallesActivos<T extends { detalles?: { isActive: boolean }[] }>(donacion: T): T {
+    if (donacion.detalles) donacion.detalles = donacion.detalles.filter((d) => d.isActive);
+    return donacion;
+  }
+
   async create(dto: CreateDonacionDto) {
     const { fechaHora, detalles, ...donacionData } = dto;
 
@@ -84,11 +90,12 @@ export class DonacionService {
     return this.findOne(saved.id);
   }
 
-  findAll() {
-    return this.donacionRepository.find({
+  async findAll() {
+    const donaciones = await this.donacionRepository.find({
       where: { isActive: true },
       relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial', 'detalles.condicionMaterial'],
     });
+    return donaciones.map((d) => this.soloDetallesActivos(d));
   }
 
   async findOne(id: number) {
@@ -97,7 +104,7 @@ export class DonacionService {
       relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial', 'detalles.condicionMaterial'],
     });
     if (!donacion) throw new NotFoundException(`Donacion ${id} no encontrada`);
-    return donacion;
+    return this.soloDetallesActivos(donacion);
   }
 
   async update(id: number, dto: UpdateDonacionDto) {
@@ -109,15 +116,36 @@ export class DonacionService {
 
     if (detalles !== undefined) {
       const existing = await this.donacionDetalleService.findByDonacion(id);
+      // Primero se crean los nuevos: si alguno falla, la donación conserva sus materiales
+      const nuevos = await Promise.all(
+        detalles.map((d) => this.donacionDetalleService.create({ ...d, donacionId: id })),
+      ).catch((err) => {
+        if (err instanceof HttpException) throw err;
+        throw new BadRequestException('No se pudieron guardar los materiales. Revisá el tipo, la condición y la cantidad de cada uno.');
+      });
       await Promise.all(existing.map((d) => this.donacionDetalleService.remove(d.id)));
-      await Promise.all(
-        detalles.map((d) =>
-          this.donacionDetalleService.create({ ...d, donacionId: id }),
-        ),
-      );
+      await this.sincronizarDetallesTurno(id, nuevos);
     }
 
     return this.findOne(id);
+  }
+
+  // Mientras el turno siga en su estado inicial, sus materiales acompañan los cambios de la donación
+  private async sincronizarDetallesTurno(donacionId: number, nuevos: { id: number; tipoMaterialId: number; cantidadEstimada: number | null }[]) {
+    const turno = await this.turnoRepository.findOne({ where: { donacionId, isActive: true } });
+    if (!turno || turno.estadoTurnoId !== 1) return;
+    const anteriores = await this.turnoDetalleService.findByTurno(turno.id);
+    await Promise.all(anteriores.map((t) => this.turnoDetalleService.remove(t.id)));
+    await Promise.all(
+      nuevos.map((detalle) =>
+        this.turnoDetalleService.create({
+          turnoId: turno.id,
+          donacionDetalleId: detalle.id,
+          tipoMaterialId: detalle.tipoMaterialId,
+          cantidadConfirmada: detalle.cantidadEstimada ?? undefined,
+        }),
+      ),
+    );
   }
 
   async remove(id: number) {

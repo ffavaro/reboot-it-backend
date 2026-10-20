@@ -1,13 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator';
 
 export class DetalleInlineDto {
   @ApiProperty({ example: 1 })
   @IsInt({ message: 'El tipo de material debe ser un número entero' })
+  @Min(1, { message: 'Seleccioná el tipo de material' })
   tipoMaterialId: number;
 
   @ApiProperty({ example: 1 })
   @IsInt({ message: 'La condición del material debe ser un número entero' })
+  @Min(1, { message: 'Seleccioná la condición del material' })
   condicionMaterialId: number;
 
   @ApiPropertyOptional({ example: 5 })
@@ -61,5 +64,7 @@ export class CreateDonacionDto {
   @ApiPropertyOptional({ type: [DetalleInlineDto] })
   @IsOptional()
   @IsArray({ message: 'Los detalles deben ser una lista' })
+  @ValidateNested({ each: true })
+  @Type(() => DetalleInlineDto)
   detalles?: DetalleInlineDto[];
 }
