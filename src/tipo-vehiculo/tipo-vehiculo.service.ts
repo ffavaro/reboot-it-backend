@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TipoVehiculo } from './tipo-vehiculo.entity';
@@ -12,7 +12,14 @@ export class TipoVehiculoService {
     private readonly tipoVehiculoRepository: Repository<TipoVehiculo>,
   ) {}
 
+  private validarRango(min?: number | null, max?: number | null) {
+    if (min != null && max != null && Number(min) > Number(max)) {
+      throw new BadRequestException('El peso mínimo no puede ser mayor al peso máximo');
+    }
+  }
+
   create(dto: CreateTipoVehiculoDto) {
+    this.validarRango(dto.pesoMinimo, dto.pesoMaximo);
     const tipo = this.tipoVehiculoRepository.create(dto);
     return this.tipoVehiculoRepository.save(tipo);
   }
@@ -28,7 +35,8 @@ export class TipoVehiculoService {
   }
 
   async update(id: number, dto: UpdateTipoVehiculoDto) {
-    await this.findOne(id);
+    const actual = await this.findOne(id);
+    this.validarRango(dto.pesoMinimo ?? actual.pesoMinimo, dto.pesoMaximo ?? actual.pesoMaximo);
     await this.tipoVehiculoRepository.update(id, dto);
     return this.findOne(id);
   }
