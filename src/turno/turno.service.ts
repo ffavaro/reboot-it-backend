@@ -144,25 +144,37 @@ export class TurnoService {
     });
     if (!condicionPendiente) throw new NotFoundException(`Condición "${CONDICION_PENDIENTE}" no encontrada en la base de datos.`);
 
-    await this.turnoRepository.update(id, { estadoTurnoId: estadoEnClasificacion.id });
-
-    if (turno.donacionId && turno.empleadoTransportistaId) {
+    // Se valida todo lo del retiro antes de escribir, para no dejar el turno a medio finalizar
+    const generaRetiro = !!(turno.donacionId && turno.empleadoTransportistaId);
+    let vehiculoRetiroId: number | null = null;
+    let direccionRetiro: string | null = null;
+    if (generaRetiro) {
       const transportista = await this.transportistaRepository.findOne({
-        where: { id: turno.empleadoTransportistaId },
+        where: { id: turno.empleadoTransportistaId as number },
       });
       if (!transportista?.vehiculoId) throw new BadRequestException('El empleado transportista no tiene un vehículo asignado.');
+      vehiculoRetiroId = transportista.vehiculoId;
 
+      // Si el donante cargó una dirección alternativa para esta donación, el retiro va ahí;
+      // si no, a la dirección de su perfil
+      const donacion = await this.donacionRepository.findOne({ where: { id: turno.donacionId as number } });
+      direccionRetiro = donacion?.direccionRetiro?.trim() || turno.donante.direccion || null;
+    }
+
+    await this.turnoRepository.update(id, { estadoTurnoId: estadoEnClasificacion.id });
+
+    if (generaRetiro) {
       const retiroExistente = await this.retiroRepository.findOne({
-        where: { donacionId: turno.donacionId, isActive: true },
+        where: { donacionId: turno.donacionId as number, isActive: true },
       });
       if (!retiroExistente) {
         await this.retiroRepository.save(
           this.retiroRepository.create({
-            donacionId: turno.donacionId,
-            empleadoTransportistaId: turno.empleadoTransportistaId,
-            vehiculoId: transportista.vehiculoId,
+            donacionId: turno.donacionId as number,
+            empleadoTransportistaId: turno.empleadoTransportistaId as number,
+            vehiculoId: vehiculoRetiroId as number,
             fechaInicio: turno.fechaHora,
-            direccion: turno.donante.direccion,
+            direccion: direccionRetiro as string,
           }),
         );
       }
