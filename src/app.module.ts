@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RolesModule } from './roles/roles.module';
@@ -94,6 +95,10 @@ import { HojaRutaModule } from './hoja-ruta/hoja-ruta.module';
     UploadModule,
     HistorialKmVehiculoModule,
     HojaRutaModule,
+  ],
+  providers: [
+    // Aplica los @Exclude() de las entidades (ej. password del usuario) a todas las respuestas
+    { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
   ],
 })
 export class AppModule {}
