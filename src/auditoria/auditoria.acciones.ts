@@ -53,8 +53,9 @@ const ACCIONES_ESPECIALES: Record<string, string> = {
   'PATCH turno/asignar': 'Asignó turno',
   'PATCH turno/finalizar': 'Finalizó turno',
   'PATCH material/clasificar': 'Clasificó material',
-  'POST hojas-ruta/iniciar': 'Inició hoja de ruta',
-  'POST hojas-ruta/finalizar': 'Finalizó hoja de ruta',
+  'POST hojas-ruta/generar': 'Generó hoja de ruta',
+  'POST hojas-ruta/turnos/confirmar-retiro': 'Confirmó retiro de turno',
+  'GET hojas-ruta/turnos/constancia': 'Consultó constancia de retiro de turno',
   'GET hojas-ruta/dia': 'Consultó hojas de ruta',
   'GET hojas-ruta/historico': 'Consultó histórico de hojas de ruta',
 };

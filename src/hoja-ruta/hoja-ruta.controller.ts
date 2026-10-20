@@ -4,9 +4,8 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { HojaRutaService } from './hoja-ruta.service';
 import {
   DiaHojaRutaQueryDto,
-  FinalizarHojaRutaDto,
+  GenerarHojaRutaDto,
   HistoricoHojaRutaQueryDto,
-  IniciarHojaRutaDto,
 } from './dto/hoja-ruta.dto';
 import { Pantalla, Accion } from '../auth/auth.decorators';
 import type { RequestConUsuario } from '../auth/auth-user';
@@ -49,21 +48,31 @@ export class HojaRutaController {
   }
 
   @Accion('editar')
-  @Post('iniciar')
+  @Post('generar')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Pendiente -> En proceso: registra el km inicial del vehículo en el historial' })
-  async iniciar(@Body() dto: IniciarHojaRutaDto, @Req() req: RequestConUsuario) {
+  @ApiOperation({
+    summary: 'Genera la hoja de ruta de una fecha con los turnos pendientes de retiro: queda En proceso y registra el km inicial y estimado en el historial del vehículo',
+  })
+  async generar(@Body() dto: GenerarHojaRutaDto, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'transportistas', dto.empleadoTransportistaId);
-    return this.hojaRutaService.iniciar(dto.empleadoTransportistaId);
+    return this.hojaRutaService.generar(dto.empleadoTransportistaId, dto.fecha, dto.confirmar);
   }
 
   @Accion('editar')
-  @Post(':id/finalizar')
+  @Post('turnos/:turnoId/confirmar-retiro')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'En proceso -> Finalizada: carga el km final y actualiza el km actual del vehículo' })
-  async finalizar(@Param('id', ParseIdPipe) id: number, @Body() dto: FinalizarHojaRutaDto, @Req() req: RequestConUsuario) {
-    const a = await this.ambito.de(req);
-    if (a) this.ambito.exigir(a, 'transportistas', await this.hojaRutaService.transportistaDe(id));
-    return this.hojaRutaService.finalizar(id, dto);
+  @ApiOperation({
+    summary: 'Confirma el retiro de un turno de la hoja (finaliza el turno y genera la constancia de retiro); al confirmar el último turno pendiente, finaliza la hoja con los km estimados',
+  })
+  async confirmarRetiro(@Param('turnoId', ParseIdPipe) turnoId: number, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'turnos', turnoId);
+    return this.hojaRutaService.confirmarRetiro(turnoId);
+  }
+
+  @Get('turnos/:turnoId/constancia')
+  @ApiOperation({ summary: 'Datos de la constancia de retiro de un turno (para verla y descargarla en PDF)' })
+  async constancia(@Param('turnoId', ParseIdPipe) turnoId: number, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'turnos', turnoId);
+    return this.hojaRutaService.constanciaDeTurno(turnoId);
   }
 }
