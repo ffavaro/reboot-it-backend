@@ -31,6 +31,15 @@ export class ConstanciaRetiroController {
     return a ? lista.filter((x) => a.retiros.has(x.retiroId)) : lista;
   }
 
+  @Get(':id/datos')
+  @ApiOperation({ summary: 'Datos de la constancia para mostrarla y descargarla en PDF' })
+  async datos(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req);
+    const constancia = await this.constanciaRetiroService.findOne(+id);
+    this.ambito.exigir(a, 'retiros', constancia.retiroId);
+    return this.constanciaRetiroService.datosParaPdf(+id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una constancia de retiro por ID' })
   async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {

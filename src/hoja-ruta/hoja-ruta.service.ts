@@ -17,6 +17,7 @@ import { HojaRutaTurno } from './hoja-ruta-turno.entity';
 import { Retiro } from '../retiro/retiro.entity';
 import { ConstanciaRetiro } from '../constancia-retiro/constancia-retiro.entity';
 import { TurnoService } from '../turno/turno.service';
+import { ConstanciaRetiroService } from '../constancia-retiro/constancia-retiro.service';
 import { ESTADO_TURNO } from '../common/constants/estados';
 
 // Turnos pendientes de retiro: asignados al transportista (todavía sin retirar) o con el retiro ya confirmado.
@@ -105,6 +106,7 @@ export class HojaRutaService {
     private readonly dataSource: DataSource,
     private readonly mapsService: GoogleMapsService,
     private readonly turnoService: TurnoService,
+    private readonly constanciaService: ConstanciaRetiroService,
   ) {}
 
   private hoy(): string {
@@ -482,31 +484,13 @@ export class HojaRutaService {
   async constanciaDeTurno(turnoId: number) {
     const turno = await this.turnoService.findOne(turnoId);
     const retiro = turno.donacionId
-      ? await this.dataSource.getRepository(Retiro).findOne({
-          where: { donacionId: turno.donacionId, isActive: true },
-          relations: ['vehiculo', 'empleadoTransportista', 'empleadoTransportista.empleado'],
-        })
+      ? await this.dataSource.getRepository(Retiro).findOne({ where: { donacionId: turno.donacionId, isActive: true } })
       : null;
     const constancia = retiro
-      ? await this.dataSource.getRepository(ConstanciaRetiro).findOne({ where: { retiroId: retiro.id, isActive: true }, relations: ['tecnico'] })
+      ? await this.dataSource.getRepository(ConstanciaRetiro).findOne({ where: { retiroId: retiro.id, isActive: true } })
       : null;
     if (!retiro || !constancia) throw new NotFoundException('Este turno todavía no tiene constancia de retiro: confirmá el retiro primero');
-    const donacion = turno.donacionId ? await this.donacionRepository.findOne({ where: { id: turno.donacionId } }) : null;
-    const emp = retiro.empleadoTransportista?.empleado;
-    return {
-      constanciaId: constancia.id,
-      turnoId: turno.id,
-      donacionId: turno.donacionId,
-      fechaEmision: constancia.fechaEmision,
-      fechaRetiro: retiro.fechaRetiro,
-      observaciones: constancia.observaciones ?? null,
-      donante: { nombre: turno.donante?.nombre ?? '', telefono: turno.donante?.telefono ?? null },
-      direccion: retiro.direccion ?? donacion?.direccionRetiro ?? turno.donante?.direccion ?? null,
-      transportista: emp ? { nombre: emp.nombre, apellido: emp.apellido, cuitDni: emp.cuitDni ?? null } : null,
-      vehiculo: retiro.vehiculo ? { patente: retiro.vehiculo.patente, marca: retiro.vehiculo.marca, modelo: retiro.vehiculo.modelo } : null,
-      pesoEstimadoKg: donacion?.pesoEstimadoKg ?? null,
-      materiales: (turno.detalles ?? []).map((d) => ({ tipo: d.tipoMaterial?.nombre ?? `Material #${d.tipoMaterialId}`, cantidad: d.cantidadConfirmada ?? null })),
-    };
+    return this.constanciaService.datosParaPdf(constancia.id);
   }
 
   // Hojas de ruta finalizadas, con km estimados (Maps) y reales (km_final - km_inicial)

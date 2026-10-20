@@ -5,8 +5,10 @@ import { Retiro } from '../retiro/retiro.entity';
 import { ConstanciaRetiroController } from './constancia-retiro.controller';
 import { ConstanciaRetiroService } from './constancia-retiro.service';
 
+import { Turno } from '../turno/turno.entity';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([ConstanciaRetiro, Retiro])],
+  imports: [TypeOrmModule.forFeature([ConstanciaRetiro, Retiro, Turno])],
   controllers: [ConstanciaRetiroController],
   providers: [ConstanciaRetiroService],
   exports: [ConstanciaRetiroService],

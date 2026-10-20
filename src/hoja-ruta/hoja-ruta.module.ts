@@ -10,9 +10,10 @@ import { Vehiculo } from '../vehiculos/vehiculo.entity';
 
 import { HojaRutaTurno } from './hoja-ruta-turno.entity';
 import { TurnoModule } from '../turno/turno.module';
+import { ConstanciaRetiroModule } from '../constancia-retiro/constancia-retiro.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([HojaRuta, HojaRutaTurno, Turno, Donacion, Vehiculo]), TurnoModule],
+  imports: [TypeOrmModule.forFeature([HojaRuta, HojaRutaTurno, Turno, Donacion, Vehiculo]), TurnoModule, ConstanciaRetiroModule],
   controllers: [HojaRutaController],
   providers: [HojaRutaService, GoogleMapsService],
 })
