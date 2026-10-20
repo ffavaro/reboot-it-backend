@@ -3,9 +3,11 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TurnoDetalleService } from './turno-detalle.service';
 import { CreateTurnoDetalleDto } from './dto/create-turno-detalle.dto';
 import { UpdateTurnoDetalleDto } from './dto/update-turno-detalle.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Accion, Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+// Endpoints internos (el frontend no los usa): solo quien puede editar turnos por completo
+@Accion('editar')
+@Pantalla('turnos!')
 @ApiTags('turno-detalle')
 @Controller('turno-detalle')
 export class TurnoDetalleController {

@@ -1,62 +1,76 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TurnoService } from './turno.service';
 import { CreateTurnoDto } from './dto/create-turno.dto';
 import { UpdateTurnoDto } from './dto/update-turno.dto';
 import { AsignarEmpleadoDto } from './dto/asignar-empleado.dto';
-import { Authenticated, ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla, Authenticated } from '../auth/auth.decorators';
+import type { RequestConUsuario } from '../auth/auth-user';
+import { AmbitoService } from '../permisos/ambito.service';
 
+@Pantalla('turnos')
 @ApiTags('turno')
 @Controller('turno')
 export class TurnoController {
-  constructor(private readonly turnoService: TurnoService) {}
+  constructor(
+    private readonly turnoService: TurnoService,
+    private readonly ambito: AmbitoService,
+  ) {}
 
-  @Roles(ROL.STAFF)
   @Post()
   @ApiOperation({ summary: 'Crear un turno' })
-  create(@Body() dto: CreateTurnoDto) {
+  async create(@Body() dto: CreateTurnoDto, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'donantes', dto.donanteId);
     return this.turnoService.create(dto);
   }
 
   @Authenticated()
   @Get()
   @ApiOperation({ summary: 'Listar todos los turnos activos' })
-  findAll() {
-    return this.turnoService.findAll();
+  async findAll(@Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req, ['turnos', 'agenda']);
+    const lista = await this.turnoService.findAll();
+    return a ? lista.filter((x) => a.turnos.has(x.id)) : lista;
   }
 
   @Authenticated()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un turno por ID' })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req, ['turnos', 'agenda']), 'turnos', +id);
     return this.turnoService.findOne(+id);
   }
 
-  @Roles(ROL.STAFF, ROL.TRANSPORTISTA)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un turno' })
-  update(@Param('id') id: string, @Body() dto: UpdateTurnoDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateTurnoDto, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
+    if (req.permiso?.alcance === 'LIMITADO') await this.turnoService.validarCambioDelDonante(+id, dto.fechaHora);
     return this.turnoService.update(+id, dto);
   }
 
-  @Roles(ROL.STAFF)
+  // Operaciones del equipo: no las puede ejecutar quien tiene acceso limitado a Turnos (el donante que reprograma o cancela)
+  @Pantalla('turnos!')
   @Patch(':id/asignar')
   @ApiOperation({ summary: 'Asignar empleado al turno y pasar a estado Asignado' })
-  asignarEmpleado(@Param('id') id: string, @Body() dto: AsignarEmpleadoDto) {
+  async asignarEmpleado(@Param('id') id: string, @Body() dto: AsignarEmpleadoDto, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
     return this.turnoService.asignarEmpleado(+id, dto);
   }
 
-  @Roles(ROL.STAFF)
+  @Pantalla('turnos!')
   @Patch(':id/finalizar')
   @ApiOperation({ summary: 'Finalizar un turno (requiere al menos una foto registrada)' })
-  finalizar(@Param('id') id: string) {
+  async finalizar(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
     return this.turnoService.finalizarTurno(+id);
   }
 
-  @Roles(ROL.STAFF)
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un turno (soft delete)' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
+    if (req.permiso?.alcance === 'LIMITADO') await this.turnoService.validarCambioDelDonante(+id);
     return this.turnoService.remove(+id);
   }
 }

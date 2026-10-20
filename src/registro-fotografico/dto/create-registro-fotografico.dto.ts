@@ -3,10 +3,11 @@ import { Type } from 'class-transformer';
 import { IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateRegistroFotograficoDto {
-  @ApiProperty({ example: 1, description: 'ID del lote' })
+  @ApiPropertyOptional({ example: 1, description: 'ID del lote (si se indica solo el turno, se toma el lote de su donación)' })
   @IsNumber({}, { message: 'El lote debe ser un número' })
+  @IsOptional()
   @Type(() => Number)
-  loteId: number;
+  loteId?: number;
 
   @ApiPropertyOptional({ example: 1, description: 'ID del turno' })
   @IsNumber({}, { message: 'El turno debe ser un número' })

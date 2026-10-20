@@ -3,14 +3,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
 @ApiTags('upload')
 @Controller('upload')
 export class UploadController {
+  @Pantalla('registro_fotografico', 'turnos', 'constancia_retiro', 'empleado_transportista', 'certificado_disposicion')
   @Post()
-  @ApiOperation({ summary: 'Subir una imagen' })
+  @ApiOperation({ summary: 'Subir una imagen o un PDF' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -22,8 +22,8 @@ export class UploadController {
         },
       }),
       fileFilter: (_req, file, cb) => {
-        if (!file.mimetype.match(/image\/(jpg|jpeg|png|gif|webp)/)) {
-          return cb(new BadRequestException('Solo se permiten imágenes (jpg, jpeg, png, gif, webp)'), false)
+        if (!/^(image\/(jpg|jpeg|png|gif|webp)|application\/pdf)$/.test(file.mimetype)) {
+          return cb(new BadRequestException('Solo se permiten imágenes (jpg, jpeg, png, gif, webp) o archivos PDF'), false)
         }
         cb(null, true)
       },

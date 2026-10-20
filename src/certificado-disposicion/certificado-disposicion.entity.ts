@@ -22,6 +22,10 @@ export class CertificadoDisposicion {
   @Column({ name: 'terminos_condiciones', type: 'text', nullable: true })
   terminosCondiciones: string;
 
+  // Foto o PDF del certificado de disposición final emitido por el gestor ambiental (se sube al crear el certificado)
+  @Column({ name: 'archivo_final_url', type: 'varchar', length: 500, nullable: true })
+  archivoFinalUrl: string | null;
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 

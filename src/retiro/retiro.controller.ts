@@ -1,55 +1,67 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RetiroService } from './retiro.service';
 import { CreateRetiroDto } from './dto/create-retiro.dto';
 import { UpdateRetiroDto } from './dto/update-retiro.dto';
 import { ReporteRetiroDto } from './dto/reporte-retiro.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
+import type { RequestConUsuario } from '../auth/auth-user';
+import { AmbitoService } from '../permisos/ambito.service';
 
+@Pantalla('retiros')
 @ApiTags('retiro')
 @Controller('retiro')
 export class RetiroController {
-  constructor(private readonly retiroService: RetiroService) {}
+  constructor(
+    private readonly retiroService: RetiroService,
+    private readonly ambito: AmbitoService,
+  ) {}
 
-  @Roles(ROL.STAFF, ROL.TRANSPORTISTA)
   @Post()
   @ApiOperation({ summary: 'Crear un retiro' })
   create(@Body() dto: CreateRetiroDto) {
     return this.retiroService.create(dto);
   }
 
-  @Roles(ROL.STAFF, ROL.TRANSPORTISTA, ROL.DONANTE)
+  @Pantalla('retiros', 'constancia_retiro')
   @Get()
   @ApiOperation({ summary: 'Listar todos los retiros activos' })
-  findAll() {
-    return this.retiroService.findAll();
+  async findAll(@Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req);
+    // la regla de planta es de la pantalla Retiros (no de Constancias, que también usa este listado)
+    const planta = await this.ambito.enPlanta(req, ['retiros']);
+    const lista = await this.retiroService.findAll();
+    return lista.filter((x) => (!a || a.retiros.has(x.id)) && (!planta || planta.has(x.donacionId)));
   }
 
-  @Roles(ROL.STAFF)
+  @Pantalla('reporte_retiros')
   @Get('reporte')
   @ApiOperation({ summary: 'Generar reporte de retiros a domicilio con filtros' })
   reporte(@Query() query: ReporteRetiroDto) {
     return this.retiroService.reporte(query);
   }
 
-  @Roles(ROL.STAFF, ROL.TRANSPORTISTA, ROL.DONANTE)
+  @Pantalla('retiros', 'constancia_retiro')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un retiro por ID' })
-  findOne(@Param('id') id: string) {
-    return this.retiroService.findOne(+id);
+  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'retiros', +id);
+    const retiro = await this.retiroService.findOne(+id);
+    this.ambito.exigirEnPlanta(await this.ambito.enPlanta(req, ['retiros']), retiro.donacionId);
+    return retiro;
   }
 
-  @Roles(ROL.STAFF, ROL.TRANSPORTISTA)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un retiro' })
-  update(@Param('id') id: string, @Body() dto: UpdateRetiroDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateRetiroDto, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'retiros', +id);
     return this.retiroService.update(+id, dto);
   }
 
-  @Roles(ROL.STAFF, ROL.TRANSPORTISTA)
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un retiro (soft delete)' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'retiros', +id);
     return this.retiroService.remove(+id);
   }
 }

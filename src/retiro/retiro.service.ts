@@ -6,6 +6,8 @@ import { CreateRetiroDto } from './dto/create-retiro.dto';
 import { UpdateRetiroDto } from './dto/update-retiro.dto';
 import { ReporteRetiroDto } from './dto/reporte-retiro.dto';
 
+import { validarPesoDonacionVehiculo } from '../common/peso-vehiculo';
+
 @Injectable()
 export class RetiroService {
   constructor(
@@ -13,7 +15,8 @@ export class RetiroService {
     private readonly retiroRepository: Repository<Retiro>,
   ) {}
 
-  create(dto: CreateRetiroDto) {
+  async create(dto: CreateRetiroDto) {
+    await validarPesoDonacionVehiculo(this.retiroRepository.manager, dto.donacionId, dto.vehiculoId);
     const retiro = this.retiroRepository.create(dto);
     return this.retiroRepository.save(retiro);
   }
@@ -35,7 +38,11 @@ export class RetiroService {
   }
 
   async update(id: number, dto: UpdateRetiroDto) {
-    await this.findOne(id);
+    const actual = await this.findOne(id);
+    // se vuelve a validar si cambia la donación o el vehículo
+    if (dto.donacionId !== undefined || dto.vehiculoId !== undefined) {
+      await validarPesoDonacionVehiculo(this.retiroRepository.manager, dto.donacionId ?? actual.donacionId, dto.vehiculoId ?? actual.vehiculoId);
+    }
     await this.retiroRepository.update(id, dto);
     return this.findOne(id);
   }

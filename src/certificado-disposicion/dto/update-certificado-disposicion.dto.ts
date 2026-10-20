@@ -1,4 +1,5 @@
-import { PartialType } from '@nestjs/swagger';
+import { OmitType, PartialType } from '@nestjs/swagger';
 import { CreateCertificadoDisposicionDto } from './create-certificado-disposicion.dto';
 
-export class UpdateCertificadoDisposicionDto extends PartialType(CreateCertificadoDisposicionDto) {}
+// El certificado de disposición final adjunto queda fijo desde que se crea el certificado
+export class UpdateCertificadoDisposicionDto extends PartialType(OmitType(CreateCertificadoDisposicionDto, ['archivoFinalUrl'] as const)) {}

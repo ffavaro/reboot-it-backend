@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { CertificadoDisposicion } from './certificado-disposicion.entity';
+import { Material } from '../material/material.entity';
 import { Lote } from '../lote/lote.entity';
 import { Donacion } from '../donacion/donacion.entity';
 import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
@@ -62,6 +63,51 @@ export class CertificadoDisposicionService {
     });
     if (!certificadoDisposicion) throw new NotFoundException(`CertificadoDisposicion ${id} no encontrado`);
     return certificadoDisposicion;
+  }
+
+  /** Datos del certificado armados para generar su PDF: donante, lote, gestor ambiental y materiales por tipo y condición. */
+  async datosParaPdf(id: number) {
+    const certificado = await this.findOne(id);
+    const manager = this.certificadoDisposicionRepository.manager;
+    const lote = certificado.lote;
+    const donacion = lote
+      ? await this.donacionRepository.findOne({ where: { id: lote.donacionId }, relations: ['donante'] })
+      : null;
+    const materiales = await manager.getRepository(Material).find({
+      where: { loteId: certificado.loteId, isActive: true },
+      relations: ['tipoMaterial', 'condicionMaterial'],
+    });
+    // se agrupan por tipo y condición: "Notebook · Reciclable: 3"
+    const grupos = new Map<string, { tipo: string; condicion: string; cantidad: number }>();
+    for (const m of materiales) {
+      const tipo = m.tipoMaterial?.nombre ?? `Material #${m.tipoMaterialId}`;
+      const condicion = m.condicionMaterial?.condicion ?? 'Sin clasificar';
+      const clave = `${tipo}|${condicion}`;
+      const g = grupos.get(clave) ?? { tipo, condicion, cantidad: 0 };
+      g.cantidad += 1;
+      grupos.set(clave, g);
+    }
+    const donante = donacion?.donante;
+    const gestor = certificado.gestorAmbiental;
+    return {
+      certificadoId: certificado.id,
+      numeroCertificado: certificado.numeroCertificado,
+      fechaEmision: certificado.fechaEmision,
+      terminosCondiciones: certificado.terminosCondiciones ?? null,
+      loteId: certificado.loteId,
+      pesoBrutoKg: lote?.pesoBrutoKg ?? null,
+      donacionId: lote?.donacionId ?? null,
+      donante: {
+        nombre: donante?.nombre ?? '',
+        razonSocial: donante?.razonSocial ?? null,
+        telefono: donante?.telefono ?? null,
+        direccion: donante?.direccion ?? null,
+      },
+      gestor: gestor
+        ? { razonSocial: gestor.razonSocial, cuit: gestor.cuit ?? null, habilitacion: gestor.habilitacion ?? null, contacto: gestor.contacto ?? null }
+        : null,
+      materiales: [...grupos.values()],
+    };
   }
 
   async update(id: number, dto: UpdateCertificadoDisposicionDto) {

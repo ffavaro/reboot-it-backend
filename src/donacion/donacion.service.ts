@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Donacion } from './donacion.entity';
@@ -11,6 +11,8 @@ import { TurnoDetalleService } from '../turno-detalle/turno-detalle.service';
 import { LoteService } from '../lote/lote.service';
 import { Turno } from '../turno/turno.entity';
 import { Retiro } from '../retiro/retiro.entity';
+import { RegistroFotografico } from '../registro-fotografico/registro-fotografico.entity';
+import { ESTADO_DONACION } from '../common/constants/estados';
 
 @Injectable()
 export class DonacionService {
@@ -27,8 +29,14 @@ export class DonacionService {
     private readonly loteService: LoteService,
   ) {}
 
+  // La relación "detalles" trae también los materiales dados de baja: se descartan para no mostrarlos ni duplicarlos
+  private soloDetallesActivos<T extends { detalles?: { isActive: boolean }[] }>(donacion: T): T {
+    if (donacion.detalles) donacion.detalles = donacion.detalles.filter((d) => d.isActive);
+    return donacion;
+  }
+
   async create(dto: CreateDonacionDto) {
-    const { fechaHora, detalles, ...donacionData } = dto;
+    const { fechaHora, detalles, fotosUrls, ...donacionData } = dto;
 
     const donacion = this.donacionRepository.create(donacionData);
     const saved = await this.donacionRepository.save(donacion).catch((error:any) => {
@@ -36,7 +44,7 @@ export class DonacionService {
       throw new InternalServerErrorException('No se pudo registrar la donación. Intentá nuevamente.');
     });
 
-    await this.loteService.create({ donacionId: saved.id }).catch(() => {
+    const lote = await this.loteService.create({ donacionId: saved.id }).catch(() => {
       throw new InternalServerErrorException('No se pudo crear el lote para la donación.');
     });
 
@@ -81,14 +89,26 @@ export class DonacionService {
       });
     }
 
-    return this.findOne(saved.id);
+    // Fotos opcionales de los materiales: quedan asociadas al lote y al turno (el retiro de la donación)
+    if (fotosUrls?.length) {
+      const fotos = this.donacionRepository.manager.getRepository(RegistroFotografico);
+      await fotos
+        .save(fotosUrls.map((urlImagen) => fotos.create({ loteId: lote.id, turnoId: turno.id, urlImagen })))
+        .catch(() => {
+          throw new InternalServerErrorException('La donación se creó, pero no se pudieron guardar las fotos.');
+        });
+    }
+
+    // Se devuelven los datos del turno generado para que el frontend confirme el horario al donante
+    return { ...(await this.findOne(saved.id)), turno: { id: turno.id, fechaHora: turno.fechaHora }, loteId: lote.id };
   }
 
-  findAll() {
-    return this.donacionRepository.find({
+  async findAll() {
+    const donaciones = await this.donacionRepository.find({
       where: { isActive: true },
       relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial', 'detalles.condicionMaterial'],
     });
+    return donaciones.map((d) => this.soloDetallesActivos(d));
   }
 
   async findOne(id: number) {
@@ -97,7 +117,7 @@ export class DonacionService {
       relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial', 'detalles.condicionMaterial'],
     });
     if (!donacion) throw new NotFoundException(`Donacion ${id} no encontrada`);
-    return donacion;
+    return this.soloDetallesActivos(donacion);
   }
 
   async update(id: number, dto: UpdateDonacionDto) {
@@ -109,15 +129,48 @@ export class DonacionService {
 
     if (detalles !== undefined) {
       const existing = await this.donacionDetalleService.findByDonacion(id);
+      // Primero se crean los nuevos: si alguno falla, la donación conserva sus materiales
+      const nuevos = await Promise.all(
+        detalles.map((d) => this.donacionDetalleService.create({ ...d, donacionId: id })),
+      ).catch((err) => {
+        if (err instanceof HttpException) throw err;
+        throw new BadRequestException('No se pudieron guardar los materiales. Revisá el tipo, la condición y la cantidad de cada uno.');
+      });
       await Promise.all(existing.map((d) => this.donacionDetalleService.remove(d.id)));
-      await Promise.all(
-        detalles.map((d) =>
-          this.donacionDetalleService.create({ ...d, donacionId: id }),
-        ),
-      );
+      await this.sincronizarDetallesTurno(id, nuevos);
     }
 
     return this.findOne(id);
+  }
+
+  // Mientras el turno siga en su estado inicial, sus materiales acompañan los cambios de la donación
+  private async sincronizarDetallesTurno(donacionId: number, nuevos: { id: number; tipoMaterialId: number; cantidadEstimada: number | null }[]) {
+    const turno = await this.turnoRepository.findOne({ where: { donacionId, isActive: true } });
+    if (!turno || turno.estadoTurnoId !== 1) return;
+    const anteriores = await this.turnoDetalleService.findByTurno(turno.id);
+    await Promise.all(anteriores.map((t) => this.turnoDetalleService.remove(t.id)));
+    await Promise.all(
+      nuevos.map((detalle) =>
+        this.turnoDetalleService.create({
+          turnoId: turno.id,
+          donacionDetalleId: detalle.id,
+          tipoMaterialId: detalle.tipoMaterialId,
+          cantidadConfirmada: detalle.cantidadEstimada ?? undefined,
+        }),
+      ),
+    );
+  }
+
+  /**
+   * Regla L del Donante: modifica o cancela su donación solo mientras sigue pendiente. Desde que entra en proceso
+   * (o termina, o se cancela) ya no se toca.
+   */
+  async validarCambioDelDonante(id: number) {
+    const donacion = await this.findOne(id);
+    const estado = donacion.estadoDonacion?.descripcion;
+    if (estado && estado !== ESTADO_DONACION.PENDIENTE) {
+      throw new ConflictException(`La donación está "${estado}": solo se puede modificar o cancelar mientras está pendiente.`);
+    }
   }
 
   async remove(id: number) {

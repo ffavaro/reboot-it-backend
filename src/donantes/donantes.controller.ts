@@ -1,44 +1,63 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DonantesService } from './donantes.service';
 import { CreateDonanteDto } from './dto/create-donante.dto';
 import { UpdateDonanteDto } from './dto/update-donante.dto';
-import { Authenticated, ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla, Authenticated, ROL_ID_DONANTE } from '../auth/auth.decorators';
+import type { RequestConUsuario } from '../auth/auth-user';
+import { PermisosService } from '../permisos/permisos.service';
+import { AmbitoService } from '../permisos/ambito.service';
 
+@Pantalla('donantes')
 @ApiTags('donantes')
 @Controller('donantes')
 export class DonantesController {
-  constructor(private readonly donantesService: DonantesService) {}
+  constructor(
+    private readonly donantesService: DonantesService,
+    private readonly permisos: PermisosService,
+    private readonly ambito: AmbitoService,
+  ) {}
 
-  @Roles(ROL.STAFF, ROL.DONANTE)
+  // Quien se registra (rol Donante) crea su propio donante; para el resto se exige el permiso de crear en Donantes
+  @Authenticated()
   @Post()
   @ApiOperation({ summary: 'Crear un donante' })
-  create(@Body() dto: CreateDonanteDto) {
+  async create(@Body() dto: CreateDonanteDto, @Req() req: RequestConUsuario) {
+    if (req.user?.rolId === ROL_ID_DONANTE) {
+      if (dto.usuario || dto.usuarioId !== req.user.id) {
+        throw new ForbiddenException('Solo podés crear el donante asociado a tu propio usuario.');
+      }
+    } else {
+      await this.permisos.exigir(req.user?.rolId, ['donantes'], 'crear');
+    }
     return this.donantesService.create(dto);
   }
 
   @Authenticated()
   @Get()
   @ApiOperation({ summary: 'Listar todos los donantes activos' })
-  findAll() {
-    return this.donantesService.findAll();
+  async findAll(@Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req, ['donantes']);
+    const lista = await this.donantesService.findAll();
+    return a ? lista.filter((d) => a.donantes.has(d.id)) : lista;
   }
 
   @Authenticated()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un donante por ID' })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req, ['donantes']), 'donantes', +id);
     return this.donantesService.findOne(+id);
   }
 
-  @Roles(ROL.STAFF, ROL.DONANTE)
+  @Pantalla('donantes', 'mi_perfil')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un donante' })
-  update(@Param('id') id: string, @Body() dto: UpdateDonanteDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateDonanteDto, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'donantes', +id);
     return this.donantesService.update(+id, dto);
   }
 
-  @Roles(ROL.STAFF)
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un donante (soft delete)' })
   remove(@Param('id') id: string) {

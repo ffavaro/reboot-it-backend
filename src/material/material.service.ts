@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Material } from './material.entity';
@@ -68,6 +68,26 @@ export class MaterialService {
       await this.procesoDestruccionRepository.save(procesoData);
     }
     return this.findOne(id);
+  }
+
+  /**
+   * Regla L del Técnico: no da de baja un material que está en un proceso de destrucción (el material figura en
+   * un medio de almacenamiento con un proceso activo que todavía no terminó ni se canceló).
+   */
+  async validarBajaDelTecnico(id: number) {
+    await this.findOne(id);
+    const procesos = await this.materialRepository.manager
+      .createQueryBuilder()
+      .select(['p.id AS id', 'e.nombre AS estado'])
+      .from('proceso_destruccion', 'p')
+      .innerJoin('medio_almacenamiento', 'm', 'm.id = p.medio_almacenamiento_id')
+      .innerJoin('estado_proceso_destruccion', 'e', 'e.id = p.estado_id')
+      .where('m.material_id = :id AND p.is_active = 1 AND m.is_active = 1', { id })
+      .getRawMany<{ id: number; estado: string }>();
+    const enProceso = procesos.some((p) => !/finaliz|complet|cancel|anulad/i.test(p.estado ?? ''));
+    if (enProceso) {
+      throw new ConflictException('El material está en un proceso de destrucción: no se puede dar de baja hasta que termine.');
+    }
   }
 
   async remove(id: number) {

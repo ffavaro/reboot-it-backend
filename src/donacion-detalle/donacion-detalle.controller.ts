@@ -3,9 +3,11 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DonacionDetalleService } from './donacion-detalle.service';
 import { CreateDonacionDetalleDto } from './dto/create-donacion-detalle.dto';
 import { UpdateDonacionDetalleDto } from './dto/update-donacion-detalle.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Accion, Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+// Endpoints internos (el frontend no los usa): solo quien puede editar donaciones por completo
+@Accion('editar')
+@Pantalla('donaciones!')
 @ApiTags('donacion-detalle')
 @Controller('donacion-detalle')
 export class DonacionDetalleController {

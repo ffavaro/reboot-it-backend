@@ -16,6 +16,17 @@ export class HistorialKmVehiculo {
   @Column({ name: 'km_final', type: 'int', unsigned: true, nullable: true })
   kmFinal: number | null;
 
+  // Distancia estimada del recorrido (Google Maps) de la hoja de ruta que generó este registro; nula en los registros anteriores
+  @Column({
+    name: 'km_estimado',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    transformer: { to: (v: number | null) => v, from: (v: string | null) => (v === null ? null : Number(v)) },
+  })
+  kmEstimado: number | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

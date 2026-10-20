@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { DetalleInlineDto } from './create-donacion.dto';
 
 export class UpdateDonacionDto {
@@ -42,5 +43,7 @@ export class UpdateDonacionDto {
   @ApiPropertyOptional({ type: [DetalleInlineDto] })
   @IsOptional()
   @IsArray({ message: 'Los detalles deben ser una lista' })
+  @ValidateNested({ each: true })
+  @Type(() => DetalleInlineDto)
   detalles?: DetalleInlineDto[];
 }

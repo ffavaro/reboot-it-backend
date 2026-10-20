@@ -3,9 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MedioAlmacenamientoService } from './medio-almacenamiento.service';
 import { CreateMedioAlmacenamientoDto } from './dto/create-medio-almacenamiento.dto';
 import { UpdateMedioAlmacenamientoDto } from './dto/update-medio-almacenamiento.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+@Pantalla('medio_almacenamiento')
 @ApiTags('medio-almacenamiento')
 @Controller('medio-almacenamiento')
 export class MedioAlmacenamientoController {
@@ -17,12 +17,14 @@ export class MedioAlmacenamientoController {
     return this.medioAlmacenamientoService.create(dto);
   }
 
+  @Pantalla('medio_almacenamiento', 'proceso_destruccion')
   @Get()
   @ApiOperation({ summary: 'Listar todos los medios de almacenamiento activos' })
   findAll() {
     return this.medioAlmacenamientoService.findAll();
   }
 
+  @Pantalla('medio_almacenamiento', 'proceso_destruccion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un medio de almacenamiento por ID' })
   findOne(@Param('id') id: string) {

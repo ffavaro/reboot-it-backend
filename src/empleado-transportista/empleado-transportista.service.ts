@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EmpleadoTransportista } from './empleado-transportista.entity';
 import { CreateEmpleadoTransportistaDto } from './dto/create-empleado-transportista.dto';
 import { UpdateEmpleadoTransportistaDto } from './dto/update-empleado-transportista.dto';
+import { Empleado } from '../empleados/empleado.entity';
 
 @Injectable()
 export class EmpleadoTransportistaService {
@@ -12,7 +13,18 @@ export class EmpleadoTransportistaService {
     private readonly empleadoTransportistaRepository: Repository<EmpleadoTransportista>,
   ) {}
 
-  create(dto: CreateEmpleadoTransportistaDto) {
+  // Solo se puede asignar como transportista a un empleado activo que tiene carnet de conducir
+  private async assertEmpleadoConCarnet(empleadoId: number) {
+    const empleado = await this.empleadoTransportistaRepository.manager.getRepository(Empleado).findOne({ where: { id: empleadoId } });
+    if (!empleado) throw new NotFoundException(`Empleado ${empleadoId} no encontrado`);
+    if (!empleado.isActive) throw new ConflictException('El empleado está desactivado: no se lo puede asignar como transportista.');
+    if (!empleado.tieneCarnet) {
+      throw new ConflictException('El empleado no tiene carnet de conducir: no se lo puede asignar como transportista.');
+    }
+  }
+
+  async create(dto: CreateEmpleadoTransportistaDto) {
+    await this.assertEmpleadoConCarnet(dto.empleadoId);
     const empleadoTransportista = this.empleadoTransportistaRepository.create(dto);
     return this.empleadoTransportistaRepository.save(empleadoTransportista);
   }
@@ -34,7 +46,8 @@ export class EmpleadoTransportistaService {
   }
 
   async update(id: number, dto: UpdateEmpleadoTransportistaDto) {
-    await this.findOne(id);
+    const actual = await this.findOne(id);
+    if (dto.empleadoId !== undefined && dto.empleadoId !== actual.empleadoId) await this.assertEmpleadoConCarnet(dto.empleadoId);
     await this.empleadoTransportistaRepository.update(id, dto);
     return this.findOne(id);
   }

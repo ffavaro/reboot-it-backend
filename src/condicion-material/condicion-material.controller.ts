@@ -3,14 +3,14 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CondicionMaterialService } from './condicion-material.service';
 import { CreateCondicionMaterialDto } from './dto/create-condicion-material.dto';
 import { UpdateCondicionMaterialDto } from './dto/update-condicion-material.dto';
-import { Authenticated, ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla, Authenticated } from '../auth/auth.decorators';
 
+@Pantalla('condicion_material')
 @ApiTags('condicion-material')
 @Controller('condicion-material')
 export class CondicionMaterialController {
   constructor(private readonly condicionMaterialService: CondicionMaterialService) {}
 
-  @Roles(ROL.STAFF)
   @Post()
   @ApiOperation({ summary: 'Crear una condición de material' })
   create(@Body() dto: CreateCondicionMaterialDto) {
@@ -31,14 +31,12 @@ export class CondicionMaterialController {
     return this.condicionMaterialService.findOne(+id);
   }
 
-  @Roles(ROL.STAFF)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una condición de material' })
   update(@Param('id') id: string, @Body() dto: UpdateCondicionMaterialDto) {
     return this.condicionMaterialService.update(+id, dto);
   }
 
-  @Roles(ROL.STAFF)
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar una condición de material (soft delete)' })
   remove(@Param('id') id: string) {

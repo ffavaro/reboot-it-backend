@@ -3,9 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MarcaService } from './marca.service';
 import { CreateMarcaDto } from './dto/create-marca.dto';
 import { UpdateMarcaDto } from './dto/update-marca.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+@Pantalla('marcas')
 @ApiTags('marca')
 @Controller('marca')
 export class MarcaController {
@@ -17,12 +17,14 @@ export class MarcaController {
     return this.marcaService.create(dto);
   }
 
+  @Pantalla('marcas', 'medio_almacenamiento', 'modelos')
   @Get()
   @ApiOperation({ summary: 'Listar todas las marcas activas' })
   findAll() {
     return this.marcaService.findAll();
   }
 
+  @Pantalla('marcas', 'medio_almacenamiento', 'modelos')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una marca por ID' })
   findOne(@Param('id') id: string) {

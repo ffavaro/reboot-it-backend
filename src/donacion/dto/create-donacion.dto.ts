@@ -1,13 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ArrayMaxSize, IsArray, IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator';
 
 export class DetalleInlineDto {
   @ApiProperty({ example: 1 })
   @IsInt({ message: 'El tipo de material debe ser un número entero' })
+  @Min(1, { message: 'Seleccioná el tipo de material' })
   tipoMaterialId: number;
 
   @ApiProperty({ example: 1 })
   @IsInt({ message: 'La condición del material debe ser un número entero' })
+  @Min(1, { message: 'Seleccioná la condición del material' })
   condicionMaterialId: number;
 
   @ApiPropertyOptional({ example: 5 })
@@ -58,8 +61,21 @@ export class CreateDonacionDto {
   @IsOptional()
   pesoEstimadoKg?: number;
 
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'URLs de fotos de los materiales (opcional, hasta 5). Quedan asociadas al lote y al turno de la donación.',
+  })
+  @IsOptional()
+  @IsArray({ message: 'Las fotos deben ser una lista' })
+  @ArrayMaxSize(5, { message: 'Se pueden cargar hasta 5 fotos' })
+  @IsString({ each: true, message: 'Cada foto debe ser un texto (URL)' })
+  @MaxLength(255, { each: true, message: 'La URL de cada foto no puede superar los 255 caracteres' })
+  fotosUrls?: string[];
+
   @ApiPropertyOptional({ type: [DetalleInlineDto] })
   @IsOptional()
   @IsArray({ message: 'Los detalles deben ser una lista' })
+  @ValidateNested({ each: true })
+  @Type(() => DetalleInlineDto)
   detalles?: DetalleInlineDto[];
 }

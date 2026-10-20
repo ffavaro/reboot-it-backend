@@ -4,9 +4,9 @@ import { ProcesoDestruccionService } from './proceso-destruccion.service';
 import { CreateProcesoDestruccionDto } from './dto/create-proceso-destruccion.dto';
 import { UpdateProcesoDestruccionDto } from './dto/update-proceso-destruccion.dto';
 import { ReporteProcesoDestruccionDto } from './dto/reporte-proceso-destruccion.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+@Pantalla('proceso_destruccion')
 @ApiTags('proceso-destruccion')
 @Controller('proceso-destruccion')
 export class ProcesoDestruccionController {
@@ -24,6 +24,7 @@ export class ProcesoDestruccionController {
     return this.procesoDestruccionService.findAll();
   }
 
+  @Pantalla('reporte_procesos_destruccion')
   @Get('reporte')
   @ApiOperation({ summary: 'Generar reporte de procesos de destrucción con filtros' })
   reporte(@Query() query: ReporteProcesoDestruccionDto) {

@@ -1,9 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDateString, IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsBoolean, IsDateString, IsIn, IsInt, IsOptional, Min } from 'class-validator';
 import { ESTADOS_HOJA_RUTA } from '../hoja-ruta.entity';
 
-const KM_MAX = 9999999;
 
 export class DiaHojaRutaQueryDto {
   @ApiPropertyOptional({ example: '2026-10-01', description: 'Inicio del rango (yyyy-MM-dd). Por defecto, hoy' })
@@ -60,17 +59,19 @@ export class HistoricoHojaRutaQueryDto {
   vehiculoId?: number;
 }
 
-export class IniciarHojaRutaDto {
-  @ApiProperty({ example: 1, description: 'Empleado transportista que inicia su hoja de ruta de hoy' })
+export class GenerarHojaRutaDto {
+  @ApiProperty({ example: 1, description: 'Empleado transportista para el que se genera la hoja de ruta' })
   @IsInt({ message: 'El empleado transportista es obligatorio' })
   @Min(1, { message: 'El empleado transportista es obligatorio' })
   empleadoTransportistaId: number;
-}
 
-export class FinalizarHojaRutaDto {
-  @ApiProperty({ example: 85120, description: 'Kilometraje final del vehículo (mayor o igual al inicial)' })
-  @IsInt({ message: 'El kilometraje final debe ser un número entero' })
-  @Min(0, { message: 'El kilometraje final no puede ser negativo' })
-  @Max(KM_MAX, { message: `El kilometraje final no puede superar los ${KM_MAX} km` })
-  kmFinal: number;
+  @ApiPropertyOptional({ example: '2026-10-21', description: 'Fecha de los turnos pendientes que incluye la hoja (yyyy-MM-dd). Por defecto, hoy' })
+  @IsOptional()
+  @IsDateString({}, { message: 'La fecha debe ser válida (yyyy-MM-dd)' })
+  fecha?: string;
+
+  @ApiPropertyOptional({ description: 'Genera la hoja aunque el transportista tenga otra hoja iniciada con turnos pendientes de retiro' })
+  @IsOptional()
+  @IsBoolean({ message: 'El campo "confirmar" debe ser verdadero o falso' })
+  confirmar?: boolean;
 }

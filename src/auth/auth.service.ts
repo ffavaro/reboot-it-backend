@@ -1,5 +1,5 @@
 import { UsuariosService } from '@app/usuarios/usuarios.service';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
@@ -37,6 +37,22 @@ export class AuthService {
             throw new UnauthorizedException('Credenciales inválidas');
         }
 
+        // Las credenciales son correctas pero el acceso fue inhabilitado (empleado o usuario desactivado)
+        if (!user.isActive) {
+            void this.auditoria.registrar({
+                ...ctx,
+                usuarioId: user.id,
+                rol: user.rol?.nombre ?? null,
+                usuarioIntentado: emailIntentado,
+                accion: 'Intento de inicio de sesión con usuario desactivado',
+                resultado: RESULTADO_ERROR,
+                codigoHttp: 403,
+                entidad: 'auth',
+                entidadId: user.id,
+            });
+            throw new ForbiddenException('Tu usuario está desactivado. Contactá al administrador.');
+        }
+
         const { password, ...result } = user;
         const access_token = this.jwtService.sign(result);
         void this.auditoria.registrar({
@@ -56,7 +72,7 @@ export class AuthService {
     async signUp({ name, apellido, email, password, cuitDni }: RegisterDto): Promise<{access_token: string}> {
         const existingUser = await this.usersService.findByEmail(email);
         if (existingUser) {
-            throw new UnauthorizedException('Email ya registrado');
+            throw new ConflictException('El email ya está registrado');
         }
         await this.usersService.create({ nombre: name, apellido, email, password, cuitDni, rolId: ROL_ID_DONANTE, isActive: true, empleadoId: undefined });
         const fullUser = await this.usersService.findByEmail(email);
