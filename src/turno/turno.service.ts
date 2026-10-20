@@ -24,6 +24,8 @@ const ESTADO_EN_CLASIFICACION = ESTADO_TURNO.EN_CLASIFICACION;
 const CONDICION_PENDIENTE = CONDICION_MATERIAL.A_DEFINIR;
 const RELATIONS = ['donante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'];
 
+import { validarPesoDonacionVehiculo } from '../common/peso-vehiculo';
+
 // Antelación mínima con la que el donante puede reprogramar o cancelar su turno
 const HORAS_ANTELACION_DONANTE = 24;
 
@@ -122,6 +124,8 @@ export class TurnoService {
         where: { id: dto.empleadoTransportistaId, isActive: true },
       });
       if (!transportista) throw new NotFoundException('Empleado transportista no encontrado.');
+      // el vehículo del transportista tiene que soportar el peso estimado de la donación
+      await validarPesoDonacionVehiculo(this.turnoRepository.manager, turno.donacionId, transportista.vehiculoId);
     } else {
       if (!dto.empleadoId) {
         throw new BadRequestException('Debe asignarse un empleado.');
