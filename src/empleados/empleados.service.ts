@@ -1,6 +1,6 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Not, Repository } from 'typeorm';
+import { DataSource, EntityManager, Not, Repository } from 'typeorm';
 import { Empleado } from './empleado.entity';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
@@ -8,6 +8,8 @@ import { Usuario } from '../usuarios/usuario.entity';
 import { UsuariosService } from '../usuarios/usuarios.service';
 import { Rol } from '../roles/rol.entity';
 import { EmpleadoTransportista } from '../empleado-transportista/empleado-transportista.entity';
+import { Vehiculo } from '../vehiculos/vehiculo.entity';
+import { DatosTransportistaDto } from './dto/create-empleado.dto';
 
 export type EstadoEmpleados = 'activos' | 'inactivos' | 'todos';
 
@@ -51,11 +53,33 @@ export class EmpleadosService {
     }
   }
 
+  private async esRolTransportista(rolId: number): Promise<boolean> {
+    const rol = await this.dataSource.getRepository(Rol).findOne({ where: { id: rolId } });
+    return !!rol && rol.nombre.trim().toLowerCase() === 'transportista';
+  }
+
+  // Un transportista necesita carnet y un vehículo existente para la ficha
+  private async validarTransportista(manager: EntityManager, tieneCarnet: boolean | undefined, datos?: DatosTransportistaDto) {
+    if (!datos) {
+      throw new BadRequestException('Para un empleado transportista hay que indicar el vehículo que va a utilizar y los datos de su carnet.');
+    }
+    if (!tieneCarnet) {
+      throw new BadRequestException('Un transportista necesita carnet de conducir: marcá "Tiene carnet de conducir".');
+    }
+    const vehiculo = await manager.getRepository(Vehiculo).findOne({ where: { id: datos.vehiculoId, isActive: true } });
+    if (!vehiculo) throw new NotFoundException(`Vehículo ${datos.vehiculoId} no encontrado`);
+  }
+
   async create(dto: CreateEmpleadoDto, actor?: ActorEmpleados) {
-    const { email, password, ...datos } = dto;
+    const { email, password, transportista, ...datos } = dto;
     await this.assertPuedeAsignarRol(datos.rolId, actor);
+    const esTransportista = await this.esRolTransportista(datos.rolId);
+    if (!esTransportista && transportista) {
+      throw new BadRequestException('Los datos de transportista solo se cargan cuando el rol es Transportista.');
+    }
     await this.assertCuitDniUnico(datos.cuitDni);
     return this.dataSource.transaction(async (manager) => {
+      if (esTransportista) await this.validarTransportista(manager, datos.tieneCarnet, transportista);
       const empleado = await manager.save(manager.create(Empleado, datos));
       await this.usuariosService.crearEnTransaccion(manager, {
         nombre: datos.nombre,
@@ -67,6 +91,10 @@ export class EmpleadosService {
         empleadoId: empleado.id,
         isActive: true,
       });
+      // Rol Transportista: se registra también su ficha de transportista, con el vehículo y el carnet
+      if (esTransportista && transportista) {
+        await manager.save(manager.create(EmpleadoTransportista, { ...transportista, empleadoId: empleado.id, fechaAsignacion: new Date() }));
+      }
       return empleado;
     });
   }
@@ -88,7 +116,8 @@ export class EmpleadosService {
     return empleado;
   }
 
-  async update(id: number, dto: UpdateEmpleadoDto, actor?: ActorEmpleados) {
+  async update(id: number, dtoCompleto: UpdateEmpleadoDto, actor?: ActorEmpleados) {
+    const { transportista, ...dto } = dtoCompleto;
     const actual = await this.findOne(id);
     if (dto.rolId !== undefined && dto.rolId !== actual.rolId) {
       // Cambiar el rol cambia los accesos del empleado: es exclusivo del SysAdmin
@@ -101,6 +130,14 @@ export class EmpleadosService {
     }
     await this.assertCuitDniUnico(dto.cuitDni, id);
 
+    // Cambio de rol hacia o desde Transportista: la ficha de transportista acompaña al rol
+    const cambiaRol = dto.rolId !== undefined && dto.rolId !== actual.rolId;
+    const pasaATransportista = cambiaRol && (await this.esRolTransportista(dto.rolId as number));
+    const dejaDeSerTransportista = cambiaRol && !pasaATransportista && (await this.esRolTransportista(actual.rolId));
+    if (!pasaATransportista && transportista) {
+      throw new BadRequestException('Los datos de transportista solo se cargan al pasar el empleado al rol Transportista.');
+    }
+
     // El usuario del empleado comparte nombre, apellido, CUIT/DNI y rol: se mantienen al día
     const datosUsuario: Partial<Pick<Usuario, 'nombre' | 'apellido' | 'cuitDni' | 'rolId'>> = {};
     if (dto.nombre !== undefined) datosUsuario.nombre = dto.nombre;
@@ -110,7 +147,15 @@ export class EmpleadosService {
 
     try {
       await this.dataSource.transaction(async (manager) => {
+        if (pasaATransportista) await this.validarTransportista(manager, dto.tieneCarnet ?? !!actual.tieneCarnet, transportista);
         await manager.update(Empleado, id, dto);
+        if (pasaATransportista && transportista) {
+          // si ya tuvo ficha antes se la reactiva con los datos nuevos; si no, se crea
+          const ficha = await manager.getRepository(EmpleadoTransportista).findOne({ where: { empleadoId: id } });
+          if (ficha) await manager.update(EmpleadoTransportista, ficha.id, { ...transportista, fechaAsignacion: new Date(), isActive: true });
+          else await manager.save(manager.create(EmpleadoTransportista, { ...transportista, empleadoId: id, fechaAsignacion: new Date() }));
+        }
+        if (dejaDeSerTransportista) await manager.update(EmpleadoTransportista, { empleadoId: id }, { isActive: false });
         if (Object.keys(datosUsuario).length) {
           await manager.update(Usuario, { empleadoId: id }, datosUsuario);
         }
