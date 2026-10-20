@@ -116,14 +116,9 @@ export class TurnoService {
       where: { descripcion: ESTADO_DONACION_EN_PROCESO, isActive: true },
     });
     
-    if (estadoEnProceso) {
-      const donacion = await this.donacionRepository.findOne({
-        where: { donanteId: turno.donanteId, isActive: true },
-        order: { createdAt: 'DESC' },
-      });
-      if (donacion) {
-        await this.donacionRepository.update(donacion.id, { estadoDonacionId: estadoEnProceso.id });
-      }
+    // Pasa a "En proceso" la donación asociada a ESTE turno (un donante puede tener varias donaciones)
+    if (estadoEnProceso && turno.donacionId) {
+      await this.donacionRepository.update(turno.donacionId, { estadoDonacionId: estadoEnProceso.id });
     }
 
     return this.findOne(id);
