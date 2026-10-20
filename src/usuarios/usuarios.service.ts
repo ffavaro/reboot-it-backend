@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Usuario } from './usuario.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
@@ -16,7 +16,20 @@ export class UsuariosService {
     private readonly usuarioRepository: Repository<Usuario>,
   ) {}
 
+  // Verifica email y CUIT/DNI únicos antes de guardar, para informar cuál de los dos está repetido.
+  // Incluye usuarios inactivos, porque el índice único de la base también los cuenta.
+  private async assertUnique(data: { email?: string; cuitDni?: string }, excludeId?: number) {
+    const idFilter = excludeId ? { id: Not(excludeId) } : {};
+    if (data.cuitDni && await this.usuarioRepository.exists({ where: { cuitDni: data.cuitDni, ...idFilter } })) {
+      throw new ConflictException('El CUIT/DNI ya está registrado');
+    }
+    if (data.email && await this.usuarioRepository.exists({ where: { email: data.email, ...idFilter } })) {
+      throw new ConflictException('El email ya está registrado');
+    }
+  }
+
   async create(dto: CreateUsuarioDto) {
+    await this.assertUnique(dto);
     try {
       const plainPassword = dto.password || DEFAULT_PASSWORD;
       const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
@@ -24,7 +37,7 @@ export class UsuariosService {
       return await this.usuarioRepository.save(usuario);
     } catch (error) {
       if (error?.code === 'ER_DUP_ENTRY') {
-        throw new ConflictException('El email ya está registrado');
+        throw new ConflictException('Ya existe un usuario con esos datos');
       }
       console.error('Error al crear usuario:', error);
       throw new InternalServerErrorException('Error al crear usuario');
@@ -53,6 +66,7 @@ export class UsuariosService {
 
   async update(id: number, dto: UpdateUsuarioDto) {
     await this.findOne(id);
+    await this.assertUnique(dto, id);
     await this.usuarioRepository.update(id, dto);
     return this.findOne(id);
   }

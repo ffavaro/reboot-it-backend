@@ -35,6 +35,8 @@ import { TipoModule } from './tipo/tipo.module';
 import { MarcaModule } from './marca/marca.module';
 import { ModeloModule } from './modelo/modelo.module';
 import { UploadModule } from './upload/upload.module';
+import { HistorialKmVehiculoModule } from './historial-km-vehiculo/historial-km-vehiculo.module';
+import { HojaRutaModule } from './hoja-ruta/hoja-ruta.module';
 
 @Module({
   imports: [
@@ -90,6 +92,8 @@ import { UploadModule } from './upload/upload.module';
     MarcaModule,
     ModeloModule,
     UploadModule,
+    HistorialKmVehiculoModule,
+    HojaRutaModule,
   ],
 })
 export class AppModule {}

@@ -16,6 +16,15 @@ export class Empleado {
   @Column({ length: 100 })
   apellido: string;
 
+  @Column({ name: 'cuit_dni', length: 11, unique: true, nullable: true })
+  cuitDni: string;
+
+  @Column({ name: 'fecha_alta', type: 'date', nullable: true })
+  fechaAlta: string;
+
+  @Column({ length: 255, nullable: true })
+  direccion: string;
+
   @Column({ length: 20, nullable: true })
   telefono: string;
 

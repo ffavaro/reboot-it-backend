@@ -10,6 +10,9 @@ export class Usuario {
   @Column({ length: 100 })
   nombre: string;
 
+  @Column({ length: 25, nullable: true })
+  apellido: string;
+
   @Column({ length: 150, unique: true })
   email: string;
 

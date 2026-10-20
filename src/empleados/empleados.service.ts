@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Empleado } from './empleado.entity';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
@@ -12,7 +12,17 @@ export class EmpleadosService {
     private readonly empleadoRepository: Repository<Empleado>,
   ) {}
 
-  create(dto: CreateEmpleadoDto) {
+  // Incluye empleados inactivos, porque el índice único de la base también los cuenta
+  private async assertCuitDniUnico(cuitDni?: string, excludeId?: number) {
+    if (!cuitDni) return;
+    const idFilter = excludeId ? { id: Not(excludeId) } : {};
+    if (await this.empleadoRepository.exists({ where: { cuitDni, ...idFilter } })) {
+      throw new ConflictException('El CUIT/DNI ya está registrado en otro empleado');
+    }
+  }
+
+  async create(dto: CreateEmpleadoDto) {
+    await this.assertCuitDniUnico(dto.cuitDni);
     const empleado = this.empleadoRepository.create(dto);
     return this.empleadoRepository.save(empleado);
   }
@@ -35,6 +45,7 @@ export class EmpleadosService {
 
   async update(id: number, dto: UpdateEmpleadoDto) {
     await this.findOne(id);
+    await this.assertCuitDniUnico(dto.cuitDni, id);
     await this.empleadoRepository.update(id, dto);
     return this.findOne(id);
   }

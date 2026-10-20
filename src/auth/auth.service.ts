@@ -2,6 +2,7 @@ import { UsuariosService } from '@app/usuarios/usuarios.service';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,12 +21,12 @@ export class AuthService {
         return { access_token };
     }
 
-    async signUp(name: string, email: string, password: string, cuitDni: string): Promise<{access_token: string}> {
+    async signUp({ name, apellido, email, password, cuitDni }: RegisterDto): Promise<{access_token: string}> {
         const existingUser = await this.usersService.findByEmail(email);
         if (existingUser) {
             throw new UnauthorizedException('Email ya registrado');
         }
-        await this.usersService.create({ nombre: name, email, password, cuitDni, rolId: 7, isActive: true, empleadoId: undefined });
+        await this.usersService.create({ nombre: name, apellido, email, password, cuitDni, rolId: 7, isActive: true, empleadoId: undefined });
         const fullUser = await this.usersService.findByEmail(email);
         const { password: _, ...result } = fullUser!;
         const access_token = this.jwtService.sign(result);
