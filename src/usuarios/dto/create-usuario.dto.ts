@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsNumber, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsNumber, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 export class CreateUsuarioDto {
   @ApiProperty({ example: 'Juan Pérez' })
@@ -33,6 +33,7 @@ export class CreateUsuarioDto {
 
   @ApiPropertyOptional({ example: '20123456789' })
   @IsString({ message: 'El CUIT/DNI debe ser un texto' })
+  @Matches(/^([0-9]{8}|[0-9]{11})$/, { message: 'El CUIT/DNI debe tener 8 (DNI) u 11 (CUIT) dígitos numéricos' })
   @IsOptional()
   cuitDni?: string;
 

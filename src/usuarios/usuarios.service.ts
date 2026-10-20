@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { EntityManager, Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Usuario } from './usuario.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { ROL_ID_DONANTE } from '../auth/auth.decorators';
 
 const DEFAULT_PASSWORD = 'reboot2024_it';
 const SALT_ROUNDS = 10;
@@ -18,14 +19,32 @@ export class UsuariosService {
 
   // Verifica email y CUIT/DNI únicos antes de guardar, para informar cuál de los dos está repetido.
   // Incluye usuarios inactivos, porque el índice único de la base también los cuenta.
-  private async assertUnique(data: { email?: string; cuitDni?: string }, excludeId?: number) {
+  // repo: permite hacer la verificación dentro de una transacción (ver crearEnTransaccion)
+  private async assertUnique(
+    data: { email?: string; cuitDni?: string; empleadoId?: number | null },
+    excludeId?: number,
+    repo: Repository<Usuario> = this.usuarioRepository,
+  ) {
     const idFilter = excludeId ? { id: Not(excludeId) } : {};
-    if (data.cuitDni && await this.usuarioRepository.exists({ where: { cuitDni: data.cuitDni, ...idFilter } })) {
-      throw new ConflictException('El CUIT/DNI ya está registrado');
+    if (data.cuitDni && await repo.exists({ where: { cuitDni: data.cuitDni, ...idFilter } })) {
+      throw new ConflictException('El CUIT/DNI ya está registrado en otro usuario');
     }
-    if (data.email && await this.usuarioRepository.exists({ where: { email: data.email, ...idFilter } })) {
+    if (data.email && await repo.exists({ where: { email: data.email, ...idFilter } })) {
       throw new ConflictException('El email ya está registrado');
     }
+    if (data.empleadoId && await repo.exists({ where: { empleadoId: data.empleadoId, ...idFilter } })) {
+      throw new ConflictException('Ese empleado ya tiene un usuario asociado');
+    }
+  }
+
+  /**
+   * Crea un usuario dentro de la transacción de quien lo llama (alta de empleado o de donante, que
+   * crean su usuario en el mismo paso): si algo falla, no queda ni el usuario ni lo que lo originó.
+   */
+  async crearEnTransaccion(manager: EntityManager, dto: CreateUsuarioDto) {
+    await this.assertUnique(dto, undefined, manager.getRepository(Usuario));
+    const password = await bcrypt.hash(dto.password || DEFAULT_PASSWORD, SALT_ROUNDS);
+    return manager.save(manager.create(Usuario, { ...dto, password }));
   }
 
   async create(dto: CreateUsuarioDto) {
@@ -65,7 +84,11 @@ export class UsuariosService {
   }
 
   async update(id: number, dto: UpdateUsuarioDto) {
-    await this.findOne(id);
+    const actual = await this.findOne(id);
+    // Los usuarios donantes nacen y viven ligados a su donante: el rol no se cambia desde acá
+    if (dto.rolId !== undefined && dto.rolId !== actual.rolId && (dto.rolId === ROL_ID_DONANTE || actual.rolId === ROL_ID_DONANTE)) {
+      throw new BadRequestException('No se puede cambiar el rol de un usuario hacia o desde Donante');
+    }
     await this.assertUnique(dto, id);
     // La contraseña nunca se guarda en texto plano: si viene en el PATCH, se hashea igual que al crear
     const { password, ...resto } = dto;

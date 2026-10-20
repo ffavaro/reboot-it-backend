@@ -1,9 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { UsuariosService } from './usuarios.service';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { ROL, ROL_ID_DONANTE, Roles } from '../auth/auth.decorators';
 
 @ApiTags('usuarios')
 @Controller('usuarios')
@@ -15,6 +15,10 @@ export class UsuariosController {
   @ApiOperation({ summary: 'Crear un usuario' })
   @ApiResponse({ status: 201, description: 'Usuario creado exitosamente' })
   create(@Body() dto: CreateUsuarioDto) {
+    // Los usuarios con rol Donante se crean junto con su donante (pantalla Donantes o registro público)
+    if (dto.rolId === ROL_ID_DONANTE) {
+      throw new BadRequestException('Los usuarios con rol Donante se crean desde Donantes');
+    }
     return this.usuariosService.create(dto);
   }
 
