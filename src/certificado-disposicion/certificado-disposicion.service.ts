@@ -7,8 +7,9 @@ import { Donacion } from '../donacion/donacion.entity';
 import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 import { CreateCertificadoDisposicionDto } from './dto/create-certificado-disposicion.dto';
 import { UpdateCertificadoDisposicionDto } from './dto/update-certificado-disposicion.dto';
+import { ESTADO_DONACION } from '../common/constants/estados';
 
-const ESTADO_DONACION_FINALIZADA = 'Finalizada';
+const ESTADO_DONACION_FINALIZADA = ESTADO_DONACION.FINALIZADA;
 
 @Injectable()
 export class CertificadoDisposicionService {

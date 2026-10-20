@@ -5,7 +5,9 @@ import { CreateMaterialDto } from './dto/create-material.dto';
 import { UpdateMaterialDto } from './dto/update-material.dto';
 import { ClasificarMaterialDto } from './dto/clasificar-material.dto';
 import { ReporteMaterialDto } from './dto/reporte-material.dto';
+import { ROL, Roles } from '../auth/auth.decorators';
 
+@Roles(ROL.STAFF)
 @ApiTags('material')
 @Controller('material')
 export class MaterialController {

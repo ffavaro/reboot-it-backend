@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RolesModule } from './roles/roles.module';
@@ -35,6 +36,9 @@ import { TipoModule } from './tipo/tipo.module';
 import { MarcaModule } from './marca/marca.module';
 import { ModeloModule } from './modelo/modelo.module';
 import { UploadModule } from './upload/upload.module';
+import { HistorialKmVehiculoModule } from './historial-km-vehiculo/historial-km-vehiculo.module';
+import { HojaRutaModule } from './hoja-ruta/hoja-ruta.module';
+import { AuditoriaModule } from './auditoria/auditoria.module';
 
 @Module({
   imports: [
@@ -90,6 +94,13 @@ import { UploadModule } from './upload/upload.module';
     MarcaModule,
     ModeloModule,
     UploadModule,
+    HistorialKmVehiculoModule,
+    HojaRutaModule,
+    AuditoriaModule,
+  ],
+  providers: [
+    // Aplica los @Exclude() de las entidades (ej. password del usuario) a todas las respuestas
+    { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
   ],
 })
 export class AppModule {}

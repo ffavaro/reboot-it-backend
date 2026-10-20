@@ -3,11 +3,11 @@ import { IsOptional, IsString } from 'class-validator';
 
 export class CreateTipoMaterialDto {
   @ApiProperty({ example: 'Electrónico' })
-  @IsString()
+  @IsString({ message: 'El nombre debe ser un texto' })
   nombre: string;
 
   @ApiPropertyOptional({ example: 'Equipos y componentes electrónicos' })
-  @IsString()
+  @IsString({ message: 'La descripción debe ser un texto' })
   @IsOptional()
   descripcion?: string;
 }

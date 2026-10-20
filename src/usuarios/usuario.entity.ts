@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { Rol } from '../roles/rol.entity';
 import { Empleado } from '../empleados/empleado.entity';
 
@@ -10,9 +11,15 @@ export class Usuario {
   @Column({ length: 100 })
   nombre: string;
 
+  @Column({ length: 25, nullable: true })
+  apellido: string;
+
   @Column({ length: 150, unique: true })
   email: string;
 
+  // Nunca se serializa en las respuestas (ClassSerializerInterceptor global); en memoria sigue
+  // disponible para validar el login
+  @Exclude()
   @Column({ length: 255 })
   password: string;
 

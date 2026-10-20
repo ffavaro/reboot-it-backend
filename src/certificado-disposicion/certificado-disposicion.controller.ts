@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CertificadoDisposicionService } from './certificado-disposicion.service';
 import { CreateCertificadoDisposicionDto } from './dto/create-certificado-disposicion.dto';
 import { UpdateCertificadoDisposicionDto } from './dto/update-certificado-disposicion.dto';
+import { ROL, Roles } from '../auth/auth.decorators';
 
+@Roles(ROL.STAFF, ROL.DONANTE)
 @ApiTags('certificado-disposicion')
 @Controller('certificado-disposicion')
 export class CertificadoDisposicionController {

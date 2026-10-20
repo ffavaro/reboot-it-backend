@@ -3,20 +3,20 @@ import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateMaterialDto {
   @ApiPropertyOptional({ example: 1, description: 'ID del lote' })
-  @IsNumber()
+  @IsNumber({}, { message: 'El lote debe ser un número' })
   @IsOptional()
   loteId?: number;
 
   @ApiProperty({ example: 1, description: 'ID del tipo de material' })
-  @IsNumber()
+  @IsNumber({}, { message: 'El tipo de material debe ser un número' })
   tipoMaterialId: number;
 
   @ApiPropertyOptional({ example: 1, description: 'ID de la condición del material' })
-  @IsNumber()
+  @IsNumber({}, { message: 'La condición del material debe ser un número' })
   @IsOptional()
   condicionMaterialId?: number;
 
   @ApiProperty({ example: 'Notebook Dell Latitude 5490' })
-  @IsString()
+  @IsString({ message: 'La descripción debe ser un texto' })
   descripcion: string;
 }

@@ -3,41 +3,41 @@ import { IsArray, IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString
 
 export class DetalleInlineDto {
   @ApiProperty({ example: 1 })
-  @IsInt()
+  @IsInt({ message: 'El tipo de material debe ser un número entero' })
   tipoMaterialId: number;
 
   @ApiProperty({ example: 1 })
-  @IsInt()
+  @IsInt({ message: 'La condición del material debe ser un número entero' })
   condicionMaterialId: number;
 
   @ApiPropertyOptional({ example: 5 })
   @IsOptional()
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'La cantidad estimada debe ser un número entero' })
+  @Min(1, { message: 'La cantidad estimada debe ser como mínimo 1' })
   cantidadEstimada?: number;
 }
 
 export class CreateDonacionDto {
   @ApiProperty({ example: 1, description: 'ID del donante' })
-  @IsNumber()
+  @IsNumber({}, { message: 'El donante debe ser un número' })
   donanteId: number;
 
   @ApiProperty({ example: '2024-06-15T10:00:00Z', description: 'Fecha y hora del turno a crear' })
-  @IsDateString()
+  @IsDateString({}, { message: 'La fecha y hora deben ser una fecha válida' })
   fechaHora: string;
 
   @ApiPropertyOptional({ example: 1, description: 'ID del estado de la donación' })
-  @IsNumber()
+  @IsNumber({}, { message: 'El estado de la donación debe ser un número' })
   @IsOptional()
   estadoDonacionId?: number;
 
   @ApiPropertyOptional({ example: 'Equipos informáticos en desuso' })
-  @IsString()
+  @IsString({ message: 'La descripción debe ser un texto' })
   @IsOptional()
   descripcion?: string;
 
   @ApiPropertyOptional({ example: false })
-  @IsBoolean()
+  @IsBoolean({ message: 'El campo "necesita retiro" debe ser verdadero o falso' })
   @IsOptional()
   necesitaRetiro?: boolean;
 
@@ -45,21 +45,21 @@ export class CreateDonacionDto {
     example: 'Av. Siempre Viva 742',
     description: 'Dirección de retiro distinta a la registrada en el donante',
   })
-  @IsString()
+  @IsString({ message: 'La dirección de retiro debe ser un texto' })
   @IsOptional()
-  @MaxLength(255)
+  @MaxLength(255, { message: 'La dirección de retiro no puede superar los 255 caracteres' })
   direccionRetiro?: string;
 
   @ApiPropertyOptional({
     example: 25.5,
     description: 'Peso estimado (kg) de la donación, usado para asignar un transportista compatible',
   })
-  @IsNumber()
+  @IsNumber({}, { message: 'El peso estimado debe ser un número' })
   @IsOptional()
   pesoEstimadoKg?: number;
 
   @ApiPropertyOptional({ type: [DetalleInlineDto] })
   @IsOptional()
-  @IsArray()
+  @IsArray({ message: 'Los detalles deben ser una lista' })
   detalles?: DetalleInlineDto[];
 }

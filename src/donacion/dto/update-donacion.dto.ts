@@ -5,21 +5,21 @@ import { DetalleInlineDto } from './create-donacion.dto';
 export class UpdateDonacionDto {
   @ApiPropertyOptional()
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'El donante debe ser un número' })
   donanteId?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'El estado de la donación debe ser un número' })
   estadoDonacionId?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'La descripción debe ser un texto' })
   descripcion?: string;
 
   @ApiPropertyOptional({ example: false })
-  @IsBoolean()
+  @IsBoolean({ message: 'El campo "necesita retiro" debe ser verdadero o falso' })
   @IsOptional()
   necesitaRetiro?: boolean;
 
@@ -27,7 +27,7 @@ export class UpdateDonacionDto {
     example: 'Av. Siempre Viva 742',
     description: 'Dirección de retiro distinta a la registrada en el donante',
   })
-  @IsString()
+  @IsString({ message: 'La dirección de retiro debe ser un texto' })
   @IsOptional()
   direccionRetiro?: string | null;
 
@@ -35,12 +35,12 @@ export class UpdateDonacionDto {
     example: 25.5,
     description: 'Peso estimado (kg) de la donación, usado para asignar un transportista compatible',
   })
-  @IsNumber()
+  @IsNumber({}, { message: 'El peso estimado debe ser un número' })
   @IsOptional()
   pesoEstimadoKg?: number | null;
 
   @ApiPropertyOptional({ type: [DetalleInlineDto] })
   @IsOptional()
-  @IsArray()
+  @IsArray({ message: 'Los detalles deben ser una lista' })
   detalles?: DetalleInlineDto[];
 }

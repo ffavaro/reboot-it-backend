@@ -3,16 +3,16 @@ import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateLoteDto {
   @ApiProperty({ example: 1, description: 'ID de la donación' })
-  @IsNumber()
+  @IsNumber({}, { message: 'La donación debe ser un número' })
   donacionId: number;
 
   @ApiPropertyOptional({ example: 150.5, description: 'Peso bruto en kg' })
-  @IsNumber()
+  @IsNumber({}, { message: 'El peso bruto debe ser un número' })
   @IsOptional()
   pesoBrutoKg?: number;
 
   @ApiPropertyOptional({ example: 'Equipos en buen estado general' })
-  @IsString()
+  @IsString({ message: 'Las observaciones deben ser un texto' })
   @IsOptional()
   observaciones?: string;
 }

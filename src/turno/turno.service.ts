@@ -15,11 +15,13 @@ import { Donacion } from '../donacion/donacion.entity';
 import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 import { Lote } from '../lote/lote.entity';
 import { Retiro } from '../retiro/retiro.entity';
+import { CONDICION_MATERIAL, ESTADO_DONACION, ESTADO_TURNO } from '../common/constants/estados';
 
-const ESTADO_ASIGNADO = 'Asignado';
-const ESTADO_DONACION_EN_PROCESO = 'En proceso';
-const ESTADO_EN_CLASIFICACION = 'En Clasificacion';
-const CONDICION_PENDIENTE = 'Pendiente de Clasificar';
+const ESTADO_ASIGNADO = ESTADO_TURNO.ASIGNADO;
+const ESTADO_DONACION_EN_PROCESO = ESTADO_DONACION.EN_PROCESO;
+const ESTADO_EN_CLASIFICACION = ESTADO_TURNO.EN_CLASIFICACION;
+// Los materiales de un turno finalizado quedan "A definir" hasta que se los clasifica
+const CONDICION_PENDIENTE = CONDICION_MATERIAL.A_DEFINIR;
 const RELATIONS = ['donante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'];
 
 @Injectable()
@@ -114,14 +116,9 @@ export class TurnoService {
       where: { descripcion: ESTADO_DONACION_EN_PROCESO, isActive: true },
     });
     
-    if (estadoEnProceso) {
-      const donacion = await this.donacionRepository.findOne({
-        where: { donanteId: turno.donanteId, isActive: true },
-        order: { createdAt: 'DESC' },
-      });
-      if (donacion) {
-        await this.donacionRepository.update(donacion.id, { estadoDonacionId: estadoEnProceso.id });
-      }
+    // Pasa a "En proceso" la donación asociada a ESTE turno (un donante puede tener varias donaciones)
+    if (estadoEnProceso && turno.donacionId) {
+      await this.donacionRepository.update(turno.donacionId, { estadoDonacionId: estadoEnProceso.id });
     }
 
     return this.findOne(id);
@@ -147,25 +144,37 @@ export class TurnoService {
     });
     if (!condicionPendiente) throw new NotFoundException(`Condición "${CONDICION_PENDIENTE}" no encontrada en la base de datos.`);
 
-    await this.turnoRepository.update(id, { estadoTurnoId: estadoEnClasificacion.id });
-
-    if (turno.donacionId && turno.empleadoTransportistaId) {
+    // Se valida todo lo del retiro antes de escribir, para no dejar el turno a medio finalizar
+    const generaRetiro = !!(turno.donacionId && turno.empleadoTransportistaId);
+    let vehiculoRetiroId: number | null = null;
+    let direccionRetiro: string | null = null;
+    if (generaRetiro) {
       const transportista = await this.transportistaRepository.findOne({
-        where: { id: turno.empleadoTransportistaId },
+        where: { id: turno.empleadoTransportistaId as number },
       });
       if (!transportista?.vehiculoId) throw new BadRequestException('El empleado transportista no tiene un vehículo asignado.');
+      vehiculoRetiroId = transportista.vehiculoId;
 
+      // Si el donante cargó una dirección alternativa para esta donación, el retiro va ahí;
+      // si no, a la dirección de su perfil
+      const donacion = await this.donacionRepository.findOne({ where: { id: turno.donacionId as number } });
+      direccionRetiro = donacion?.direccionRetiro?.trim() || turno.donante.direccion || null;
+    }
+
+    await this.turnoRepository.update(id, { estadoTurnoId: estadoEnClasificacion.id });
+
+    if (generaRetiro) {
       const retiroExistente = await this.retiroRepository.findOne({
-        where: { donacionId: turno.donacionId, isActive: true },
+        where: { donacionId: turno.donacionId as number, isActive: true },
       });
       if (!retiroExistente) {
         await this.retiroRepository.save(
           this.retiroRepository.create({
-            donacionId: turno.donacionId,
-            empleadoTransportistaId: turno.empleadoTransportistaId,
-            vehiculoId: transportista.vehiculoId,
+            donacionId: turno.donacionId as number,
+            empleadoTransportistaId: turno.empleadoTransportistaId as number,
+            vehiculoId: vehiculoRetiroId as number,
             fechaInicio: turno.fechaHora,
-            direccion: turno.donante.direccion,
+            direccion: direccionRetiro as string,
           }),
         );
       }

@@ -1,20 +1,50 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Donante } from './donante.entity';
 import { CreateDonanteDto } from './dto/create-donante.dto';
 import { UpdateDonanteDto } from './dto/update-donante.dto';
+import { UsuariosService } from '../usuarios/usuarios.service';
+import { ROL_ID_DONANTE } from '../auth/auth.decorators';
 
 @Injectable()
 export class DonantesService {
   constructor(
     @InjectRepository(Donante)
     private readonly donanteRepository: Repository<Donante>,
+    private readonly dataSource: DataSource,
+    private readonly usuariosService: UsuariosService,
   ) {}
 
-  create(dto: CreateDonanteDto) {
-    const donante = this.donanteRepository.create(dto);
-    return this.donanteRepository.save(donante);
+  /**
+   * Todo donante tiene un usuario. Hay dos formas de crearlo:
+   *  - con `usuario` (email, contraseña y CUIT/DNI): se crea el usuario con rol Donante y el donante
+   *    queda vinculado a él, en una sola transacción (si algo falla, no queda ninguno de los dos);
+   *  - con `usuarioId`: el registro público crea primero el usuario y después el donante.
+   */
+  async create(dto: CreateDonanteDto) {
+    const { usuario, ...datos } = dto;
+    if (usuario && datos.usuarioId) {
+      throw new BadRequestException('Enviá los datos del usuario a crear o el id de un usuario existente, no ambos');
+    }
+    if (!usuario && !datos.usuarioId) {
+      throw new BadRequestException('El donante necesita un usuario: ingresá su email, contraseña y CUIT/DNI');
+    }
+    if (!usuario) {
+      return this.donanteRepository.save(this.donanteRepository.create(datos));
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const nuevoUsuario = await this.usuariosService.crearEnTransaccion(manager, {
+        nombre: datos.nombre,
+        cuitDni: usuario.cuitDni,
+        email: usuario.email,
+        password: usuario.password,
+        rolId: ROL_ID_DONANTE,
+        isActive: true,
+      });
+      return manager.save(manager.create(Donante, { ...datos, usuarioId: nuevoUsuario.id }));
+    });
   }
 
   findAll() {

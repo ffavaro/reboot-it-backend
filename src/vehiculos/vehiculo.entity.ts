@@ -18,6 +18,15 @@ export class Vehiculo {
   @Column({ length: 50 })
   modelo: string;
 
+  @Column({ name: 'itv_vencimiento', type: 'date', nullable: true })
+  itvVencimiento: string;
+
+  @Column({ type: 'int', unsigned: true, nullable: true })
+  kilometraje: number;
+
+  @Column({ name: 'tipo_combustible', length: 30, nullable: true })
+  tipoCombustible: string;
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 

@@ -1,27 +1,35 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { UsuariosService } from './usuarios.service';
+import { ROL, ROL_ID_DONANTE, Roles } from '../auth/auth.decorators';
 
 @ApiTags('usuarios')
 @Controller('usuarios')
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
+  @Roles(ROL.STAFF)
   @Post()
   @ApiOperation({ summary: 'Crear un usuario' })
   @ApiResponse({ status: 201, description: 'Usuario creado exitosamente' })
   create(@Body() dto: CreateUsuarioDto) {
+    // Los usuarios con rol Donante se crean junto con su donante (pantalla Donantes o registro público)
+    if (dto.rolId === ROL_ID_DONANTE) {
+      throw new BadRequestException('Los usuarios con rol Donante se crean desde Donantes');
+    }
     return this.usuariosService.create(dto);
   }
 
+  @Roles(ROL.STAFF, ROL.TRANSPORTISTA)
   @Get()
   @ApiOperation({ summary: 'Listar todos los usuarios activos' })
   findAll() {
     return this.usuariosService.findAll();
   }
 
+  @Roles(ROL.STAFF, ROL.TRANSPORTISTA)
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un usuario por ID' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
@@ -29,12 +37,14 @@ export class UsuariosController {
     return this.usuariosService.findOne(+id);
   }
 
+  @Roles(ROL.STAFF)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un usuario' })
   update(@Param('id') id: string, @Body() dto: UpdateUsuarioDto) {
     return this.usuariosService.update(+id, dto);
   }
 
+  @Roles(ROL.STAFF)
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un usuario (soft delete)' })
   remove(@Param('id') id: string) {

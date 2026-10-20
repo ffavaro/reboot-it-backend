@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TipoService } from './tipo.service';
 import { CreateTipoDto } from './dto/create-tipo.dto';
 import { UpdateTipoDto } from './dto/update-tipo.dto';
+import { ROL, Roles } from '../auth/auth.decorators';
 
+@Roles(ROL.STAFF)
 @ApiTags('tipo')
 @Controller('tipo')
 export class TipoController {
