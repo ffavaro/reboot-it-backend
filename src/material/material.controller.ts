@@ -5,9 +5,9 @@ import { CreateMaterialDto } from './dto/create-material.dto';
 import { UpdateMaterialDto } from './dto/update-material.dto';
 import { ClasificarMaterialDto } from './dto/clasificar-material.dto';
 import { ReporteMaterialDto } from './dto/reporte-material.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+@Pantalla('materiales')
 @ApiTags('material')
 @Controller('material')
 export class MaterialController {
@@ -19,18 +19,21 @@ export class MaterialController {
     return this.materialService.create(dto);
   }
 
+  @Pantalla('materiales', 'dashboard+', 'proceso_destruccion', 'lotes')
   @Get()
   @ApiOperation({ summary: 'Listar todos los materiales activos' })
   findAll() {
     return this.materialService.findAll();
   }
 
+  @Pantalla('reporte_inventario', 'dashboard+')
   @Get('reporte')
   @ApiOperation({ summary: 'Generar reporte de inventario (materiales) con filtros' })
   reporte(@Query() query: ReporteMaterialDto) {
     return this.materialService.reporte(query);
   }
 
+  @Pantalla('materiales', 'dashboard+', 'proceso_destruccion', 'lotes')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un material por ID' })
   findOne(@Param('id') id: string) {

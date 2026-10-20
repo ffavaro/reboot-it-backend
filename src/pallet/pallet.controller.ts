@@ -3,9 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PalletService } from './pallet.service';
 import { CreatePalletDto } from './dto/create-pallet.dto';
 import { UpdatePalletDto } from './dto/update-pallet.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+@Pantalla('pallets')
 @ApiTags('pallet')
 @Controller('pallet')
 export class PalletController {
@@ -17,12 +17,14 @@ export class PalletController {
     return this.palletService.create(dto);
   }
 
+  @Pantalla('pallets', 'racks', 'lotes')
   @Get()
   @ApiOperation({ summary: 'Listar todos los pallets activos' })
   findAll() {
     return this.palletService.findAll();
   }
 
+  @Pantalla('pallets', 'racks', 'lotes')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un pallet por ID' })
   findOne(@Param('id') id: string) {

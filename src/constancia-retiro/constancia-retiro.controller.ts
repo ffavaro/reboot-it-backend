@@ -3,9 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ConstanciaRetiroService } from './constancia-retiro.service';
 import { CreateConstanciaRetiroDto } from './dto/create-constancia-retiro.dto';
 import { UpdateConstanciaRetiroDto } from './dto/update-constancia-retiro.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF, ROL.DONANTE)
+@Pantalla('constancia_retiro')
 @ApiTags('constancia-retiro')
 @Controller('constancia-retiro')
 export class ConstanciaRetiroController {

@@ -3,6 +3,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RolesModule } from './roles/roles.module';
+import { PermisosModule } from './permisos/permisos.module';
 import { EmpleadosModule } from './empleados/empleados.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
@@ -61,6 +62,7 @@ import { AuditoriaModule } from './auditoria/auditoria.module';
       }),
     }),
     RolesModule,
+    PermisosModule,
     EmpleadosModule,
     UsuariosModule,
     AuthModule,

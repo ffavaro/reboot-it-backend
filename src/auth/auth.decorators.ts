@@ -1,32 +1,31 @@
 import { SetMetadata } from '@nestjs/common';
+import type { Accion } from '../permisos/permisos.constants';
 
 export const IS_PUBLIC_KEY = 'isPublic';
-export const ROLES_KEY = 'roles';
+export const PANTALLAS_KEY = 'pantallas';
+export const ACCION_KEY = 'accionPermiso';
 
 /**
- * Roles del sistema, en minúsculas y sin tildes (tabla rol: 1 Admin, 2 Administrativo, 3 Reciclado,
- * 4 Técnico, 5 Transportista, 6 Dirección, 7 Donante).
- * El menú del frontend solo distingue tres grupos, y el backend replica ese criterio:
- *  - DONANTE y TRANSPORTISTA: ven únicamente sus pantallas
- *  - STAFF: cualquier otro rol (Admin, Administrativo, Reciclado, Técnico, Dirección...), ve todo
- *  - ADMIN: solo el rol Admin (por ejemplo, la auditoría)
+ * Ids de la tabla rol que el código necesita conocer (ver db_reboot_it/roles_permisos.sql):
+ * 1 Admin (SysAdmin), 2 Administrativo, 3 Técnico, 4 Transportista, 5 Donante.
+ * Los permisos de cada rol no están en el código: salen de las tablas pantalla y rol_permiso.
  */
-export const ROL = {
-  ADMIN: 'admin',
-  DONANTE: 'donante',
-  TRANSPORTISTA: 'transportista',
-  STAFF: 'staff',
-} as const;
-export type RolPermitido = (typeof ROL)[keyof typeof ROL];
-
-// Id del rol "Donante" en la tabla rol (se asigna a quien se registra desde la pantalla pública)
-export const ROL_ID_DONANTE = 7;
+export const ROL_ID_DONANTE = 5;
 
 /** Ruta abierta: no exige token (login, registro y lo que el registro necesita antes de iniciar sesión). */
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 
-/** Restringe el endpoint a los roles indicados. Puesto en un método reemplaza al @Roles de la clase. */
-export const Roles = (...roles: RolPermitido[]) => SetMetadata(ROLES_KEY, roles);
+/**
+ * Exige permiso sobre alguna de las pantallas indicadas (clave de la tabla pantalla). La acción sale del método
+ * HTTP (GET ver, POST crear, PUT/PATCH editar, DELETE baja) y se puede cambiar con @Accion.
+ * Puesto en un método reemplaza al de la clase. Con varias pantallas alcanza con tener permiso en una
+ * (por ejemplo, un listado que usan varias pantallas como combo).
+ */
+export const Pantalla = (...claves: string[]) => SetMetadata(PANTALLAS_KEY, claves);
 
-/** Cualquier usuario autenticado, de cualquier rol (token válido, sin restricción de rol). */
-export const Authenticated = () => SetMetadata(ROLES_KEY, []);
+/** Acción de la matriz que exige la ruta cuando no coincide con su método HTTP (ej. un POST que edita). */
+export const Accion_ = (accion: Accion) => SetMetadata(ACCION_KEY, accion);
+export { Accion_ as Accion };
+
+/** Cualquier usuario autenticado, de cualquier rol (token válido, sin permiso de pantalla). */
+export const Authenticated = () => SetMetadata(PANTALLAS_KEY, []);

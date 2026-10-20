@@ -3,12 +3,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
 @ApiTags('upload')
 @Controller('upload')
 export class UploadController {
+  @Pantalla('registro_fotografico', 'turnos', 'constancia_retiro', 'empleado_transportista')
   @Post()
   @ApiOperation({ summary: 'Subir una imagen' })
   @ApiConsumes('multipart/form-data')

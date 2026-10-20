@@ -3,14 +3,14 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TipoMaterialService } from './tipo-material.service';
 import { CreateTipoMaterialDto } from './dto/create-tipo-material.dto';
 import { UpdateTipoMaterialDto } from './dto/update-tipo-material.dto';
-import { Authenticated, ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla, Authenticated } from '../auth/auth.decorators';
 
+@Pantalla('tipos_material')
 @ApiTags('tipo-material')
 @Controller('tipo-material')
 export class TipoMaterialController {
   constructor(private readonly tipoMaterialService: TipoMaterialService) {}
 
-  @Roles(ROL.STAFF)
   @Post()
   @ApiOperation({ summary: 'Crear un tipo de material' })
   create(@Body() dto: CreateTipoMaterialDto) {
@@ -31,14 +31,12 @@ export class TipoMaterialController {
     return this.tipoMaterialService.findOne(+id);
   }
 
-  @Roles(ROL.STAFF)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un tipo de material' })
   update(@Param('id') id: string, @Body() dto: UpdateTipoMaterialDto) {
     return this.tipoMaterialService.update(+id, dto);
   }
 
-  @Roles(ROL.STAFF)
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un tipo de material (soft delete)' })
   remove(@Param('id') id: string) {

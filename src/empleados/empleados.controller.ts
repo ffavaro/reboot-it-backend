@@ -3,14 +3,14 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 import { EmpleadosService } from './empleados.service';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
+@Pantalla('empleados')
 @ApiTags('empleados')
 @Controller('empleados')
 export class EmpleadosController {
   constructor(private readonly empleadosService: EmpleadosService) {}
 
-  @Roles(ROL.STAFF)
   @Post()
   @ApiOperation({ summary: 'Crear un empleado' })
   @ApiResponse({ status: 201, description: 'Empleado creado exitosamente' })
@@ -18,14 +18,14 @@ export class EmpleadosController {
     return this.empleadosService.create(dto);
   }
 
-  @Roles(ROL.STAFF, ROL.TRANSPORTISTA)
+  @Pantalla('empleados', 'empleado_transportista', 'hoja_ruta', 'usuarios')
   @Get()
   @ApiOperation({ summary: 'Listar todos los empleados activos' })
   findAll() {
     return this.empleadosService.findAll();
   }
 
-  @Roles(ROL.STAFF, ROL.TRANSPORTISTA)
+  @Pantalla('empleados', 'empleado_transportista', 'hoja_ruta', 'usuarios')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un empleado por ID' })
   @ApiResponse({ status: 404, description: 'Empleado no encontrado' })
@@ -33,14 +33,12 @@ export class EmpleadosController {
     return this.empleadosService.findOne(+id);
   }
 
-  @Roles(ROL.STAFF)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un empleado' })
   update(@Param('id') id: string, @Body() dto: UpdateEmpleadoDto) {
     return this.empleadosService.update(+id, dto);
   }
 
-  @Roles(ROL.STAFF)
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un empleado (soft delete)' })
   remove(@Param('id') id: string) {

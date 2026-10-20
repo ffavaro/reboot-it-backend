@@ -3,9 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MetodoDestruccionService } from './metodo-destruccion.service';
 import { CreateMetodoDestruccionDto } from './dto/create-metodo-destruccion.dto';
 import { UpdateMetodoDestruccionDto } from './dto/update-metodo-destruccion.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+@Pantalla('metodos_destruccion')
 @ApiTags('metodo-destruccion')
 @Controller('metodo-destruccion')
 export class MetodoDestruccionController {
@@ -17,12 +17,14 @@ export class MetodoDestruccionController {
     return this.service.create(dto);
   }
 
+  @Pantalla('metodos_destruccion', 'proceso_destruccion')
   @Get()
   @ApiOperation({ summary: 'Listar todos los métodos de destrucción activos' })
   findAll() {
     return this.service.findAll();
   }
 
+  @Pantalla('metodos_destruccion', 'proceso_destruccion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un método de destrucción por ID' })
   findOne(@Param('id') id: string) {

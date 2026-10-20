@@ -3,9 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RackService } from './rack.service';
 import { CreateRackDto } from './dto/create-rack.dto';
 import { UpdateRackDto } from './dto/update-rack.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+@Pantalla('racks')
 @ApiTags('rack')
 @Controller('rack')
 export class RackController {
@@ -17,12 +17,14 @@ export class RackController {
     return this.rackService.create(dto);
   }
 
+  @Pantalla('racks', 'pallets')
   @Get()
   @ApiOperation({ summary: 'Listar todos los racks activos' })
   findAll() {
     return this.rackService.findAll();
   }
 
+  @Pantalla('racks', 'pallets')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un rack por ID' })
   findOne(@Param('id') id: string) {

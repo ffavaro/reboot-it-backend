@@ -6,7 +6,7 @@ import { UsuariosModule } from '@app/usuarios/usuarios.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { RolesGuard } from './roles.guard';
+import { PermisosGuard } from './permisos.guard';
 
 @Module({
   imports: [
@@ -24,9 +24,9 @@ import { RolesGuard } from './roles.guard';
   controllers: [AuthController],
   providers: [
     AuthService,
-    // Guards globales: primero se valida el token (JwtAuthGuard) y después el rol (RolesGuard)
+    // Guards globales: primero se valida el token (JwtAuthGuard) y después los permisos (PermisosGuard)
     { provide: APP_GUARD, useClass: JwtAuthGuard },
-    { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: PermisosGuard },
   ],
 })
 export class AuthModule {}

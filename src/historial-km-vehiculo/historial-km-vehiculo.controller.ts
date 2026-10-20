@@ -9,9 +9,9 @@ import {
   RangoFechasQueryDto,
   ReporteUsoVehiculosQueryDto,
 } from './dto/rango-fechas-query.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF, ROL.TRANSPORTISTA)
+@Pantalla('vehiculos')
 @ApiTags('historial-km-vehiculo')
 @Controller('historial-km-vehiculo')
 export class HistorialKmVehiculoController {
@@ -29,6 +29,7 @@ export class HistorialKmVehiculoController {
     return this.historialService.findAll(query.vehiculoId, query);
   }
 
+  @Pantalla('dashboard+', 'vehiculos')
   @Get('reporte/uso')
   @ApiOperation({ summary: 'Vehículos más utilizados: km totales y recorridos finalizados por vehículo en el período' })
   reporteUso(@Query() query: ReporteUsoVehiculosQueryDto) {

@@ -3,14 +3,14 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RegistroFotograficoService } from './registro-fotografico.service';
 import { CreateRegistroFotograficoDto } from './dto/create-registro-fotografico.dto';
 import { UpdateRegistroFotograficoDto } from './dto/update-registro-fotografico.dto';
-import { Authenticated, ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla, Authenticated } from '../auth/auth.decorators';
 
+@Pantalla('registro_fotografico')
 @ApiTags('registro-fotografico')
 @Controller('registro-fotografico')
 export class RegistroFotograficoController {
   constructor(private readonly registroFotograficoService: RegistroFotograficoService) {}
 
-  @Roles(ROL.STAFF)
   @Post()
   @ApiOperation({ summary: 'Crear un registro fotográfico' })
   create(@Body() dto: CreateRegistroFotograficoDto) {
@@ -38,14 +38,12 @@ export class RegistroFotograficoController {
     return this.registroFotograficoService.findOne(+id);
   }
 
-  @Roles(ROL.STAFF)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un registro fotográfico' })
   update(@Param('id') id: string, @Body() dto: UpdateRegistroFotograficoDto) {
     return this.registroFotograficoService.update(+id, dto);
   }
 
-  @Roles(ROL.STAFF)
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un registro fotográfico (soft delete)' })
   remove(@Param('id') id: string) {

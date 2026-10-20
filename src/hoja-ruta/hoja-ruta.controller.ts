@@ -8,9 +8,9 @@ import {
   HistoricoHojaRutaQueryDto,
   IniciarHojaRutaDto,
 } from './dto/hoja-ruta.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla, Accion } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF, ROL.TRANSPORTISTA)
+@Pantalla('hoja_ruta')
 @ApiTags('hojas-ruta')
 @Controller('hojas-ruta')
 export class HojaRutaController {
@@ -30,6 +30,7 @@ export class HojaRutaController {
     return this.hojaRutaService.historico(query);
   }
 
+  @Accion('editar')
   @Post('iniciar')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Pendiente -> En proceso: registra el km inicial del vehículo en el historial' })
@@ -37,6 +38,7 @@ export class HojaRutaController {
     return this.hojaRutaService.iniciar(dto.empleadoTransportistaId);
   }
 
+  @Accion('editar')
   @Post(':id/finalizar')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'En proceso -> Finalizada: carga el km final y actualiza el km actual del vehículo' })

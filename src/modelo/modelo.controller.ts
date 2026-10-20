@@ -3,9 +3,9 @@ import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ModeloService } from './modelo.service';
 import { CreateModeloDto } from './dto/create-modelo.dto';
 import { UpdateModeloDto } from './dto/update-modelo.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+@Pantalla('modelos')
 @ApiTags('modelo')
 @Controller('modelo')
 export class ModeloController {
@@ -17,6 +17,7 @@ export class ModeloController {
     return this.modeloService.create(dto);
   }
 
+  @Pantalla('modelos', 'medio_almacenamiento')
   @Get()
   @ApiOperation({ summary: 'Listar todos los modelos activos (opcionalmente filtrar por marca o tipo)' })
   @ApiQuery({ name: 'marcaId', required: false, type: Number })
@@ -27,6 +28,7 @@ export class ModeloController {
     return this.modeloService.findAll();
   }
 
+  @Pantalla('modelos', 'medio_almacenamiento')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un modelo por ID' })
   findOne(@Param('id') id: string) {

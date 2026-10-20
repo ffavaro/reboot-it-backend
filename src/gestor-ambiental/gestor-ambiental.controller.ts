@@ -3,42 +3,40 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GestorAmbientalService } from './gestor-ambiental.service';
 import { CreateGestorAmbientalDto } from './dto/create-gestor-ambiental.dto';
 import { UpdateGestorAmbientalDto } from './dto/update-gestor-ambiental.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
+@Pantalla('gestora_ambiental')
 @ApiTags('gestor-ambiental')
 @Controller('gestor-ambiental')
 export class GestorAmbientalController {
   constructor(private readonly gestorAmbientalService: GestorAmbientalService) {}
 
-  @Roles(ROL.STAFF)
   @Post()
   @ApiOperation({ summary: 'Crear un gestor ambiental' })
   create(@Body() dto: CreateGestorAmbientalDto) {
     return this.gestorAmbientalService.create(dto);
   }
 
-  @Roles(ROL.STAFF, ROL.DONANTE)
+  @Pantalla('gestora_ambiental', 'certificado_disposicion', 'proceso_destruccion')
   @Get()
   @ApiOperation({ summary: 'Listar todos los gestores ambientales activos' })
   findAll() {
     return this.gestorAmbientalService.findAll();
   }
 
-  @Roles(ROL.STAFF, ROL.DONANTE)
+  @Pantalla('gestora_ambiental', 'certificado_disposicion', 'proceso_destruccion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un gestor ambiental por ID' })
   findOne(@Param('id') id: string) {
     return this.gestorAmbientalService.findOne(+id);
   }
 
-  @Roles(ROL.STAFF)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un gestor ambiental' })
   update(@Param('id') id: string, @Body() dto: UpdateGestorAmbientalDto) {
     return this.gestorAmbientalService.update(+id, dto);
   }
 
-  @Roles(ROL.STAFF)
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un gestor ambiental (soft delete)' })
   remove(@Param('id') id: string) {

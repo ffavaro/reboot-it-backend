@@ -3,9 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TipoService } from './tipo.service';
 import { CreateTipoDto } from './dto/create-tipo.dto';
 import { UpdateTipoDto } from './dto/update-tipo.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+@Pantalla('tipos')
 @ApiTags('tipo')
 @Controller('tipo')
 export class TipoController {
@@ -17,12 +17,14 @@ export class TipoController {
     return this.tipoService.create(dto);
   }
 
+  @Pantalla('tipos', 'medio_almacenamiento')
   @Get()
   @ApiOperation({ summary: 'Listar todos los tipos activos' })
   findAll() {
     return this.tipoService.findAll();
   }
 
+  @Pantalla('tipos', 'medio_almacenamiento')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un tipo por ID' })
   findOne(@Param('id') id: string) {

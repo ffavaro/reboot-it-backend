@@ -3,9 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EstadoProcesoDestruccionService } from './estado-proceso-destruccion.service';
 import { CreateEstadoProcesoDestruccionDto } from './dto/create-estado-proceso-destruccion.dto';
 import { UpdateEstadoProcesoDestruccionDto } from './dto/update-estado-proceso-destruccion.dto';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+@Pantalla('estado_proceso_destruccion')
 @ApiTags('estado-proceso-destruccion')
 @Controller('estado-proceso-destruccion')
 export class EstadoProcesoDestruccionController {
@@ -17,12 +17,14 @@ export class EstadoProcesoDestruccionController {
     return this.service.create(dto);
   }
 
+  @Pantalla('estado_proceso_destruccion', 'proceso_destruccion', 'reporte_procesos_destruccion')
   @Get()
   @ApiOperation({ summary: 'Listar todos los estados de proceso de destrucción activos' })
   findAll() {
     return this.service.findAll();
   }
 
+  @Pantalla('estado_proceso_destruccion', 'proceso_destruccion', 'reporte_procesos_destruccion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un estado de proceso de destrucción por ID' })
   findOne(@Param('id') id: string) {
