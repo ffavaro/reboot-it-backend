@@ -7,6 +7,7 @@ export interface AuthUser {
   nombre: string;
   email: string;
   rolId: number;
+  empleadoId?: number | null;
   rol?: { id: number; nombre: string };
   isActive?: boolean;
   iat?: number;

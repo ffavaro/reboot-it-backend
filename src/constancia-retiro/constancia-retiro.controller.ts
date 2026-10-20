@@ -1,32 +1,43 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ConstanciaRetiroService } from './constancia-retiro.service';
 import { CreateConstanciaRetiroDto } from './dto/create-constancia-retiro.dto';
 import { UpdateConstanciaRetiroDto } from './dto/update-constancia-retiro.dto';
 import { Pantalla } from '../auth/auth.decorators';
+import type { RequestConUsuario } from '../auth/auth-user';
+import { AmbitoService } from '../permisos/ambito.service';
 
 @Pantalla('constancia_retiro')
 @ApiTags('constancia-retiro')
 @Controller('constancia-retiro')
 export class ConstanciaRetiroController {
-  constructor(private readonly constanciaRetiroService: ConstanciaRetiroService) {}
+  constructor(
+    private readonly constanciaRetiroService: ConstanciaRetiroService,
+    private readonly ambito: AmbitoService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Crear una constancia de retiro' })
-  create(@Body() dto: CreateConstanciaRetiroDto) {
+  async create(@Body() dto: CreateConstanciaRetiroDto, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'retiros', dto.retiroId);
     return this.constanciaRetiroService.create(dto);
   }
 
   @Get()
   @ApiOperation({ summary: 'Listar todas las constancias de retiro activas' })
-  findAll() {
-    return this.constanciaRetiroService.findAll();
+  async findAll(@Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req);
+    const lista = await this.constanciaRetiroService.findAll();
+    return a ? lista.filter((x) => a.retiros.has(x.retiroId)) : lista;
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una constancia de retiro por ID' })
-  findOne(@Param('id') id: string) {
-    return this.constanciaRetiroService.findOne(+id);
+  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req);
+    const constancia = await this.constanciaRetiroService.findOne(+id);
+    this.ambito.exigir(a, 'retiros', constancia.retiroId);
+    return constancia;
   }
 
   @Patch(':id')

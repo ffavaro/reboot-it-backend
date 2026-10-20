@@ -1,15 +1,20 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoteService } from './lote.service';
 import { CreateLoteDto } from './dto/create-lote.dto';
 import { UpdateLoteDto } from './dto/update-lote.dto';
 import { Pantalla } from '../auth/auth.decorators';
+import type { RequestConUsuario } from '../auth/auth-user';
+import { AmbitoService } from '../permisos/ambito.service';
 
 @Pantalla('lotes')
 @ApiTags('lote')
 @Controller('lote')
 export class LoteController {
-  constructor(private readonly loteService: LoteService) {}
+  constructor(
+    private readonly loteService: LoteService,
+    private readonly ambito: AmbitoService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Crear un lote' })
@@ -20,26 +25,35 @@ export class LoteController {
   @Pantalla('lotes', 'dashboard+', 'certificado_disposicion')
   @Get()
   @ApiOperation({ summary: 'Listar todos los lotes activos' })
-  findAll() {
-    return this.loteService.findAll();
+  async findAll(@Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req);
+    const lista = await this.loteService.findAll();
+    return a ? lista.filter((x) => a.donaciones.has(x.donacionId)) : lista;
   }
 
   @Pantalla('lotes', 'dashboard+', 'certificado_disposicion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un lote por ID' })
-  findOne(@Param('id') id: string) {
-    return this.loteService.findOne(+id);
+  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req);
+    const lote = await this.loteService.findOne(+id);
+    this.ambito.exigir(a, 'donaciones', lote.donacionId);
+    return lote;
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un lote' })
-  update(@Param('id') id: string, @Body() dto: UpdateLoteDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateLoteDto, @Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req);
+    this.ambito.exigir(a, 'donaciones', (await this.loteService.findOne(+id)).donacionId);
     return this.loteService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un lote (soft delete)' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req);
+    this.ambito.exigir(a, 'donaciones', (await this.loteService.findOne(+id)).donacionId);
     return this.loteService.remove(+id);
   }
 }

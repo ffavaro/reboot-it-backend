@@ -6,6 +6,7 @@ import { UpdateDonanteDto } from './dto/update-donante.dto';
 import { Pantalla, Authenticated, ROL_ID_DONANTE } from '../auth/auth.decorators';
 import type { RequestConUsuario } from '../auth/auth-user';
 import { PermisosService } from '../permisos/permisos.service';
+import { AmbitoService } from '../permisos/ambito.service';
 
 @Pantalla('donantes')
 @ApiTags('donantes')
@@ -14,6 +15,7 @@ export class DonantesController {
   constructor(
     private readonly donantesService: DonantesService,
     private readonly permisos: PermisosService,
+    private readonly ambito: AmbitoService,
   ) {}
 
   // Quien se registra (rol Donante) crea su propio donante; para el resto se exige el permiso de crear en Donantes
@@ -34,21 +36,25 @@ export class DonantesController {
   @Authenticated()
   @Get()
   @ApiOperation({ summary: 'Listar todos los donantes activos' })
-  findAll() {
-    return this.donantesService.findAll();
+  async findAll(@Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req, ['donantes']);
+    const lista = await this.donantesService.findAll();
+    return a ? lista.filter((d) => a.donantes.has(d.id)) : lista;
   }
 
   @Authenticated()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un donante por ID' })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req, ['donantes']), 'donantes', +id);
     return this.donantesService.findOne(+id);
   }
 
   @Pantalla('donantes', 'mi_perfil')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un donante' })
-  update(@Param('id') id: string, @Body() dto: UpdateDonanteDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateDonanteDto, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'donantes', +id);
     return this.donantesService.update(+id, dto);
   }
 

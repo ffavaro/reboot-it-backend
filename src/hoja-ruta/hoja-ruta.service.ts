@@ -350,6 +350,12 @@ export class HojaRutaService {
   }
 
   // En proceso -> Finalizada: se carga el km final del vehículo
+  /** Transportista dueño de una hoja de ruta (null si la hoja no existe). */
+  async transportistaDe(id: number): Promise<number | null> {
+    const hoja = await this.hojaRepository.findOne({ where: { id } });
+    return hoja?.empleadoTransportistaId ?? null;
+  }
+
   async finalizar(id: number, dto: FinalizarHojaRutaDto): Promise<HojaRutaDia> {
     const hoja = await this.hojaRepository.findOne({ where: { id, isActive: true }, relations: HOJA_RELATIONS });
     if (!hoja) throw new NotFoundException(`Hoja de ruta ${id} no encontrada`);

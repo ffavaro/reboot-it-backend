@@ -1,16 +1,21 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RetiroService } from './retiro.service';
 import { CreateRetiroDto } from './dto/create-retiro.dto';
 import { UpdateRetiroDto } from './dto/update-retiro.dto';
 import { ReporteRetiroDto } from './dto/reporte-retiro.dto';
 import { Pantalla } from '../auth/auth.decorators';
+import type { RequestConUsuario } from '../auth/auth-user';
+import { AmbitoService } from '../permisos/ambito.service';
 
 @Pantalla('retiros')
 @ApiTags('retiro')
 @Controller('retiro')
 export class RetiroController {
-  constructor(private readonly retiroService: RetiroService) {}
+  constructor(
+    private readonly retiroService: RetiroService,
+    private readonly ambito: AmbitoService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Crear un retiro' })
@@ -20,8 +25,10 @@ export class RetiroController {
 
   @Get()
   @ApiOperation({ summary: 'Listar todos los retiros activos' })
-  findAll() {
-    return this.retiroService.findAll();
+  async findAll(@Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req);
+    const lista = await this.retiroService.findAll();
+    return a ? lista.filter((x) => a.retiros.has(x.id)) : lista;
   }
 
   @Pantalla('reporte_retiros')
@@ -33,19 +40,22 @@ export class RetiroController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un retiro por ID' })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'retiros', +id);
     return this.retiroService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un retiro' })
-  update(@Param('id') id: string, @Body() dto: UpdateRetiroDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateRetiroDto, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'retiros', +id);
     return this.retiroService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un retiro (soft delete)' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'retiros', +id);
     return this.retiroService.remove(+id);
   }
 }
