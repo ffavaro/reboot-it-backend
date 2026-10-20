@@ -3,31 +3,31 @@ import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 
 export class CreateTurnoDetalleDto {
   @ApiProperty()
-  @IsInt()
+  @IsInt({ message: 'El turno debe ser un número entero' })
   turnoId: number;
 
   @ApiProperty()
-  @IsInt()
+  @IsInt({ message: 'El detalle de la donación debe ser un número entero' })
   donacionDetalleId: number;
 
   @ApiProperty()
-  @IsInt()
+  @IsInt({ message: 'El tipo de material debe ser un número entero' })
   tipoMaterialId: number;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
-  @MaxLength(255)
+  @IsString({ message: 'La descripción debe ser un texto' })
+  @MaxLength(255, { message: 'La descripción no puede superar los 255 caracteres' })
   descripcion?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsInt()
-  @Min(0)
+  @IsInt({ message: 'La cantidad confirmada debe ser un número entero' })
+  @Min(0, { message: 'La cantidad confirmada debe ser como mínimo 0' })
   cantidadConfirmada?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Las observaciones deben ser un texto' })
   observaciones?: string;
 }

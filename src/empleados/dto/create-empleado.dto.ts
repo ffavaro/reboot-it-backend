@@ -6,20 +6,20 @@ const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? val
 
 export class CreateEmpleadoDto {
   @ApiPropertyOptional({ example: 1, description: 'ID del usuario asociado' })
-  @IsNumber()
+  @IsNumber({}, { message: 'El usuario debe ser un número' })
   @IsOptional()
   usuarioId?: number;
 
   @ApiProperty({ example: 2 })
-  @IsNumber()
+  @IsNumber({}, { message: 'El rol debe ser un número' })
   rolId: number;
 
   @ApiProperty({ example: 'Juan' })
-  @IsString()
+  @IsString({ message: 'El nombre debe ser un texto' })
   nombre: string;
 
   @ApiProperty({ example: 'Pérez' })
-  @IsString()
+  @IsString({ message: 'El apellido debe ser un texto' })
   apellido: string;
 
   @ApiProperty({ example: '30123456', description: 'DNI (8 dígitos) o CUIT (11 dígitos), solo números' })
@@ -33,18 +33,18 @@ export class CreateEmpleadoDto {
 
   @ApiProperty({ example: 'Av. Corrientes 1234, CABA' })
   @Transform(trim)
-  @IsString()
+  @IsString({ message: 'La dirección debe ser un texto' })
   @IsNotEmpty({ message: 'La dirección es obligatoria' })
-  @MaxLength(255)
+  @MaxLength(255, { message: 'La dirección no puede superar los 255 caracteres' })
   direccion: string;
 
   @ApiPropertyOptional({ example: '+54 9 11 1234-5678' })
-  @IsString()
+  @IsString({ message: 'El teléfono debe ser un texto' })
   @IsOptional()
   telefono?: string;
 
   @ApiPropertyOptional({ example: 'Técnico IT' })
-  @IsString()
+  @IsString({ message: 'El cargo debe ser un texto' })
   @IsOptional()
   cargo?: string;
 }

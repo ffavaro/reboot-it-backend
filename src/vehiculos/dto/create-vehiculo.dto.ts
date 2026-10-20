@@ -5,19 +5,19 @@ export const TIPOS_COMBUSTIBLE = ['Nafta', 'Diésel', 'GNC', 'Eléctrico', 'Híb
 
 export class CreateVehiculoDto {
   @ApiProperty({ example: 1, description: 'ID del tipo de vehículo' })
-  @IsNumber()
+  @IsNumber({}, { message: 'El tipo de vehículo debe ser un número' })
   tipoVehiculoId: number;
 
   @ApiProperty({ example: 'ABC123' })
-  @IsString()
+  @IsString({ message: 'La patente debe ser un texto' })
   patente: string;
 
   @ApiProperty({ example: 'Ford' })
-  @IsString()
+  @IsString({ message: 'La marca debe ser un texto' })
   marca: string;
 
   @ApiProperty({ example: 'F-100' })
-  @IsString()
+  @IsString({ message: 'El modelo debe ser un texto' })
   modelo: string;
 
   @ApiProperty({ example: '2027-03-15', description: 'Fecha de vencimiento de la ITV (yyyy-MM-dd)' })

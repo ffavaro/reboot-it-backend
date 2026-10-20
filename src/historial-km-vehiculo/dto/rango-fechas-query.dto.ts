@@ -29,9 +29,9 @@ export class ReporteUsoVehiculosQueryDto extends RangoFechasQueryDto {
   @ApiPropertyOptional({ example: 10, description: 'Cantidad máxima de vehículos (top N)' })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(100)
+  @IsInt({ message: 'El límite debe ser un número entero' })
+  @Min(1, { message: 'El límite debe ser como mínimo 1' })
+  @Max(100, { message: 'El límite debe ser como máximo 100' })
   limit?: number;
 }
 
@@ -39,8 +39,8 @@ export class ListarHistorialQueryDto extends RangoFechasQueryDto {
   @ApiPropertyOptional({ example: 1, description: 'Filtrar por vehículo' })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'El vehículo debe ser un número entero' })
+  @Min(1, { message: 'El vehículo debe ser como mínimo 1' })
   vehiculoId?: number;
 }
 

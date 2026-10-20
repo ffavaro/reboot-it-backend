@@ -3,6 +3,6 @@ import { IsString } from 'class-validator';
 
 export class CreateEstadoTurnoDto {
   @ApiProperty({ example: 'Pendiente' })
-  @IsString()
+  @IsString({ message: 'La descripción debe ser un texto' })
   descripcion: string;
 }

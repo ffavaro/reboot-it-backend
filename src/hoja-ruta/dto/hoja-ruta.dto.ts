@@ -24,8 +24,8 @@ export class DiaHojaRutaQueryDto {
   @ApiPropertyOptional({ example: 1, description: 'Filtrar por empleado transportista' })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'El empleado transportista debe ser un número entero' })
+  @Min(1, { message: 'El empleado transportista debe ser como mínimo 1' })
   empleadoTransportistaId?: number;
 
   @ApiPropertyOptional({ enum: ESTADOS_HOJA_RUTA, description: 'Filtrar por estado' })
@@ -48,15 +48,15 @@ export class HistoricoHojaRutaQueryDto {
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'El empleado transportista debe ser un número entero' })
+  @Min(1, { message: 'El empleado transportista debe ser como mínimo 1' })
   empleadoTransportistaId?: number;
 
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'El vehículo debe ser un número entero' })
+  @Min(1, { message: 'El vehículo debe ser como mínimo 1' })
   vehiculoId?: number;
 }
 

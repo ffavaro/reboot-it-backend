@@ -1,4 +1,5 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { HojaRutaService } from './hoja-ruta.service';
 import {
@@ -37,7 +38,7 @@ export class HojaRutaController {
   @Post(':id/finalizar')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'En proceso -> Finalizada: carga el km final y actualiza el km actual del vehículo' })
-  finalizar(@Param('id', ParseIntPipe) id: number, @Body() dto: FinalizarHojaRutaDto) {
+  finalizar(@Param('id', ParseIdPipe) id: number, @Body() dto: FinalizarHojaRutaDto) {
     return this.hojaRutaService.finalizar(id, dto);
   }
 }

@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { HistorialKmVehiculoService } from './historial-km-vehiculo.service';
 import { CreateHistorialKmVehiculoDto } from './dto/create-historial-km-vehiculo.dto';
@@ -34,25 +35,25 @@ export class HistorialKmVehiculoController {
 
   @Get('vehiculo/:vehiculoId')
   @ApiOperation({ summary: 'Listar el historial de km de un vehículo (filtrable por fechas)' })
-  findByVehiculo(@Param('vehiculoId', ParseIntPipe) vehiculoId: number, @Query() query: RangoFechasQueryDto) {
+  findByVehiculo(@Param('vehiculoId', ParseIdPipe) vehiculoId: number, @Query() query: RangoFechasQueryDto) {
     return this.historialService.findByVehiculo(vehiculoId, query);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un registro del historial por ID' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.historialService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un registro del historial' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateHistorialKmVehiculoDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateHistorialKmVehiculoDto) {
     return this.historialService.update(id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar un registro del historial' })
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.historialService.remove(id);
   }
 }

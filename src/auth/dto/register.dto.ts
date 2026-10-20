@@ -8,7 +8,7 @@ const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? val
 export class RegisterDto {
   @ApiProperty({ example: 'Juan', description: 'Nombre (particular) o razón social (empresa / organismo)' })
   @Transform(trim)
-  @IsString()
+  @IsString({ message: 'El nombre debe ser un texto' })
   @IsNotEmpty({ message: 'El nombre es obligatorio' })
   // Las restricciones de nombre aplican solo a personas (cuando se envía apellido)
   @ValidateIf((o: RegisterDto) => o.apellido !== undefined)
@@ -19,7 +19,7 @@ export class RegisterDto {
   @ApiPropertyOptional({ example: 'Pérez' })
   @Transform(trim)
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'El apellido debe ser un texto' })
   @IsNotEmpty({ message: 'El apellido es obligatorio' })
   @MaxLength(25, { message: 'El apellido puede tener como máximo 25 caracteres' })
   @Matches(SOLO_LETRAS, { message: 'El apellido solo puede contener letras' })
@@ -30,12 +30,12 @@ export class RegisterDto {
   email: string;
 
   @ApiProperty({ example: 'password123', minLength: 6 })
-  @IsString()
+  @IsString({ message: 'La contraseña debe ser un texto' })
   @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
   password: string;
 
   @ApiProperty({ example: '20123456789' })
-  @IsString()
+  @IsString({ message: 'El CUIT/DNI debe ser un texto' })
   @IsNotEmpty({ message: 'El CUIT/DNI es obligatorio' })
   cuitDni: string;
 }

@@ -3,26 +3,26 @@ import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateMedioAlmacenamientoDto {
   @ApiProperty({ example: 1, description: 'ID del material' })
-  @IsNumber()
+  @IsNumber({}, { message: 'El material debe ser un número' })
   materialId: number;
 
   @ApiPropertyOptional({ example: 1, description: 'ID del tipo de medio' })
-  @IsNumber()
+  @IsNumber({}, { message: 'El tipo debe ser un número' })
   @IsOptional()
   tipoId?: number;
 
   @ApiPropertyOptional({ example: 1, description: 'ID de la marca' })
-  @IsNumber()
+  @IsNumber({}, { message: 'La marca debe ser un número' })
   @IsOptional()
   marcaId?: number;
 
   @ApiPropertyOptional({ example: 1, description: 'ID del modelo' })
-  @IsNumber()
+  @IsNumber({}, { message: 'El modelo debe ser un número' })
   @IsOptional()
   modeloId?: number;
 
   @ApiPropertyOptional({ example: 'Uso en ambiente seco' })
-  @IsString()
+  @IsString({ message: 'Los términos de uso deben ser un texto' })
   @IsOptional()
   terminosUso?: string;
 }
