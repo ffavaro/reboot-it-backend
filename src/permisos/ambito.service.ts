@@ -124,13 +124,16 @@ export class AmbitoService {
   /**
    * Regla L del Técnico: en Donaciones y Retiros ve solo lo que llegó a planta, o sea las donaciones cuyo turno
    * está en clasificación o finalizado. Devuelve los ids de esas donaciones, o null si el usuario no tiene alcance
-   * limitado sobre la pantalla (no hay restricción).
+   * limitado sobre la pantalla (no hay restricción). Con `incluirSinAcceso` la regla se aplica también a quien no tiene
+   * permiso propio sobre la pantalla y llega a la consulta desde otra (por ejemplo, Lotes).
    */
-  async enPlanta(req: RequestConUsuario, pantallas?: string[]): Promise<Set<number> | null> {
+  async enPlanta(req: RequestConUsuario, pantallas?: string[], incluirSinAcceso = false): Promise<Set<number> | null> {
     const user = req.user;
     if (!user) return null;
     const claves = pantallas ?? req.permiso?.pantallas ?? [];
-    if ((await this.permisos.alcance(user.rolId, claves, 'ver')) !== 'LIMITADO') return null;
+    const alcance = await this.permisos.alcance(user.rolId, claves, 'ver');
+    // con "incluirSinAcceso" también se limita a quien entra a la consulta por otra pantalla (sin permiso propio)
+    if (alcance !== 'LIMITADO' && !(incluirSinAcceso && alcance === 'NINGUNO')) return null;
     const turnos = await this.turnoRepo.find({
       where: { isActive: true, estadoTurno: { descripcion: In([ESTADO_TURNO.EN_CLASIFICACION, ESTADO_TURNO.FINALIZADO]) } },
     });

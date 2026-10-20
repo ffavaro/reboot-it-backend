@@ -11,11 +11,14 @@ const SIN_PERMISOS: PermisosPantalla = { ver: 'NINGUNO', crear: 'NINGUNO', edita
 // Si varias pantallas habilitan la misma acción se toma el alcance más amplio
 const PESO: Record<Alcance, number> = { NINGUNO: 0, PROPIO: 1, ASIGNADO: 1, LIMITADO: 2, PLENO: 3 };
 const ROL_ADMIN = 'admin';
+// Los permisos se vuelven a leer de la base como máximo cada 30 segundos
+const TTL_CACHE_MS = 30_000;
 
 @Injectable()
 export class PermisosService {
-  // rolId -> clave de pantalla -> permisos. Se recarga completo cuando se guarda la matriz de un rol.
-  private cache = new Map<number, Map<string, PermisosPantalla>>();
+  // rolId -> clave de pantalla -> permisos. Se recarga cuando se guarda la matriz de un rol y también cada
+  // TTL_CACHE_MS, para que un cambio hecho directamente en la base (por ejemplo corriendo el script de roles) se note solo.
+  private cache = new Map<number, { vence: number; mapa: Map<string, PermisosPantalla> }>();
 
   constructor(
     @InjectRepository(Pantalla) private readonly pantallaRepo: Repository<Pantalla>,
@@ -25,14 +28,14 @@ export class PermisosService {
 
   private async cargarRol(rolId: number) {
     const hit = this.cache.get(rolId);
-    if (hit) return hit;
+    if (hit && hit.vence > Date.now()) return hit.mapa;
     const filas = await this.permisoRepo.find({ where: { rolId }, relations: ['pantalla'] });
     const mapa = new Map<string, PermisosPantalla>();
     for (const f of filas) {
       if (!f.pantalla?.isActive) continue;
       mapa.set(f.pantalla.clave, { ver: f.ver, crear: f.crear, editar: f.editar, baja: f.baja });
     }
-    this.cache.set(rolId, mapa);
+    this.cache.set(rolId, { vence: Date.now() + TTL_CACHE_MS, mapa });
     return mapa;
   }
 

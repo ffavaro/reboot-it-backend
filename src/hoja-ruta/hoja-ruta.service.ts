@@ -61,6 +61,8 @@ export interface HojaRutaDia {
   kmEstimados: number | null;
   mapsUrl: string | null;
   embedUrl: string | null;
+  // Línea y coordenadas del recorrido para dibujarlo en el mapa (null si Google no calculó la ruta)
+  mapa: { polyline: string; puntos: { lat: number; lng: number }[] } | null;
   recorrido: PuntoRecorrido[];
   // Base configurada (HOJA_RUTA_ORIGEN) desde donde sale y a donde vuelve la ruta
   origen: string | null;
@@ -257,7 +259,7 @@ export class HojaRutaService {
       // Una hoja finalizada ya no se recalcula: se conserva lo estimado al momento de crearse
       const finalizada = hoja?.estado === ESTADO_HOJA_FINALIZADA;
       const ruta = finalizada
-        ? { orden: base.map((_, i) => i), kmEstimados: hoja!.kmEstimados, mapsUrl: null, embedUrl: null, origen: null, puntos: [], optimizada: false, advertencia: undefined }
+        ? { orden: base.map((_, i) => i), kmEstimados: hoja!.kmEstimados, mapsUrl: null, embedUrl: null, mapa: null, origen: null, puntos: [], optimizada: false, advertencia: undefined }
         : await this.mapsService.calcular(base.map((b) => b.direccion));
 
       const paradas: ParadaHojaRuta[] = ruta.orden.map((idx, pos) => ({
@@ -302,6 +304,7 @@ export class HojaRutaService {
         kmEstimados: hoja && hoja.estado !== ESTADO_HOJA_PENDIENTE ? hoja.kmEstimados : ruta.kmEstimados,
         mapsUrl: ruta.mapsUrl,
         embedUrl: ruta.embedUrl,
+        mapa: ruta.mapa,
         recorrido,
         origen: ruta.origen,
         rutaOptimizada: ruta.optimizada,

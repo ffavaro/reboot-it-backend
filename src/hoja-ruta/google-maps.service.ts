@@ -9,6 +9,13 @@ export interface PuntoRuta {
   direccion: string;
 }
 
+// Datos para dibujar la ruta en un mapa propio: línea del recorrido (polyline codificada de Google) y la
+// coordenada de cada punto del recorrido, en el mismo orden que `puntos`
+export interface MapaRuta {
+  polyline: string;
+  puntos: { lat: number; lng: number }[];
+}
+
 export interface RutaCalculada {
   // Índices de las direcciones recibidas, en el orden de visita recomendado
   orden: number[];
@@ -16,6 +23,8 @@ export interface RutaCalculada {
   mapsUrl: string | null;
   // URL para mostrar la ruta en un iframe (mapa embebido)
   embedUrl: string | null;
+  // Ruta lista para dibujar (null si Google no la calculó)
+  mapa: MapaRuta | null;
   // Punto de partida/llegada configurado (HOJA_RUTA_ORIGEN), si hay
   origen: string | null;
   // Recorrido completo: origen, paradas intermedias y destino
@@ -111,7 +120,7 @@ export class GoogleMapsService {
 
     if (validas.length === 0) {
       return {
-        orden: sinDireccion, kmEstimados: null, mapsUrl: null, embedUrl: null, origen: base || null, puntos: [], optimizada: false,
+        orden: sinDireccion, kmEstimados: null, mapsUrl: null, embedUrl: null, mapa: null, origen: base || null, puntos: [], optimizada: false,
         advertencia: 'Ninguna parada tiene dirección cargada',
       };
     }
@@ -128,6 +137,7 @@ export class GoogleMapsService {
     let kmEstimados: number | null = null;
     let optimizada = false;
     let advertencia: string | undefined;
+    let mapa: MapaRuta | null = null;
 
     const puedeCalcular = conBase || validas.length >= 2;
     if (!puedeCalcular) {
@@ -157,7 +167,7 @@ export class GoogleMapsService {
           headers: {
             'Content-Type': 'application/json',
             'X-Goog-Api-Key': key,
-            'X-Goog-FieldMask': 'routes.distanceMeters,routes.optimizedIntermediateWaypointIndex',
+            'X-Goog-FieldMask': 'routes.distanceMeters,routes.optimizedIntermediateWaypointIndex,routes.polyline.encodedPolyline,routes.legs.startLocation,routes.legs.endLocation',
           },
           body: JSON.stringify(body),
         }).finally(() => clearTimeout(timer));
@@ -169,6 +179,13 @@ export class GoogleMapsService {
           const kmAlerta = Number(this.config.get<string>('HOJA_RUTA_KM_ALERTA')) || KM_ALERTA_DEFAULT;
           if (kmEstimados > kmAlerta) {
             advertencia = `La distancia estimada (${kmEstimados} km) es muy alta para una ruta local: revisá que las direcciones tengan calle, número y ciudad correctos`;
+          }
+          // Línea y coordenadas para dibujar el recorrido: origen, cada parada y destino (un tramo por parada)
+          const legs: any[] = route.legs ?? [];
+          const coordenada = (loc: any) => (loc?.latLng ? { lat: Number(loc.latLng.latitude), lng: Number(loc.latLng.longitude) } : null);
+          const puntosMapa = legs.length ? [coordenada(legs[0].startLocation), ...legs.map((l) => coordenada(l.endLocation))] : [];
+          if (route.polyline?.encodedPolyline && puntosMapa.length && puntosMapa.every((p) => p !== null)) {
+            mapa = { polyline: route.polyline.encodedPolyline, puntos: puntosMapa as { lat: number; lng: number }[] };
           }
           const wpOrder: number[] | undefined = route.optimizedIntermediateWaypointIndex;
           if (wpOrder?.length === intermedias.length && intermedias.length > 1) {
@@ -219,6 +236,6 @@ export class GoogleMapsService {
           direccion: direccionDe(i),
         }));
 
-    return { orden: [...ordenValidas, ...sinDireccion], kmEstimados, mapsUrl, embedUrl, origen: base || null, puntos, optimizada, advertencia };
+    return { orden: [...ordenValidas, ...sinDireccion], kmEstimados, mapsUrl, embedUrl, mapa, origen: base || null, puntos, optimizada, advertencia };
   }
 }

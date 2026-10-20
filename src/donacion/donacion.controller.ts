@@ -25,11 +25,13 @@ export class DonacionController {
     return this.donacionService.create(dto);
   }
 
+  @Pantalla('donaciones', 'lotes')
   @Get()
   @ApiOperation({ summary: 'Listar todas las donaciones activas' })
   async findAll(@Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
-    const planta = await this.ambito.enPlanta(req);
+    // sin permiso propio sobre Donaciones (solo la consulta desde Lotes) se ven únicamente las recibidas en planta
+    const planta = await this.ambito.enPlanta(req, ['donaciones'], true);
     const lista = await this.donacionService.findAll();
     return lista.filter((x) => (!a || a.donaciones.has(x.id)) && (!planta || planta.has(x.id)));
   }
@@ -41,11 +43,12 @@ export class DonacionController {
     return this.donacionService.reporte(query);
   }
 
+  @Pantalla('donaciones', 'lotes')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una donación por ID' })
   async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'donaciones', +id);
-    this.ambito.exigirEnPlanta(await this.ambito.enPlanta(req), +id);
+    this.ambito.exigirEnPlanta(await this.ambito.enPlanta(req, ['donaciones'], true), +id);
     return this.donacionService.findOne(+id);
   }
 
