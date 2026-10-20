@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Turno } from './turno.entity';
@@ -23,6 +23,9 @@ const ESTADO_EN_CLASIFICACION = ESTADO_TURNO.EN_CLASIFICACION;
 // Los materiales de un turno finalizado quedan "A definir" hasta que se los clasifica
 const CONDICION_PENDIENTE = CONDICION_MATERIAL.A_DEFINIR;
 const RELATIONS = ['donante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'];
+
+// Antelación mínima con la que el donante puede reprogramar o cancelar su turno
+const HORAS_ANTELACION_DONANTE = 24;
 
 @Injectable()
 export class TurnoService {
@@ -76,6 +79,28 @@ export class TurnoService {
     });
     if (!turno) throw new NotFoundException(`Turno ${id} no encontrado`);
     return this.soloDetallesActivos(turno);
+  }
+
+  /**
+   * Regla L del Donante: reprograma o cancela su turno solo si la donación sigue pendiente y faltan al menos
+   * 24 horas para el turno. Un turno nuevo tiene que quedar en el futuro.
+   */
+  async validarCambioDelDonante(id: number, nuevaFecha?: Date | string) {
+    const turno = await this.findOne(id);
+    if (turno.donacionId) {
+      const donacion = await this.donacionRepository.findOne({ where: { id: turno.donacionId }, relations: ['estadoDonacion'] });
+      const estado = donacion?.estadoDonacion?.descripcion;
+      if (estado && estado !== ESTADO_DONACION.PENDIENTE) {
+        throw new ConflictException(`La donación está "${estado}": el turno solo se puede reprogramar o cancelar mientras está pendiente.`);
+      }
+    }
+    const faltan = new Date(turno.fechaHora).getTime() - Date.now();
+    if (faltan < HORAS_ANTELACION_DONANTE * 3600 * 1000) {
+      throw new ConflictException(`El turno solo se puede reprogramar o cancelar con al menos ${HORAS_ANTELACION_DONANTE} horas de antelación.`);
+    }
+    if (nuevaFecha !== undefined && new Date(nuevaFecha).getTime() <= Date.now()) {
+      throw new BadRequestException('La nueva fecha del turno tiene que ser posterior a hoy.');
+    }
   }
 
   async update(id: number, dto: UpdateTurnoDto) {

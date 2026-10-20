@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MaterialService } from './material.service';
 import { CreateMaterialDto } from './dto/create-material.dto';
@@ -6,6 +6,7 @@ import { UpdateMaterialDto } from './dto/update-material.dto';
 import { ClasificarMaterialDto } from './dto/clasificar-material.dto';
 import { ReporteMaterialDto } from './dto/reporte-material.dto';
 import { Pantalla } from '../auth/auth.decorators';
+import type { RequestConUsuario } from '../auth/auth-user';
 
 @Pantalla('materiales')
 @ApiTags('material')
@@ -54,7 +55,8 @@ export class MaterialController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un material (soft delete)' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    if (req.permiso?.alcance === 'LIMITADO') await this.materialService.validarBajaDelTecnico(+id);
     return this.materialService.remove(+id);
   }
 }

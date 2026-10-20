@@ -45,6 +45,7 @@ export class TurnoController {
   @ApiOperation({ summary: 'Actualizar un turno' })
   async update(@Param('id') id: string, @Body() dto: UpdateTurnoDto, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
+    if (req.permiso?.alcance === 'LIMITADO') await this.turnoService.validarCambioDelDonante(+id, dto.fechaHora);
     return this.turnoService.update(+id, dto);
   }
 
@@ -69,6 +70,7 @@ export class TurnoController {
   @ApiOperation({ summary: 'Desactivar un turno (soft delete)' })
   async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
+    if (req.permiso?.alcance === 'LIMITADO') await this.turnoService.validarCambioDelDonante(+id);
     return this.turnoService.remove(+id);
   }
 }

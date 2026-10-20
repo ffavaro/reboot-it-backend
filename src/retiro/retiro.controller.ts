@@ -27,8 +27,9 @@ export class RetiroController {
   @ApiOperation({ summary: 'Listar todos los retiros activos' })
   async findAll(@Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
+    const planta = await this.ambito.enPlanta(req);
     const lista = await this.retiroService.findAll();
-    return a ? lista.filter((x) => a.retiros.has(x.id)) : lista;
+    return lista.filter((x) => (!a || a.retiros.has(x.id)) && (!planta || planta.has(x.donacionId)));
   }
 
   @Pantalla('reporte_retiros')
@@ -42,7 +43,9 @@ export class RetiroController {
   @ApiOperation({ summary: 'Obtener un retiro por ID' })
   async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'retiros', +id);
-    return this.retiroService.findOne(+id);
+    const retiro = await this.retiroService.findOne(+id);
+    this.ambito.exigirEnPlanta(await this.ambito.enPlanta(req), retiro.donacionId);
+    return retiro;
   }
 
   @Patch(':id')

@@ -98,6 +98,21 @@ export class PalletService {
     return this.findOne(id);
   }
 
+  /** Regla L del Técnico: da de baja un pallet solo si está vacío (sin lote, o con un lote sin materiales activos). */
+  async validarBajaDelTecnico(id: number) {
+    const pallet = await this.findOne(id);
+    if (!pallet.loteId) return;
+    const materiales = await this.palletRepository.manager
+      .createQueryBuilder()
+      .select('COUNT(*)', 'n')
+      .from('material', 'm')
+      .where('m.lote_id = :loteId AND m.is_active = 1', { loteId: pallet.loteId })
+      .getRawOne<{ n: string }>();
+    if (Number(materiales?.n ?? 0) > 0) {
+      throw new ConflictException('El pallet no está vacío: tiene un lote con materiales.');
+    }
+  }
+
   async remove(id: number) {
     await this.findOne(id);
     await this.palletRepository.update(id, { isActive: false });

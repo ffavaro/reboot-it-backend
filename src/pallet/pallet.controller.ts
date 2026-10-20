@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PalletService } from './pallet.service';
 import { CreatePalletDto } from './dto/create-pallet.dto';
 import { UpdatePalletDto } from './dto/update-pallet.dto';
 import { Pantalla } from '../auth/auth.decorators';
+import type { RequestConUsuario } from '../auth/auth-user';
 
 @Pantalla('pallets')
 @ApiTags('pallet')
@@ -39,7 +40,8 @@ export class PalletController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un pallet (soft delete)' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    if (req.permiso?.alcance === 'LIMITADO') await this.palletService.validarBajaDelTecnico(+id);
     return this.palletService.remove(+id);
   }
 }

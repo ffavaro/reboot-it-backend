@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { ESTADO_TURNO } from '../common/constants/estados';
 import { Donante } from '../donantes/donante.entity';
 import { EmpleadoTransportista } from '../empleado-transportista/empleado-transportista.entity';
 import { Turno } from '../turno/turno.entity';
@@ -118,6 +119,29 @@ export class AmbitoService {
       lotes.forEach((l) => a.lotes.add(l.id));
     }
     return a;
+  }
+
+  /**
+   * Regla L del Técnico: en Donaciones y Retiros ve solo lo que llegó a planta, o sea las donaciones cuyo turno
+   * está en clasificación o finalizado. Devuelve los ids de esas donaciones, o null si el usuario no tiene alcance
+   * limitado sobre la pantalla (no hay restricción).
+   */
+  async enPlanta(req: RequestConUsuario, pantallas?: string[]): Promise<Set<number> | null> {
+    const user = req.user;
+    if (!user) return null;
+    const claves = pantallas ?? req.permiso?.pantallas ?? [];
+    if ((await this.permisos.alcance(user.rolId, claves, 'ver')) !== 'LIMITADO') return null;
+    const turnos = await this.turnoRepo.find({
+      where: { isActive: true, estadoTurno: { descripcion: In([ESTADO_TURNO.EN_CLASIFICACION, ESTADO_TURNO.FINALIZADO]) } },
+    });
+    return new Set(ids(turnos.map((t) => t.donacionId)));
+  }
+
+  /** Lanza 403 si la donación no llegó a planta (para quien tiene la regla de planta). */
+  exigirEnPlanta(planta: Set<number> | null, donacionId: number | null | undefined) {
+    if (planta && (typeof donacionId !== 'number' || !planta.has(donacionId))) {
+      throw new ForbiddenException('Solo podés ver lo que ya llegó a planta.');
+    }
   }
 
   /** Lanza 403 si el registro no está dentro del ámbito (null = sin restricción). */

@@ -29,8 +29,9 @@ export class DonacionController {
   @ApiOperation({ summary: 'Listar todas las donaciones activas' })
   async findAll(@Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
+    const planta = await this.ambito.enPlanta(req);
     const lista = await this.donacionService.findAll();
-    return a ? lista.filter((x) => a.donaciones.has(x.id)) : lista;
+    return lista.filter((x) => (!a || a.donaciones.has(x.id)) && (!planta || planta.has(x.id)));
   }
 
   @Pantalla('reporte_donaciones', 'dashboard+')
@@ -44,6 +45,7 @@ export class DonacionController {
   @ApiOperation({ summary: 'Obtener una donación por ID' })
   async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'donaciones', +id);
+    this.ambito.exigirEnPlanta(await this.ambito.enPlanta(req), +id);
     return this.donacionService.findOne(+id);
   }
 
@@ -53,6 +55,7 @@ export class DonacionController {
     const a = await this.ambito.de(req);
     this.ambito.exigir(a, 'donaciones', +id);
     if (dto.donanteId !== undefined) this.ambito.exigir(a, 'donantes', dto.donanteId);
+    if (req.permiso?.alcance === 'LIMITADO') await this.donacionService.validarCambioDelDonante(+id);
     return this.donacionService.update(+id, dto);
   }
 
@@ -60,6 +63,7 @@ export class DonacionController {
   @ApiOperation({ summary: 'Desactivar una donación (soft delete)' })
   async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'donaciones', +id);
+    if (req.permiso?.alcance === 'LIMITADO') await this.donacionService.validarCambioDelDonante(+id);
     return this.donacionService.remove(+id);
   }
 }

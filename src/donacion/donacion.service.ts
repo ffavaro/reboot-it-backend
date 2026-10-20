@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Donacion } from './donacion.entity';
@@ -11,6 +11,7 @@ import { TurnoDetalleService } from '../turno-detalle/turno-detalle.service';
 import { LoteService } from '../lote/lote.service';
 import { Turno } from '../turno/turno.entity';
 import { Retiro } from '../retiro/retiro.entity';
+import { ESTADO_DONACION } from '../common/constants/estados';
 
 @Injectable()
 export class DonacionService {
@@ -146,6 +147,18 @@ export class DonacionService {
         }),
       ),
     );
+  }
+
+  /**
+   * Regla L del Donante: modifica o cancela su donación solo mientras sigue pendiente. Desde que entra en proceso
+   * (o termina, o se cancela) ya no se toca.
+   */
+  async validarCambioDelDonante(id: number) {
+    const donacion = await this.findOne(id);
+    const estado = donacion.estadoDonacion?.descripcion;
+    if (estado && estado !== ESTADO_DONACION.PENDIENTE) {
+      throw new ConflictException(`La donación está "${estado}": solo se puede modificar o cancelar mientras está pendiente.`);
+    }
   }
 
   async remove(id: number) {
