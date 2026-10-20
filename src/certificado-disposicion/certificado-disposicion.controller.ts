@@ -30,6 +30,15 @@ export class CertificadoDisposicionController {
     return a ? lista.filter((x) => a.lotes.has(x.loteId)) : lista;
   }
 
+  @Get(':id/datos')
+  @ApiOperation({ summary: 'Datos del certificado para generar su PDF' })
+  async datos(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req);
+    const certificado = await this.certificadoDisposicionService.findOne(+id);
+    this.ambito.exigir(a, 'lotes', certificado.loteId);
+    return this.certificadoDisposicionService.datosParaPdf(+id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un certificado de disposición por ID' })
   async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
