@@ -1,15 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import { IsDateString, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
 export class CreateEmpleadoDto {
-  @ApiPropertyOptional({ example: 1, description: 'ID del usuario asociado' })
-  @IsNumber({}, { message: 'El usuario debe ser un número' })
-  @IsOptional()
-  usuarioId?: number;
-
   @ApiProperty({ example: 2 })
   @IsNumber({}, { message: 'El rol debe ser un número' })
   rolId: number;
@@ -47,4 +42,16 @@ export class CreateEmpleadoDto {
   @IsString({ message: 'El cargo debe ser un texto' })
   @IsOptional()
   cargo?: string;
+
+  // Datos del usuario que se crea junto con el empleado (con su mismo nombre, apellido, CUIT/DNI y rol)
+  @ApiProperty({ example: 'juan.perez@empresa.com', description: 'Email con el que el empleado inicia sesión' })
+  @Transform(trim)
+  @IsEmail({}, { message: 'El correo electrónico no es válido' })
+  email: string;
+
+  @ApiProperty({ example: 'clave123', minLength: 6, description: 'Contraseña inicial del usuario' })
+  @IsString({ message: 'La contraseña debe ser un texto' })
+  @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
+  @MaxLength(72, { message: 'La contraseña no puede superar los 72 caracteres' })
+  password: string;
 }
