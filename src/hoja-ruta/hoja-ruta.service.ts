@@ -13,9 +13,10 @@ import { Donacion } from '../donacion/donacion.entity';
 import { Vehiculo } from '../vehiculos/vehiculo.entity';
 import { HistorialKmVehiculo } from '../historial-km-vehiculo/historial-km-vehiculo.entity';
 import { DiaHojaRutaQueryDto, FinalizarHojaRutaDto, HistoricoHojaRutaQueryDto } from './dto/hoja-ruta.dto';
+import { ESTADO_TURNO } from '../common/constants/estados';
 
 // Solo los turnos con el retiro confirmado forman parte de la hoja de ruta
-const ESTADO_TURNO_RETIRO_CONFIRMADO = 'retiro confirmado';
+const ESTADO_TURNO_RETIRO_CONFIRMADO = ESTADO_TURNO.RETIRO_CONFIRMADO.toLowerCase();
 // Tope del rango consultado: cada hoja puede implicar una consulta a Google Directions
 const MAX_DIAS_RANGO = 31;
 

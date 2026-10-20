@@ -15,11 +15,13 @@ import { Donacion } from '../donacion/donacion.entity';
 import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 import { Lote } from '../lote/lote.entity';
 import { Retiro } from '../retiro/retiro.entity';
+import { CONDICION_MATERIAL, ESTADO_DONACION, ESTADO_TURNO } from '../common/constants/estados';
 
-const ESTADO_ASIGNADO = 'Asignado';
-const ESTADO_DONACION_EN_PROCESO = 'En proceso';
-const ESTADO_EN_CLASIFICACION = 'En Clasificacion';
-const CONDICION_PENDIENTE = 'Pendiente de Clasificar';
+const ESTADO_ASIGNADO = ESTADO_TURNO.ASIGNADO;
+const ESTADO_DONACION_EN_PROCESO = ESTADO_DONACION.EN_PROCESO;
+const ESTADO_EN_CLASIFICACION = ESTADO_TURNO.EN_CLASIFICACION;
+// Los materiales de un turno finalizado quedan "A definir" hasta que se los clasifica
+const CONDICION_PENDIENTE = CONDICION_MATERIAL.A_DEFINIR;
 const RELATIONS = ['donante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'];
 
 @Injectable()

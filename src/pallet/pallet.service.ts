@@ -9,9 +9,10 @@ import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 import { EstadoTurno } from '../estado-turno/estado-turno.entity';
 import { CreatePalletDto } from './dto/create-pallet.dto';
 import { UpdatePalletDto } from './dto/update-pallet.dto';
+import { ESTADO_DONACION, ESTADO_TURNO } from '../common/constants/estados';
 
-const ESTADO_TURNO_FINALIZADO = 'Finalizado';
-const ESTADO_DONACION_PENDIENTE_CERT = 'Pendiente de emision certificado';
+const ESTADO_TURNO_FINALIZADO = ESTADO_TURNO.FINALIZADO;
+const ESTADO_DONACION_PENDIENTE_CERT = ESTADO_DONACION.PENDIENTE_CERTIFICADO;
 
 @Injectable()
 export class PalletService {
