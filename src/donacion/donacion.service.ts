@@ -11,6 +11,7 @@ import { TurnoDetalleService } from '../turno-detalle/turno-detalle.service';
 import { LoteService } from '../lote/lote.service';
 import { Turno } from '../turno/turno.entity';
 import { Retiro } from '../retiro/retiro.entity';
+import { RegistroFotografico } from '../registro-fotografico/registro-fotografico.entity';
 import { ESTADO_DONACION } from '../common/constants/estados';
 
 @Injectable()
@@ -35,7 +36,7 @@ export class DonacionService {
   }
 
   async create(dto: CreateDonacionDto) {
-    const { fechaHora, detalles, ...donacionData } = dto;
+    const { fechaHora, detalles, fotosUrls, ...donacionData } = dto;
 
     const donacion = this.donacionRepository.create(donacionData);
     const saved = await this.donacionRepository.save(donacion).catch((error:any) => {
@@ -43,7 +44,7 @@ export class DonacionService {
       throw new InternalServerErrorException('No se pudo registrar la donación. Intentá nuevamente.');
     });
 
-    await this.loteService.create({ donacionId: saved.id }).catch(() => {
+    const lote = await this.loteService.create({ donacionId: saved.id }).catch(() => {
       throw new InternalServerErrorException('No se pudo crear el lote para la donación.');
     });
 
@@ -88,7 +89,18 @@ export class DonacionService {
       });
     }
 
-    return this.findOne(saved.id);
+    // Fotos opcionales de los materiales: quedan asociadas al lote y al turno (el retiro de la donación)
+    if (fotosUrls?.length) {
+      const fotos = this.donacionRepository.manager.getRepository(RegistroFotografico);
+      await fotos
+        .save(fotosUrls.map((urlImagen) => fotos.create({ loteId: lote.id, turnoId: turno.id, urlImagen })))
+        .catch(() => {
+          throw new InternalServerErrorException('La donación se creó, pero no se pudieron guardar las fotos.');
+        });
+    }
+
+    // Se devuelven los datos del turno generado para que el frontend confirme el horario al donante
+    return { ...(await this.findOne(saved.id)), turno: { id: turno.id, fechaHora: turno.fechaHora }, loteId: lote.id };
   }
 
   async findAll() {

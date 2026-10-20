@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator';
 
 export class DetalleInlineDto {
   @ApiProperty({ example: 1 })
@@ -60,6 +60,17 @@ export class CreateDonacionDto {
   @IsNumber({}, { message: 'El peso estimado debe ser un número' })
   @IsOptional()
   pesoEstimadoKg?: number;
+
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'URLs de fotos de los materiales (opcional, hasta 5). Quedan asociadas al lote y al turno de la donación.',
+  })
+  @IsOptional()
+  @IsArray({ message: 'Las fotos deben ser una lista' })
+  @ArrayMaxSize(5, { message: 'Se pueden cargar hasta 5 fotos' })
+  @IsString({ each: true, message: 'Cada foto debe ser un texto (URL)' })
+  @MaxLength(255, { each: true, message: 'La URL de cada foto no puede superar los 255 caracteres' })
+  fotosUrls?: string[];
 
   @ApiPropertyOptional({ type: [DetalleInlineDto] })
   @IsOptional()
