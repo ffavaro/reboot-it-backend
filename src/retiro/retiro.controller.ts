@@ -23,11 +23,13 @@ export class RetiroController {
     return this.retiroService.create(dto);
   }
 
+  @Pantalla('retiros', 'constancia_retiro')
   @Get()
   @ApiOperation({ summary: 'Listar todos los retiros activos' })
   async findAll(@Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
-    const planta = await this.ambito.enPlanta(req);
+    // la regla de planta es de la pantalla Retiros (no de Constancias, que también usa este listado)
+    const planta = await this.ambito.enPlanta(req, ['retiros']);
     const lista = await this.retiroService.findAll();
     return lista.filter((x) => (!a || a.retiros.has(x.id)) && (!planta || planta.has(x.donacionId)));
   }
@@ -39,12 +41,13 @@ export class RetiroController {
     return this.retiroService.reporte(query);
   }
 
+  @Pantalla('retiros', 'constancia_retiro')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un retiro por ID' })
   async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'retiros', +id);
     const retiro = await this.retiroService.findOne(+id);
-    this.ambito.exigirEnPlanta(await this.ambito.enPlanta(req), retiro.donacionId);
+    this.ambito.exigirEnPlanta(await this.ambito.enPlanta(req, ['retiros']), retiro.donacionId);
     return retiro;
   }
 

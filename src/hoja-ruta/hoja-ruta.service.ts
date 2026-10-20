@@ -19,8 +19,10 @@ import { ConstanciaRetiro } from '../constancia-retiro/constancia-retiro.entity'
 import { TurnoService } from '../turno/turno.service';
 import { ESTADO_TURNO } from '../common/constants/estados';
 
-// Solo los turnos con el retiro confirmado forman parte de la hoja de ruta
-const ESTADO_TURNO_RETIRO_CONFIRMADO = ESTADO_TURNO.RETIRO_CONFIRMADO.toLowerCase();
+// Turnos pendientes de retiro: asignados al transportista (todavía sin retirar) o con el retiro ya confirmado.
+// Son los que forman parte de la hoja de ruta; al confirmar el retiro pasan a clasificación y dejan de ser pendientes.
+const ESTADOS_PENDIENTE_RETIRO = [ESTADO_TURNO.ASIGNADO, ESTADO_TURNO.RETIRO_CONFIRMADO].map((e) => e.toLowerCase());
+const esPendienteDeRetiro = (estado?: string | null) => ESTADOS_PENDIENTE_RETIRO.includes((estado ?? '').toLowerCase());
 // Tope del rango consultado: cada hoja puede implicar una consulta a Google Directions
 const MAX_DIAS_RANGO = 31;
 
@@ -128,7 +130,7 @@ export class HojaRutaService {
     return { desde, hasta };
   }
 
-  // Pedidos (turnos con retiro confirmado) asignados a transportistas en el rango de fechas
+  // Pedidos (turnos asignados a transportistas, pendientes de retiro) en el rango de fechas
   private turnosEnRango(desde: string, hasta: string, empleadoTransportistaId?: number) {
     const qb = this.turnoRepository
       .createQueryBuilder('t')
@@ -138,7 +140,7 @@ export class HojaRutaService {
       .leftJoinAndSelect('et.empleado', 'emp')
       .leftJoinAndSelect('et.vehiculo', 'veh')
       .where('t.isActive = 1')
-      .andWhere('LOWER(estado.descripcion) = :estado', { estado: ESTADO_TURNO_RETIRO_CONFIRMADO })
+      .andWhere('LOWER(estado.descripcion) IN (:...estados)', { estados: ESTADOS_PENDIENTE_RETIRO })
       .andWhere('DATE(t.fechaHora) BETWEEN :desde AND :hasta', { desde, hasta })
       .orderBy('t.fechaHora', 'ASC')
       .addOrderBy('t.id', 'ASC');
@@ -245,7 +247,7 @@ export class HojaRutaService {
           direccion,
           fechaHora: t.fechaHora,
           estadoTurno: t.estadoTurno?.descripcion ?? '',
-          retirado: (t.estadoTurno?.descripcion ?? '').toLowerCase() !== ESTADO_TURNO_RETIRO_CONFIRMADO,
+          retirado: !esPendienteDeRetiro(t.estadoTurno?.descripcion),
           constanciaId: t.donacionId ? (constanciaPorRetiro.get(retiroPorDonacion.get(t.donacionId)?.id ?? -1) ?? null) : null,
         };
       });
@@ -332,7 +334,7 @@ export class HojaRutaService {
     const resultado: { id: number; fecha: string; pendientes: number }[] = [];
     for (const h of hojas) {
       const filas = await this.dataSource.getRepository(HojaRutaTurno).find({ where: { hojaRutaId: h.id }, relations: ['turno', 'turno.estadoTurno'] });
-      const pendientes = filas.filter((f) => (f.turno?.estadoTurno?.descripcion ?? '').toLowerCase() === ESTADO_TURNO_RETIRO_CONFIRMADO).length;
+      const pendientes = filas.filter((f) => esPendienteDeRetiro(f.turno?.estadoTurno?.descripcion)).length;
       if (pendientes > 0) resultado.push({ id: h.id, fecha: h.fecha, pendientes });
     }
     return resultado;
@@ -427,7 +429,7 @@ export class HojaRutaService {
     if (!fila || fila.hojaRuta.estado !== ESTADO_HOJA_EN_PROCESO) {
       throw new BadRequestException('El turno no pertenece a una hoja de ruta iniciada: generá la hoja de ruta primero');
     }
-    if ((fila.turno.estadoTurno?.descripcion ?? '').toLowerCase() !== ESTADO_TURNO_RETIRO_CONFIRMADO) {
+    if (!esPendienteDeRetiro(fila.turno.estadoTurno?.descripcion)) {
       throw new ConflictException('El retiro de este turno ya fue confirmado');
     }
 
@@ -460,7 +462,7 @@ export class HojaRutaService {
 
       // ¿Quedan turnos pendientes en la hoja? Si no, se finaliza con los km estimados
       const filas = await m.getRepository(HojaRutaTurno).find({ where: { hojaRutaId: fila.hojaRutaId }, relations: ['turno', 'turno.estadoTurno'] });
-      const quedan = filas.some((f) => (f.turno?.estadoTurno?.descripcion ?? '').toLowerCase() === ESTADO_TURNO_RETIRO_CONFIRMADO);
+      const quedan = filas.some((f) => esPendienteDeRetiro(f.turno?.estadoTurno?.descripcion));
       if (quedan) return { turnoId, constanciaId, hojaFinalizada: false };
 
       const historial = fila.hojaRuta.historialKm;
