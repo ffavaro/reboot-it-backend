@@ -3,9 +3,9 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateRolDto } from './dto/create-rol.dto';
 import { UpdateRolDto } from './dto/update-rol.dto';
 import { RolesService } from './roles.service';
-import { ROL, Roles } from '../auth/auth.decorators';
+import { Pantalla } from '../auth/auth.decorators';
 
-@Roles(ROL.STAFF)
+@Pantalla('roles')
 @ApiTags('roles')
 @Controller('roles')
 export class RolesController {
@@ -18,12 +18,14 @@ export class RolesController {
     return this.rolesService.create(dto);
   }
 
+  @Pantalla('roles', 'usuarios', 'empleados')
   @Get()
   @ApiOperation({ summary: 'Listar todos los roles activos' })
   findAll() {
     return this.rolesService.findAll();
   }
 
+  @Pantalla('roles', 'usuarios', 'empleados')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un rol por ID' })
   @ApiResponse({ status: 404, description: 'Rol no encontrado' })
