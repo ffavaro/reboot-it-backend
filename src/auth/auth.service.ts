@@ -1,5 +1,5 @@
 import { UsuariosService } from '@app/usuarios/usuarios.service';
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
@@ -35,6 +35,22 @@ export class AuthService {
                 entidadId: user?.id ?? null,
             });
             throw new UnauthorizedException('Credenciales inválidas');
+        }
+
+        // Las credenciales son correctas pero el acceso fue inhabilitado (empleado o usuario desactivado)
+        if (!user.isActive) {
+            void this.auditoria.registrar({
+                ...ctx,
+                usuarioId: user.id,
+                rol: user.rol?.nombre ?? null,
+                usuarioIntentado: emailIntentado,
+                accion: 'Intento de inicio de sesión con usuario desactivado',
+                resultado: RESULTADO_ERROR,
+                codigoHttp: 403,
+                entidad: 'auth',
+                entidadId: user.id,
+            });
+            throw new ForbiddenException('Tu usuario está desactivado. Contactá al administrador.');
         }
 
         const { password, ...result } = user;

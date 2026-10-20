@@ -34,9 +34,11 @@ export class CreateEmpleadoDto {
   direccion: string;
 
   @ApiPropertyOptional({ example: '+54 9 11 1234-5678' })
+  @Transform(trim)
   @IsString({ message: 'El teléfono debe ser un texto' })
-  @IsOptional()
-  telefono?: string;
+  @IsNotEmpty({ message: 'El teléfono es obligatorio' })
+  @Matches(/^\d{6,20}$/, { message: 'El teléfono debe tener entre 6 y 20 dígitos numéricos' })
+  telefono: string;
 
   @ApiPropertyOptional({ example: 'Técnico IT' })
   @IsString({ message: 'El cargo debe ser un texto' })
