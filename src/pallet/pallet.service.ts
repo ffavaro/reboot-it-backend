@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Pallet } from './pallet.entity';
 import { Lote } from '../lote/lote.entity';
 import { Turno } from '../turno/turno.entity';
@@ -31,7 +31,20 @@ export class PalletService {
     private readonly estadoTurnoRepository: Repository<EstadoTurno>,
   ) {}
 
+  // Un lote se guarda en un único pallet (y por lo tanto en un único rack)
+  private async validarLoteLibre(loteId: number, ignorarPalletId?: number) {
+    const ocupado = await this.palletRepository.findOne({
+      where: { loteId, isActive: true, ...(ignorarPalletId ? { id: Not(ignorarPalletId) } : {}) },
+      relations: ['rack'],
+    });
+    if (ocupado) {
+      const donde = ocupado.rack?.codigo ? ` del rack ${ocupado.rack.codigo}` : '';
+      throw new ConflictException(`El lote #${loteId} ya está asignado al pallet #${ocupado.id}${donde}. Un lote solo puede estar en un rack.`);
+    }
+  }
+
   async create(dto: CreatePalletDto) {
+    if (dto.loteId) await this.validarLoteLibre(dto.loteId);
     const pallet = this.palletRepository.create(dto);
     const saved = await this.palletRepository.save(pallet);
 
@@ -80,6 +93,7 @@ export class PalletService {
 
   async update(id: number, dto: UpdatePalletDto) {
     await this.findOne(id);
+    if (dto.loteId) await this.validarLoteLibre(dto.loteId, id);
     await this.palletRepository.update(id, dto);
     return this.findOne(id);
   }
