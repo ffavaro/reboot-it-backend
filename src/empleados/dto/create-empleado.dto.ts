@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsDateString, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsDateString, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, MaxLength, MinLength, IsBoolean } from 'class-validator';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
@@ -44,6 +44,18 @@ export class CreateEmpleadoDto {
   @IsString({ message: 'El cargo debe ser un texto' })
   @IsOptional()
   cargo?: string;
+
+  @ApiPropertyOptional({ example: true, description: 'Tiene carnet de conducir (necesario para ser transportista)' })
+  @IsBoolean({ message: 'El campo "tiene carnet" debe ser verdadero o falso' })
+  @IsOptional()
+  tieneCarnet?: boolean;
+
+  @ApiPropertyOptional({ description: 'URL de la foto tipo carnet del empleado' })
+  @Transform(trim)
+  @IsString({ message: 'La foto debe ser un texto (URL)' })
+  @MaxLength(255, { message: 'La URL de la foto no puede superar los 255 caracteres' })
+  @IsOptional()
+  fotoUrl?: string;
 
   // Datos del usuario que se crea junto con el empleado (con su mismo nombre, apellido, CUIT/DNI y rol)
   @ApiProperty({ example: 'juan.perez@empresa.com', description: 'Email con el que el empleado inicia sesión' })

@@ -95,6 +95,10 @@ export class EmpleadosService {
       if (!esAdmin(actor)) throw new ForbiddenException('Solo el SysAdmin puede cambiar el rol de un empleado.');
       await this.assertPuedeAsignarRol(dto.rolId, actor);
     }
+    if (dto.tieneCarnet === false && actual.tieneCarnet) {
+      const esTransportista = await this.dataSource.getRepository(EmpleadoTransportista).exists({ where: { empleadoId: id, isActive: true } });
+      if (esTransportista) throw new ConflictException('El empleado es transportista: no se le puede quitar el carnet mientras tenga la ficha activa.');
+    }
     await this.assertCuitDniUnico(dto.cuitDni, id);
 
     // El usuario del empleado comparte nombre, apellido, CUIT/DNI y rol: se mantienen al día

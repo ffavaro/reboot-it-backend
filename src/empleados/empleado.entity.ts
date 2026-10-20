@@ -31,6 +31,14 @@ export class Empleado {
   @Column({ length: 100, nullable: true })
   cargo: string;
 
+  // Tiene carnet de conducir: condición para poder ser transportista
+  @Column({ name: 'tiene_carnet', type: 'tinyint', default: 0 })
+  tieneCarnet: boolean;
+
+  // Foto tipo carnet del empleado (opcional)
+  @Column({ name: 'foto_url', type: 'varchar', length: 255, nullable: true })
+  fotoUrl: string | null;
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 
