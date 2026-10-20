@@ -3,6 +3,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
+import { ROL_ID_DONANTE } from './auth.decorators';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +27,7 @@ export class AuthService {
         if (existingUser) {
             throw new UnauthorizedException('Email ya registrado');
         }
-        await this.usersService.create({ nombre: name, apellido, email, password, cuitDni, rolId: 7, isActive: true, empleadoId: undefined });
+        await this.usersService.create({ nombre: name, apellido, email, password, cuitDni, rolId: ROL_ID_DONANTE, isActive: true, empleadoId: undefined });
         const fullUser = await this.usersService.findByEmail(email);
         const { password: _, ...result } = fullUser!;
         const access_token = this.jwtService.sign(result);

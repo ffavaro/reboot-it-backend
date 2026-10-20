@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MedioAlmacenamientoService } from './medio-almacenamiento.service';
 import { CreateMedioAlmacenamientoDto } from './dto/create-medio-almacenamiento.dto';
 import { UpdateMedioAlmacenamientoDto } from './dto/update-medio-almacenamiento.dto';
+import { ROL, Roles } from '../auth/auth.decorators';
 
+@Roles(ROL.STAFF)
 @ApiTags('medio-almacenamiento')
 @Controller('medio-almacenamiento')
 export class MedioAlmacenamientoController {

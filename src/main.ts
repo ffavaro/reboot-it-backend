@@ -21,6 +21,9 @@ async function bootstrap() {
     .setTitle('RebootIT API')
     .setDescription('API del backend de  RebootIT')
     .setVersion('1.0')
+    // Botón "Authorize" de Swagger: pegar el access_token devuelto por POST /auth/login
+    .addBearerAuth()
+    .addSecurityRequirements('bearer')
     .build();
   
   const document = SwaggerModule.createDocument(app, config);

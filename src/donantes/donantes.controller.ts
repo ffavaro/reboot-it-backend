@@ -3,36 +3,42 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DonantesService } from './donantes.service';
 import { CreateDonanteDto } from './dto/create-donante.dto';
 import { UpdateDonanteDto } from './dto/update-donante.dto';
+import { Authenticated, ROL, Roles } from '../auth/auth.decorators';
 
 @ApiTags('donantes')
 @Controller('donantes')
 export class DonantesController {
   constructor(private readonly donantesService: DonantesService) {}
 
+  @Roles(ROL.STAFF, ROL.DONANTE)
   @Post()
   @ApiOperation({ summary: 'Crear un donante' })
   create(@Body() dto: CreateDonanteDto) {
     return this.donantesService.create(dto);
   }
 
+  @Authenticated()
   @Get()
   @ApiOperation({ summary: 'Listar todos los donantes activos' })
   findAll() {
     return this.donantesService.findAll();
   }
 
+  @Authenticated()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un donante por ID' })
   findOne(@Param('id') id: string) {
     return this.donantesService.findOne(+id);
   }
 
+  @Roles(ROL.STAFF, ROL.DONANTE)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un donante' })
   update(@Param('id') id: string, @Body() dto: UpdateDonanteDto) {
     return this.donantesService.update(+id, dto);
   }
 
+  @Roles(ROL.STAFF)
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un donante (soft delete)' })
   remove(@Param('id') id: string) {

@@ -4,7 +4,9 @@ import { ProcesoDestruccionService } from './proceso-destruccion.service';
 import { CreateProcesoDestruccionDto } from './dto/create-proceso-destruccion.dto';
 import { UpdateProcesoDestruccionDto } from './dto/update-proceso-destruccion.dto';
 import { ReporteProcesoDestruccionDto } from './dto/reporte-proceso-destruccion.dto';
+import { ROL, Roles } from '../auth/auth.decorators';
 
+@Roles(ROL.STAFF)
 @ApiTags('proceso-destruccion')
 @Controller('proceso-destruccion')
 export class ProcesoDestruccionController {

@@ -3,7 +3,9 @@ import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ModeloService } from './modelo.service';
 import { CreateModeloDto } from './dto/create-modelo.dto';
 import { UpdateModeloDto } from './dto/update-modelo.dto';
+import { ROL, Roles } from '../auth/auth.decorators';
 
+@Roles(ROL.STAFF)
 @ApiTags('modelo')
 @Controller('modelo')
 export class ModeloController {

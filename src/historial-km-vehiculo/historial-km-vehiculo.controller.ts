@@ -9,7 +9,9 @@ import {
   RangoFechasQueryDto,
   ReporteUsoVehiculosQueryDto,
 } from './dto/rango-fechas-query.dto';
+import { ROL, Roles } from '../auth/auth.decorators';
 
+@Roles(ROL.STAFF, ROL.TRANSPORTISTA)
 @ApiTags('historial-km-vehiculo')
 @Controller('historial-km-vehiculo')
 export class HistorialKmVehiculoController {

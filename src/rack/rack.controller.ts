@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RackService } from './rack.service';
 import { CreateRackDto } from './dto/create-rack.dto';
 import { UpdateRackDto } from './dto/update-rack.dto';
+import { ROL, Roles } from '../auth/auth.decorators';
 
+@Roles(ROL.STAFF)
 @ApiTags('rack')
 @Controller('rack')
 export class RackController {

@@ -8,7 +8,9 @@ import {
   HistoricoHojaRutaQueryDto,
   IniciarHojaRutaDto,
 } from './dto/hoja-ruta.dto';
+import { ROL, Roles } from '../auth/auth.decorators';
 
+@Roles(ROL.STAFF, ROL.TRANSPORTISTA)
 @ApiTags('hojas-ruta')
 @Controller('hojas-ruta')
 export class HojaRutaController {
