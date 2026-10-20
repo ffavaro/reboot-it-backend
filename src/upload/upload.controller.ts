@@ -8,9 +8,9 @@ import { Pantalla } from '../auth/auth.decorators';
 @ApiTags('upload')
 @Controller('upload')
 export class UploadController {
-  @Pantalla('registro_fotografico', 'turnos', 'constancia_retiro', 'empleado_transportista')
+  @Pantalla('registro_fotografico', 'turnos', 'constancia_retiro', 'empleado_transportista', 'certificado_disposicion')
   @Post()
-  @ApiOperation({ summary: 'Subir una imagen' })
+  @ApiOperation({ summary: 'Subir una imagen o un PDF' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -22,8 +22,8 @@ export class UploadController {
         },
       }),
       fileFilter: (_req, file, cb) => {
-        if (!file.mimetype.match(/image\/(jpg|jpeg|png|gif|webp)/)) {
-          return cb(new BadRequestException('Solo se permiten imágenes (jpg, jpeg, png, gif, webp)'), false)
+        if (!/^(image\/(jpg|jpeg|png|gif|webp)|application\/pdf)$/.test(file.mimetype)) {
+          return cb(new BadRequestException('Solo se permiten imágenes (jpg, jpeg, png, gif, webp) o archivos PDF'), false)
         }
         cb(null, true)
       },
