@@ -38,6 +38,7 @@ import { ModeloModule } from './modelo/modelo.module';
 import { UploadModule } from './upload/upload.module';
 import { HistorialKmVehiculoModule } from './historial-km-vehiculo/historial-km-vehiculo.module';
 import { HojaRutaModule } from './hoja-ruta/hoja-ruta.module';
+import { AuditoriaModule } from './auditoria/auditoria.module';
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import { HojaRutaModule } from './hoja-ruta/hoja-ruta.module';
     UploadModule,
     HistorialKmVehiculoModule,
     HojaRutaModule,
+    AuditoriaModule,
   ],
   providers: [
     // Aplica los @Exclude() de las entidades (ej. password del usuario) a todas las respuestas
