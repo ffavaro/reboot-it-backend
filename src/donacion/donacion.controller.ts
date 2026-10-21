@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, ForbiddenException } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DonacionService } from './donacion.service';
 import { CreateDonacionDto } from './dto/create-donacion.dto';
@@ -22,6 +22,8 @@ export class DonacionController {
   async create(@Body() dto: CreateDonacionDto, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
     this.ambito.exigir(a, 'donantes', dto.donanteId);
+    // quien dona no elige el estado: toda donación nueva arranca en el estado inicial
+    if (a) delete dto.estadoDonacionId;
     return this.donacionService.create(dto);
   }
 
@@ -59,6 +61,13 @@ export class DonacionController {
     this.ambito.exigir(a, 'donaciones', +id);
     if (dto.donanteId !== undefined) this.ambito.exigir(a, 'donantes', dto.donanteId);
     if (req.permiso?.alcance === 'LIMITADO') await this.donacionService.validarCambioDelDonante(+id);
+    // el estado de la donación solo lo cambia el equipo (quien dona puede reenviar el actual, no modificarlo)
+    if (dto.estadoDonacionId !== undefined && (a || req.permiso?.alcance === 'LIMITADO')) {
+      const actual = await this.donacionService.findOne(+id);
+      if (dto.estadoDonacionId !== actual.estadoDonacionId) {
+        throw new ForbiddenException('El estado de la donación lo gestiona el equipo de Reboot IT.');
+      }
+    }
     return this.donacionService.update(+id, dto);
   }
 

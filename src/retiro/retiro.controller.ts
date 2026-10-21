@@ -7,6 +7,7 @@ import { ReporteRetiroDto } from './dto/reporte-retiro.dto';
 import { Pantalla } from '../auth/auth.decorators';
 import type { RequestConUsuario } from '../auth/auth-user';
 import { AmbitoService } from '../permisos/ambito.service';
+import { ocultarDatosPrivadosDelTransportista } from '../common/ocultar-datos-transportista';
 
 @Pantalla('retiros')
 @ApiTags('retiro')
@@ -31,7 +32,8 @@ export class RetiroController {
     // la regla de planta es de la pantalla Retiros (no de Constancias, que también usa este listado)
     const planta = await this.ambito.enPlanta(req, ['retiros']);
     const lista = await this.retiroService.findAll();
-    return lista.filter((x) => (!a || a.retiros.has(x.id)) && (!planta || planta.has(x.donacionId)));
+    const visibles = lista.filter((x) => (!a || a.retiros.has(x.id)) && (!planta || planta.has(x.donacionId)));
+    return a?.donanteId != null ? ocultarDatosPrivadosDelTransportista(visibles) : visibles;
   }
 
   @Pantalla('reporte_retiros')
@@ -45,10 +47,11 @@ export class RetiroController {
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un retiro por ID' })
   async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
-    this.ambito.exigir(await this.ambito.de(req), 'retiros', +id);
+    const a = await this.ambito.de(req);
+    this.ambito.exigir(a, 'retiros', +id);
     const retiro = await this.retiroService.findOne(+id);
     this.ambito.exigirEnPlanta(await this.ambito.enPlanta(req, ['retiros']), retiro.donacionId);
-    return retiro;
+    return a?.donanteId != null ? ocultarDatosPrivadosDelTransportista(retiro) : retiro;
   }
 
   @Patch(':id')

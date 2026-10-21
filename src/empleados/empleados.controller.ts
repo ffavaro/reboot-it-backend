@@ -37,6 +37,14 @@ export class EmpleadosController {
     return a ? lista.filter((x) => a.empleados.has(x.id)) : lista;
   }
 
+  @Pantalla('empleados', 'proceso_destruccion', 'reporte_procesos_destruccion')
+  @Get('combo')
+  @ApiOperation({ summary: 'Empleados activos con lo mínimo para un combo (id, nombre, apellido y cargo): sin datos personales' })
+  async combo() {
+    const lista = await this.empleadosService.findAll();
+    return lista.map((e) => ({ id: e.id, nombre: e.nombre, apellido: e.apellido, cargo: e.cargo }));
+  }
+
   @Pantalla('empleados', 'empleado_transportista', 'hoja_ruta', 'usuarios')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un empleado por ID' })

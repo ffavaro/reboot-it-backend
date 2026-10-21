@@ -6,6 +6,7 @@ import { UpdateConstanciaRetiroDto } from './dto/update-constancia-retiro.dto';
 import { Pantalla } from '../auth/auth.decorators';
 import type { RequestConUsuario } from '../auth/auth-user';
 import { AmbitoService } from '../permisos/ambito.service';
+import { ocultarDatosPrivadosDelTransportista } from '../common/ocultar-datos-transportista';
 
 @Pantalla('constancia_retiro')
 @ApiTags('constancia-retiro')
@@ -37,7 +38,8 @@ export class ConstanciaRetiroController {
     const a = await this.ambito.de(req);
     const constancia = await this.constanciaRetiroService.findOne(+id);
     this.ambito.exigir(a, 'retiros', constancia.retiroId);
-    return this.constanciaRetiroService.datosParaPdf(+id);
+    const datos = await this.constanciaRetiroService.datosParaPdf(+id);
+    return a?.donanteId != null ? ocultarDatosPrivadosDelTransportista(datos) : datos;
   }
 
   @Get(':id')

@@ -7,6 +7,7 @@ import { AsignarEmpleadoDto } from './dto/asignar-empleado.dto';
 import { Pantalla, Authenticated } from '../auth/auth.decorators';
 import type { RequestConUsuario } from '../auth/auth-user';
 import { AmbitoService } from '../permisos/ambito.service';
+import { ocultarDatosPrivadosDelTransportista } from '../common/ocultar-datos-transportista';
 
 @Pantalla('turnos')
 @ApiTags('turno')
@@ -24,21 +25,24 @@ export class TurnoController {
     return this.turnoService.create(dto);
   }
 
-  @Authenticated()
+  @Pantalla('turnos', 'agenda', 'donaciones', 'retiros')
   @Get()
   @ApiOperation({ summary: 'Listar todos los turnos activos' })
   async findAll(@Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req, ['turnos', 'agenda']);
     const lista = await this.turnoService.findAll();
-    return a ? lista.filter((x) => a.turnos.has(x.id)) : lista;
+    const visibles = a ? lista.filter((x) => a.turnos.has(x.id)) : lista;
+    return a?.donanteId != null ? ocultarDatosPrivadosDelTransportista(visibles) : visibles;
   }
 
-  @Authenticated()
+  @Pantalla('turnos', 'agenda', 'donaciones', 'retiros')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un turno por ID' })
   async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
-    this.ambito.exigir(await this.ambito.de(req, ['turnos', 'agenda']), 'turnos', +id);
-    return this.turnoService.findOne(+id);
+    const a = await this.ambito.de(req, ['turnos', 'agenda']);
+    this.ambito.exigir(a, 'turnos', +id);
+    const turno = await this.turnoService.findOne(+id);
+    return a?.donanteId != null ? ocultarDatosPrivadosDelTransportista(turno) : turno;
   }
 
   @Patch(':id')

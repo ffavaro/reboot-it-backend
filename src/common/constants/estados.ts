@@ -33,3 +33,7 @@ export const CONDICION_MATERIAL = {
   // Condición de un material recién cargado, todavía sin clasificar
   A_DEFINIR: 'A definir',
 } as const;
+
+// estado_proceso_destruccion.nombre: un proceso está cerrado cuando su estado coincide con esto (Finalizado, Completado,
+// Cancelado, Anulado). Se usa para el doble control de la destrucción y para emitir certificados.
+export const PROCESO_DESTRUCCION_CERRADO = /finaliz|complet|cancel|anulad/i;

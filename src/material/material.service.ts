@@ -8,6 +8,7 @@ import { ClasificarMaterialDto } from './dto/clasificar-material.dto';
 import { ReporteMaterialDto } from './dto/reporte-material.dto';
 import { MedioAlmacenamiento } from '../medio-almacenamiento/medio-almacenamiento.entity';
 import { ProcesoDestruccion } from '../proceso-destruccion/proceso-destruccion.entity';
+import { PROCESO_DESTRUCCION_CERRADO } from '../common/constants/estados';
 
 @Injectable()
 export class MaterialService {
@@ -84,7 +85,7 @@ export class MaterialService {
       .innerJoin('estado_proceso_destruccion', 'e', 'e.id = p.estado_id')
       .where('m.material_id = :id AND p.is_active = 1 AND m.is_active = 1', { id })
       .getRawMany<{ id: number; estado: string }>();
-    const enProceso = procesos.some((p) => !/finaliz|complet|cancel|anulad/i.test(p.estado ?? ''));
+    const enProceso = procesos.some((p) => !PROCESO_DESTRUCCION_CERRADO.test(p.estado ?? ''));
     if (enProceso) {
       throw new ConflictException('El material está en un proceso de destrucción: no se puede dar de baja hasta que termine.');
     }
