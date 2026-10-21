@@ -159,6 +159,27 @@ export class TurnoService {
     return this.findOne(id);
   }
 
+  /**
+   * Turno de sucursal (la donación se entrega en la sucursal): el equipo recibe los materiales y el turno pasa de
+   * "Asignado" a "Retiro confirmado", paso previo a clasificarlos. Los turnos con retiro a domicilio lo hacen con la
+   * hoja de ruta del transportista.
+   */
+  async confirmarRecepcion(id: number) {
+    const turno = await this.findOne(id);
+    if (turno.necesitaRetiro) {
+      throw new BadRequestException('Este turno es con retiro a domicilio: el retiro lo confirma el transportista desde su hoja de ruta.');
+    }
+    const estado = turno.estadoTurno?.descripcion;
+    if (estado !== ESTADO_ASIGNADO) {
+      throw new ConflictException(estado === ESTADO_TURNO.RETIRO_CONFIRMADO ? 'El turno ya tiene el retiro confirmado.' : `El turno está "${estado}": solo se puede clasificar un turno asignado.`);
+    }
+    if (!turno.empleadoId) throw new BadRequestException('Asigná un empleado al turno antes de clasificarlo.');
+    const confirmado = await this.estadoTurnoRepository.findOne({ where: { descripcion: ESTADO_TURNO.RETIRO_CONFIRMADO, isActive: true } });
+    if (!confirmado) throw new NotFoundException(`Estado "${ESTADO_TURNO.RETIRO_CONFIRMADO}" no encontrado en la base de datos.`);
+    await this.turnoRepository.update(id, { estadoTurnoId: confirmado.id });
+    return this.findOne(id);
+  }
+
   async finalizarTurno(id: number) {
     const turno = await this.findOne(id);
 

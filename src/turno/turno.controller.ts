@@ -63,6 +63,14 @@ export class TurnoController {
   }
 
   @Pantalla('turnos!')
+  @Patch(':id/confirmar-recepcion')
+  @ApiOperation({ summary: 'Turno de sucursal: pasa de Asignado a Retiro confirmado para poder clasificar los materiales' })
+  async confirmarRecepcion(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
+    return this.turnoService.confirmarRecepcion(+id);
+  }
+
+  @Pantalla('turnos!')
   @Patch(':id/finalizar')
   @ApiOperation({ summary: 'Finalizar un turno (requiere al menos una foto registrada)' })
   async finalizar(@Param('id') id: string, @Req() req: RequestConUsuario) {
