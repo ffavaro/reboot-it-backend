@@ -42,7 +42,7 @@ export class EmpleadosController {
   @ApiOperation({ summary: 'Empleados activos con lo mínimo para un combo (id, nombre, apellido y cargo): sin datos personales' })
   async combo() {
     const lista = await this.empleadosService.findAll();
-    return lista.map((e) => ({ id: e.id, nombre: e.nombre, apellido: e.apellido, cargo: e.cargo }));
+    return lista.map((e) => ({ id: e.id, nombre: e.nombre, apellido: e.apellido, cargo: e.cargo, rol: e.rol ? { id: e.rol.id, nombre: e.rol.nombre } : undefined }));
   }
 
   @Pantalla('empleados', 'empleado_transportista', 'hoja_ruta', 'usuarios')
