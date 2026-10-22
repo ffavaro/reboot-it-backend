@@ -1,11 +1,10 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProcesoDestruccion } from './proceso-destruccion.entity';
 import { CreateProcesoDestruccionDto } from './dto/create-proceso-destruccion.dto';
 import { UpdateProcesoDestruccionDto } from './dto/update-proceso-destruccion.dto';
 import { ReporteProcesoDestruccionDto } from './dto/reporte-proceso-destruccion.dto';
-import { PermisosService } from '../permisos/permisos.service';
 import { EstadoProcesoDestruccion } from '../estado-proceso-destruccion/estado-proceso-destruccion.entity';
 import { PROCESO_DESTRUCCION_CERRADO } from '../common/constants/estados';
 
@@ -14,29 +13,9 @@ export class ProcesoDestruccionService {
   constructor(
     @InjectRepository(ProcesoDestruccion)
     private readonly procesoDestruccionRepository: Repository<ProcesoDestruccion>,
-    private readonly permisos: PermisosService,
   ) {}
 
-  /**
-   * Doble control: el Técnico ejecuta el proceso y el Administrativo lo valida y cierra. Pasar un proceso a un estado de
-   * cierre (o modificar uno ya cerrado) requiere el permiso de baja sobre Proceso de destrucción, que el Técnico no tiene.
-   */
-  async validarCierre(rolId: number | undefined, estadoId: number | undefined, estadoActualId?: number) {
-    const repo = this.procesoDestruccionRepository.manager.getRepository(EstadoProcesoDestruccion);
-    const esCierre = async (id?: number) => {
-      if (id === undefined) return false;
-      const estado = await repo.findOne({ where: { id } });
-      return !!estado && PROCESO_DESTRUCCION_CERRADO.test(estado.nombre);
-    };
-    if ((await esCierre(estadoId)) || (await esCierre(estadoActualId))) {
-      if ((await this.permisos.alcance(rolId, ['proceso_destruccion'], 'baja')) === 'NINGUNO') {
-        throw new ForbiddenException('Cerrar o validar un proceso de destrucción lo hace el Administrativo (doble control): el Técnico solo lo ejecuta.');
-      }
-    }
-  }
-
-  async create(dto: CreateProcesoDestruccionDto, rolId?: number) {
-    await this.validarCierre(rolId, dto.estadoId);
+  async create(dto: CreateProcesoDestruccionDto) {
     const procesoDestruccion = this.procesoDestruccionRepository.create(dto);
     return this.procesoDestruccionRepository.save(procesoDestruccion);
   }
@@ -57,10 +36,31 @@ export class ProcesoDestruccionService {
     return procesoDestruccion;
   }
 
-  async update(id: number, dto: UpdateProcesoDestruccionDto, rolId?: number) {
-    const actual = await this.findOne(id);
-    await this.validarCierre(rolId, dto.estadoId, actual.estadoId);
+  async update(id: number, dto: UpdateProcesoDestruccionDto) {
+    await this.findOne(id);
     await this.procesoDestruccionRepository.update(id, dto);
+    return this.findOne(id);
+  }
+
+  /**
+   * Cierra el proceso (estado "Finalizado"). Lo hace el Técnico o el Administrativo; el proceso tiene que tener
+   * definidos el método y el responsable. El certificado de disposición se puede emitir recién cuando todos los
+   * procesos del lote están cerrados.
+   */
+  async finalizar(id: number) {
+    const proceso = await this.findOne(id);
+    if (PROCESO_DESTRUCCION_CERRADO.test(proceso.estado?.nombre ?? '')) {
+      throw new ConflictException(`El proceso ya está "${proceso.estado?.nombre}".`);
+    }
+    if (!proceso.metodoDestruccionId || !proceso.empleadoId) {
+      throw new BadRequestException('Antes de finalizar, iniciá el proceso: definí el método y el responsable.');
+    }
+    const estados = await this.procesoDestruccionRepository.manager
+      .getRepository(EstadoProcesoDestruccion)
+      .find({ where: { isActive: true } });
+    const finalizado = estados.find((e) => /finaliz/i.test(e.nombre)) ?? estados.find((e) => PROCESO_DESTRUCCION_CERRADO.test(e.nombre));
+    if (!finalizado) throw new NotFoundException('No hay un estado "Finalizado" cargado en los estados de proceso de destrucción.');
+    await this.procesoDestruccionRepository.update(id, { estadoId: finalizado.id });
     return this.findOne(id);
   }
 

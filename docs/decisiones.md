@@ -9,7 +9,6 @@ Si se necesita el real, habría que pedirle al transportista el kilometraje al c
 El enlace "¿Olvidaste tu contraseña?" está oculto: el backend no envía correos ni guarda tokens de recuperación.
 Hoy la contraseña la restablece el Administrativo/SysAdmin desde Usuarios.
 
-## Doble control de destrucción
-El Técnico ejecuta el proceso de destrucción; **cerrarlo** (Finalizado/Completado/Cancelado) requiere permiso de baja sobre la pantalla
-Proceso de destrucción (Administrativo/SysAdmin). El certificado de disposición no se emite mientras el lote tenga procesos abiertos
-y solo hay un certificado activo por lote.
+## Finalizar procesos de destrucción
+El Técnico y el Administrativo (y el SysAdmin) inician y finalizan los procesos de destrucción: no hay doble control por rol. Para finalizar el proceso tiene que tener método y responsable ("Iniciar").
+El certificado de disposición no se emite mientras el lote tenga procesos abiertos y solo hay un certificado activo por lote; al emitirlo la donación pasa a Finalizada.

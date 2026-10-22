@@ -1,11 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProcesoDestruccionService } from './proceso-destruccion.service';
 import { CreateProcesoDestruccionDto } from './dto/create-proceso-destruccion.dto';
 import { UpdateProcesoDestruccionDto } from './dto/update-proceso-destruccion.dto';
 import { ReporteProcesoDestruccionDto } from './dto/reporte-proceso-destruccion.dto';
 import { Pantalla } from '../auth/auth.decorators';
-import type { RequestConUsuario } from '../auth/auth-user';
 
 @Pantalla('proceso_destruccion')
 @ApiTags('proceso-destruccion')
@@ -15,8 +14,8 @@ export class ProcesoDestruccionController {
 
   @Post()
   @ApiOperation({ summary: 'Crear un proceso de destrucción' })
-  create(@Body() dto: CreateProcesoDestruccionDto, @Req() req: RequestConUsuario) {
-    return this.procesoDestruccionService.create(dto, req.user?.rolId);
+  create(@Body() dto: CreateProcesoDestruccionDto) {
+    return this.procesoDestruccionService.create(dto);
   }
 
   @Get()
@@ -40,8 +39,14 @@ export class ProcesoDestruccionController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un proceso de destrucción' })
-  update(@Param('id') id: string, @Body() dto: UpdateProcesoDestruccionDto, @Req() req: RequestConUsuario) {
-    return this.procesoDestruccionService.update(+id, dto, req.user?.rolId);
+  update(@Param('id') id: string, @Body() dto: UpdateProcesoDestruccionDto) {
+    return this.procesoDestruccionService.update(+id, dto);
+  }
+
+  @Patch(':id/finalizar')
+  @ApiOperation({ summary: 'Finalizar un proceso de destrucción (Técnico o Administrativo)' })
+  finalizar(@Param('id') id: string) {
+    return this.procesoDestruccionService.finalizar(+id);
   }
 
   @Delete(':id')
