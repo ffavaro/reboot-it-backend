@@ -17,20 +17,30 @@ export class LoteService {
     return this.loteRepository.save(lote);
   }
 
-  findAll() {
-    return this.loteRepository.find({
-      where: { isActive: true },
-      relations: ['donacion'],
+  // La grilla de lotes muestra el donante: se devuelve solo el nombre, sin datos de contacto
+  private conDonante<T extends { donacion?: { donante?: unknown } }>(lotes: T[]): T[] {
+    lotes.forEach((l) => {
+      const d = l.donacion?.donante as { id: number; nombre: string; razonSocial?: string | null } | undefined;
+      if (l.donacion && d) l.donacion.donante = { id: d.id, nombre: d.nombre, razonSocial: d.razonSocial ?? null };
     });
+    return lotes;
+  }
+
+  async findAll() {
+    const lotes = await this.loteRepository.find({
+      where: { isActive: true },
+      relations: ['donacion', 'donacion.donante'],
+    });
+    return this.conDonante(lotes);
   }
 
   async findOne(id: number) {
     const lote = await this.loteRepository.findOne({
       where: { id },
-      relations: ['donacion'],
+      relations: ['donacion', 'donacion.donante'],
     });
     if (!lote) throw new NotFoundException(`Lote ${id} no encontrado`);
-    return lote;
+    return this.conDonante([lote])[0];
   }
 
   async update(id: number, dto: UpdateLoteDto) {

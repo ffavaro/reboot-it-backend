@@ -6,6 +6,7 @@ import { UpdateEmpleadoTransportistaDto } from './dto/update-empleado-transporti
 import { Pantalla } from '../auth/auth.decorators';
 import type { RequestConUsuario } from '../auth/auth-user';
 import { AmbitoService } from '../permisos/ambito.service';
+import { ocultarDatosPrivadosDelTransportista } from '../common/ocultar-datos-transportista';
 
 @Pantalla('empleado_transportista')
 @ApiTags('empleado-transportista')
@@ -28,7 +29,8 @@ export class EmpleadoTransportistaController {
   async findAll(@Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req, ['empleado_transportista', 'turnos', 'retiros', 'hoja_ruta']);
     const lista = await this.empleadoTransportistaService.findAll();
-    return a ? lista.filter((x) => a.transportistas.has(x.id)) : lista;
+    const visibles = a ? lista.filter((x) => a.transportistas.has(x.id)) : lista;
+    return a?.donanteId != null ? ocultarDatosPrivadosDelTransportista(visibles) : visibles;
   }
 
   @Pantalla('empleado_transportista', 'turnos', 'retiros', 'hoja_ruta')

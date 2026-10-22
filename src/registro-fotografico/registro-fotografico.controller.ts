@@ -29,7 +29,7 @@ export class RegistroFotograficoController {
     return this.registroFotograficoService.create(dto);
   }
 
-  @Authenticated()
+  @Pantalla('registro_fotografico', 'lotes')
   @Get()
   @ApiOperation({ summary: 'Listar todos los registros fotográficos activos' })
   async findAll(@Req() req: RequestConUsuario) {
@@ -38,7 +38,7 @@ export class RegistroFotograficoController {
     return a ? lista.filter((x) => (!!x.loteId && a.lotes.has(x.loteId)) || (!!x.turnoId && a.turnos.has(x.turnoId))) : lista;
   }
 
-  @Authenticated()
+  @Pantalla('registro_fotografico', 'turnos')
   @Get('by-turno/:turnoId')
   @ApiOperation({ summary: 'Listar registros fotográficos de un turno' })
   async findByTurno(@Param('turnoId') turnoId: string, @Req() req: RequestConUsuario) {
@@ -46,7 +46,7 @@ export class RegistroFotograficoController {
     return this.registroFotograficoService.findByTurno(+turnoId);
   }
 
-  @Authenticated()
+  @Pantalla('registro_fotografico', 'lotes')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un registro fotográfico por ID' })
   async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {

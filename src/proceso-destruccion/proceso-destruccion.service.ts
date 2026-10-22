@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProcesoDestruccion } from './proceso-destruccion.entity';
 import { CreateProcesoDestruccionDto } from './dto/create-proceso-destruccion.dto';
 import { UpdateProcesoDestruccionDto } from './dto/update-proceso-destruccion.dto';
 import { ReporteProcesoDestruccionDto } from './dto/reporte-proceso-destruccion.dto';
+import { EstadoProcesoDestruccion } from '../estado-proceso-destruccion/estado-proceso-destruccion.entity';
+import { PROCESO_DESTRUCCION_CERRADO } from '../common/constants/estados';
 
 @Injectable()
 export class ProcesoDestruccionService {
@@ -13,7 +15,7 @@ export class ProcesoDestruccionService {
     private readonly procesoDestruccionRepository: Repository<ProcesoDestruccion>,
   ) {}
 
-  create(dto: CreateProcesoDestruccionDto) {
+  async create(dto: CreateProcesoDestruccionDto) {
     const procesoDestruccion = this.procesoDestruccionRepository.create(dto);
     return this.procesoDestruccionRepository.save(procesoDestruccion);
   }
@@ -37,6 +39,28 @@ export class ProcesoDestruccionService {
   async update(id: number, dto: UpdateProcesoDestruccionDto) {
     await this.findOne(id);
     await this.procesoDestruccionRepository.update(id, dto);
+    return this.findOne(id);
+  }
+
+  /**
+   * Cierra el proceso (estado "Finalizado"). Lo hace el Técnico o el Administrativo; el proceso tiene que tener
+   * definidos el método y el responsable. El certificado de disposición se puede emitir recién cuando todos los
+   * procesos del lote están cerrados.
+   */
+  async finalizar(id: number) {
+    const proceso = await this.findOne(id);
+    if (PROCESO_DESTRUCCION_CERRADO.test(proceso.estado?.nombre ?? '')) {
+      throw new ConflictException(`El proceso ya está "${proceso.estado?.nombre}".`);
+    }
+    if (!proceso.metodoDestruccionId || !proceso.empleadoId) {
+      throw new BadRequestException('Antes de finalizar, iniciá el proceso: definí el método y el responsable.');
+    }
+    const estados = await this.procesoDestruccionRepository.manager
+      .getRepository(EstadoProcesoDestruccion)
+      .find({ where: { isActive: true } });
+    const finalizado = estados.find((e) => /finaliz/i.test(e.nombre)) ?? estados.find((e) => PROCESO_DESTRUCCION_CERRADO.test(e.nombre));
+    if (!finalizado) throw new NotFoundException('No hay un estado "Finalizado" cargado en los estados de proceso de destrucción.');
+    await this.procesoDestruccionRepository.update(id, { estadoId: finalizado.id });
     return this.findOne(id);
   }
 

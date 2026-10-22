@@ -6,6 +6,9 @@ import { UsuariosService } from './usuarios.service';
 import { Pantalla, ROL_ID_DONANTE } from '../auth/auth.decorators';
 import type { RequestConUsuario } from '../auth/auth-user';
 
+// Datos que cada usuario puede cambiar de sí mismo desde Mi Perfil
+const CAMPOS_MI_PERFIL = ['nombre', 'apellido', 'email', 'password'];
+
 // Quien solo tiene permiso "propio" (Mi Perfil) puede ver y editar únicamente su propio usuario
 function soloSiMismo(req: RequestConUsuario, id: number) {
   if (req.permiso?.alcance === 'PROPIO' && req.user?.id !== id) {
@@ -51,6 +54,13 @@ export class UsuariosController {
   @ApiOperation({ summary: 'Actualizar un usuario' })
   update(@Param('id') id: string, @Body() dto: UpdateUsuarioDto, @Req() req: RequestConUsuario) {
     soloSiMismo(req, +id);
+    // Desde Mi Perfil (permiso "propio") no se cambian el rol, el estado ni el vínculo con el empleado
+    if (req.permiso?.alcance === 'PROPIO') {
+      const prohibidos = Object.entries(dto).filter(([clave, valor]) => valor !== undefined && !CAMPOS_MI_PERFIL.includes(clave)).map(([clave]) => clave);
+      if (prohibidos.length) {
+        throw new ForbiddenException('Desde Mi Perfil solo podés cambiar tu nombre, apellido, email y contraseña.');
+      }
+    }
     return this.usuariosService.update(+id, dto);
   }
 

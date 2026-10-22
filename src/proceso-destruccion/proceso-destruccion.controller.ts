@@ -43,6 +43,12 @@ export class ProcesoDestruccionController {
     return this.procesoDestruccionService.update(+id, dto);
   }
 
+  @Patch(':id/finalizar')
+  @ApiOperation({ summary: 'Finalizar un proceso de destrucción (Técnico o Administrativo)' })
+  finalizar(@Param('id') id: string) {
+    return this.procesoDestruccionService.finalizar(+id);
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un proceso de destrucción (soft delete)' })
   remove(@Param('id') id: string) {

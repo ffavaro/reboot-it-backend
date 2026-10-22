@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { CertificadoDisposicion } from './certificado-disposicion.entity';
@@ -8,7 +8,7 @@ import { Donacion } from '../donacion/donacion.entity';
 import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 import { CreateCertificadoDisposicionDto } from './dto/create-certificado-disposicion.dto';
 import { UpdateCertificadoDisposicionDto } from './dto/update-certificado-disposicion.dto';
-import { ESTADO_DONACION } from '../common/constants/estados';
+import { ESTADO_DONACION, PROCESO_DESTRUCCION_CERRADO } from '../common/constants/estados';
 
 const ESTADO_DONACION_FINALIZADA = ESTADO_DONACION.FINALIZADA;
 
@@ -25,7 +25,29 @@ export class CertificadoDisposicionService {
     private readonly estadoDonacionRepository: Repository<EstadoDonacion>,
   ) {}
 
+  /** El certificado se emite una sola vez por lote y recién cuando no quedan procesos de destrucción abiertos. */
+  private async validarEmision(loteId: number) {
+    const existente = await this.certificadoDisposicionRepository.findOne({ where: { loteId, isActive: true } });
+    if (existente) {
+      throw new ConflictException(`El lote ya tiene un certificado de disposición emitido (${existente.numeroCertificado ?? `#${existente.id}`}).`);
+    }
+    const procesos = await this.certificadoDisposicionRepository.manager
+      .createQueryBuilder()
+      .select(['p.id AS id', 'e.nombre AS estado'])
+      .from('proceso_destruccion', 'p')
+      .innerJoin('medio_almacenamiento', 'm', 'm.id = p.medio_almacenamiento_id')
+      .innerJoin('material', 'mat', 'mat.id = m.material_id')
+      .innerJoin('estado_proceso_destruccion', 'e', 'e.id = p.estado_id')
+      .where('mat.lote_id = :loteId AND p.is_active = 1 AND m.is_active = 1 AND mat.is_active = 1', { loteId })
+      .getRawMany<{ id: number; estado: string }>();
+    const abiertos = procesos.filter((p) => !PROCESO_DESTRUCCION_CERRADO.test(p.estado ?? '')).length;
+    if (abiertos > 0) {
+      throw new ConflictException(`El lote tiene ${abiertos} proceso${abiertos !== 1 ? 's' : ''} de destrucción sin cerrar: el certificado se emite cuando todos estén finalizados.`);
+    }
+  }
+
   async create(dto: CreateCertificadoDisposicionDto) {
+    await this.validarEmision(dto.loteId);
     const fechaEmision = new Date();
     const numeroCertificado = await this.generarNumeroCertificado(fechaEmision);
 
