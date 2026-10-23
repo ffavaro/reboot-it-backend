@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import { BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { MENSAJE_CODIGO_ENVIADO, MENSAJE_CONTRASENA_ACTUALIZADA, PasswordResetService } from './password-reset.service';

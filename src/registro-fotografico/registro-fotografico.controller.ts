@@ -3,7 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RegistroFotograficoService } from './registro-fotografico.service';
 import { CreateRegistroFotograficoDto } from './dto/create-registro-fotografico.dto';
 import { UpdateRegistroFotograficoDto } from './dto/update-registro-fotografico.dto';
-import { Pantalla, Authenticated } from '../auth/auth.decorators';
+import { Pantalla, Accion, Authenticated } from '../auth/auth.decorators';
 import type { RequestConUsuario } from '../auth/auth-user';
 import { AmbitoService } from '../permisos/ambito.service';
 
@@ -16,6 +16,9 @@ export class RegistroFotograficoController {
     private readonly ambito: AmbitoService,
   ) {}
 
+  // El transportista sube las fotos al confirmar el retiro desde su hoja de ruta, sin tener la pantalla Registro fotográfico
+  @Pantalla('registro_fotografico', 'hoja_ruta')
+  @Accion('editar')
   @Post()
   @ApiOperation({ summary: 'Crear un registro fotográfico' })
   async create(@Body() dto: CreateRegistroFotograficoDto, @Req() req: RequestConUsuario) {
