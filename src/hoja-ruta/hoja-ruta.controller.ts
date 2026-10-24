@@ -47,7 +47,8 @@ export class HojaRutaController {
     return this.hojaRutaService.historico(query);
   }
 
-  @Accion('editar')
+  // Generar la hoja de ruta es del Administrativo (permiso de crear sobre Hoja de ruta); el transportista la recibe y confirma sus retiros
+  @Accion('crear')
   @Post('generar')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

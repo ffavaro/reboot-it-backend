@@ -13,6 +13,7 @@ import { Turno } from '../turno/turno.entity';
 import { Retiro } from '../retiro/retiro.entity';
 import { RegistroFotografico } from '../registro-fotografico/registro-fotografico.entity';
 import { ESTADO_DONACION } from '../common/constants/estados';
+import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 
 @Injectable()
 export class DonacionService {
@@ -37,6 +38,15 @@ export class DonacionService {
 
   async create(dto: CreateDonacionDto) {
     const { fechaHora, detalles, fotosUrls, ...donacionData } = dto;
+
+    // Toda donación nueva arranca "Pendiente" (quien dona no elige el estado y el equipo tampoco lo deja vacío)
+    if (donacionData.estadoDonacionId == null) {
+      const pendiente = await this.donacionRepository.manager
+        .getRepository(EstadoDonacion)
+        .findOne({ where: { descripcion: ESTADO_DONACION.PENDIENTE, isActive: true } });
+      if (!pendiente) throw new InternalServerErrorException(`Falta el estado "${ESTADO_DONACION.PENDIENTE}" en los estados de donación.`);
+      donacionData.estadoDonacionId = pendiente.id;
+    }
 
     const donacion = this.donacionRepository.create(donacionData);
     const saved = await this.donacionRepository.save(donacion).catch((error:any) => {
