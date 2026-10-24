@@ -132,8 +132,10 @@ export class AmbitoService {
     if (!user) return null;
     const claves = pantallas ?? req.permiso?.pantallas ?? [];
     const alcance = await this.permisos.alcance(user.rolId, claves, 'ver');
-    // con "incluirSinAcceso" también se limita a quien entra a la consulta por otra pantalla (sin permiso propio)
-    if (alcance !== 'LIMITADO' && !(incluirSinAcceso && alcance === 'NINGUNO')) return null;
+    // con "incluirSinAcceso" también se limita a quien entra a la consulta por otra pantalla (sin permiso propio);
+    // Donante y Transportista no: ven lo suyo por su ámbito
+    const externo = ['donante', 'transportista'].includes((user.rol?.nombre ?? '').trim().toLowerCase());
+    if (alcance !== 'LIMITADO' && !(incluirSinAcceso && alcance === 'NINGUNO' && !externo)) return null;
     const turnos = await this.turnoRepo.find({
       where: { isActive: true, estadoTurno: { descripcion: In([ESTADO_TURNO.EN_CLASIFICACION, ESTADO_TURNO.FINALIZADO]) } },
     });

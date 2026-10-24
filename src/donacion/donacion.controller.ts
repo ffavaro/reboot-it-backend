@@ -27,7 +27,8 @@ export class DonacionController {
     return this.donacionService.create(dto);
   }
 
-  @Pantalla('donaciones', 'lotes')
+  // la consulta de donaciones también la usan las pantallas de Turnos, Agenda, Constancia y Retiros (nombre de la donación)
+  @Pantalla('donaciones', 'lotes', 'turnos', 'agenda', 'constancia_retiro', 'retiros')
   @Get()
   @ApiOperation({ summary: 'Listar todas las donaciones activas' })
   async findAll(@Req() req: RequestConUsuario) {
@@ -45,7 +46,8 @@ export class DonacionController {
     return this.donacionService.reporte(query);
   }
 
-  @Pantalla('donaciones', 'lotes')
+  // la consulta de donaciones también la usan las pantallas de Turnos, Agenda, Constancia y Retiros (nombre de la donación)
+  @Pantalla('donaciones', 'lotes', 'turnos', 'agenda', 'constancia_retiro', 'retiros')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una donación por ID' })
   async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
