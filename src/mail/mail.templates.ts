@@ -72,10 +72,13 @@ function mensajeDeEstado(estado: string): string {
   return `El estado de tu donación cambió a "${estado}".`;
 }
 
-export function plantillaEstadoDonacion(nombre: string, donacionId: number, estado: string, url?: string) {
+export function plantillaEstadoDonacion(nombre: string, donacionId: number, estado: string, url?: string, estadoTurno?: string | null) {
   const mensaje = mensajeDeEstado(estado);
   const boton = url
     ? `<p style="margin:20px 0 0;"><a href="${escapar(url)}" style="display:inline-block;background:#dc2626;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:bold;">Ver mis donaciones</a></p>`
+    : '';
+  const turno = estadoTurno
+    ? `<p style="margin:16px 0 0;padding:10px 12px;background:#f4f4f5;border-radius:6px;">Estado de tu turno: <strong>${escapar(estadoTurno)}</strong></p>`
     : '';
   const html = marco(
     `Tu donación #${donacionId} cambió de estado`,
@@ -83,13 +86,14 @@ export function plantillaEstadoDonacion(nombre: string, donacionId: number, esta
      <p style="margin:0 0 12px;">El nuevo estado de tu donación es:</p>
      <p style="margin:12px 0;text-align:center;font-size:20px;font-weight:bold;color:#0f172a;">${escapar(estado)}</p>
      <p style="margin:0;">${escapar(mensaje)}</p>
+     ${turno}
      ${boton}`,
   );
   const text = `Hola ${nombre},
 
 El nuevo estado de tu donación #${donacionId} es: ${estado}.
 
-${mensaje}${url ? `\n\nVer mis donaciones: ${url}` : ''}
+${mensaje}${estadoTurno ? `\n\nEstado de tu turno: ${estadoTurno}` : ''}${url ? `\n\nVer mis donaciones: ${url}` : ''}
 
 Reboot IT – MSIT`;
   return { subject: `Tu donación #${donacionId} cambió de estado – Reboot IT`, html, text };

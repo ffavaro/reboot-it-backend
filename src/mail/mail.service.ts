@@ -24,8 +24,8 @@ export class MailService {
     return this.enviar(to, plantillaCambioContrasena(nombre, `${texto} hs`), 'aviso de cambio de contraseña');
   }
 
-  async sendDonationStatusChange(to: string, nombre: string, donacionId: number, estado: string, url?: string): Promise<boolean> {
-    return this.enviar(to, plantillaEstadoDonacion(nombre, donacionId, estado, url), 'cambio de estado de la donación');
+  async sendDonationStatusChange(to: string, nombre: string, donacionId: number, estado: string, url?: string, estadoTurno?: string | null): Promise<boolean> {
+    return this.enviar(to, plantillaEstadoDonacion(nombre, donacionId, estado, url, estadoTurno), 'cambio de estado de la donación');
   }
 
   private async enviar(to: string, contenido: { subject: string; html: string; text: string }, que: string): Promise<boolean> {
