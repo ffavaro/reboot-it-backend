@@ -14,6 +14,9 @@ import { Retiro } from '../retiro/retiro.entity';
 import { RegistroFotografico } from '../registro-fotografico/registro-fotografico.entity';
 import { ESTADO_DONACION } from '../common/constants/estados';
 import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
+import { ConstanciaRetiro } from '../constancia-retiro/constancia-retiro.entity';
+import { Lote } from '../lote/lote.entity';
+import { CertificadoDisposicion } from '../certificado-disposicion/certificado-disposicion.entity';
 import { NotificacionDonacionService } from '../notificaciones/notificacion-donacion.service';
 
 @Injectable()
@@ -130,6 +133,74 @@ export class DonacionService {
     });
     if (!donacion) throw new NotFoundException(`Donacion ${id} no encontrada`);
     return this.soloDetallesActivos(donacion);
+  }
+
+  /**
+   * Trazabilidad de una donación en una sola respuesta: datos, materiales, turno, fotos, retiro con su constancia, lote y
+   * certificado de disposición. Es lo que muestra el detalle de la donación.
+   */
+  async detalle(id: number) {
+    const donacion = await this.findOne(id);
+    const manager = this.donacionRepository.manager;
+    const turno = await this.turnoRepository.findOne({
+      where: { donacionId: id, isActive: true },
+      relations: ['estadoTurno', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'],
+      order: { createdAt: 'DESC' },
+    });
+    const retiro = await this.retiroRepository.findOne({ where: { donacionId: id, isActive: true } });
+    const constancia = retiro
+      ? await manager.getRepository(ConstanciaRetiro).findOne({ where: { retiroId: retiro.id, isActive: true } })
+      : null;
+    const lote = await manager.getRepository(Lote).findOne({ where: { donacionId: id, isActive: true } });
+    const certificado = lote
+      ? await manager.getRepository(CertificadoDisposicion).findOne({ where: { loteId: lote.id, isActive: true }, relations: ['gestorAmbiental'] })
+      : null;
+    const condiciones = [turno ? { turnoId: turno.id, isActive: true } : null, lote ? { loteId: lote.id, isActive: true } : null].filter(
+      (c): c is { turnoId: number; isActive: boolean } | { loteId: number; isActive: boolean } => c !== null,
+    );
+    const fotos = condiciones.length
+      ? await manager.getRepository(RegistroFotografico).find({ where: condiciones, order: { fecha: 'ASC', id: 'ASC' } })
+      : [];
+    const persona = (e?: { id: number; nombre: string; apellido: string } | null) => (e ? { id: e.id, nombre: e.nombre, apellido: e.apellido } : null);
+
+    return {
+      id: donacion.id,
+      descripcion: donacion.descripcion,
+      createdAt: donacion.createdAt,
+      necesitaRetiro: donacion.necesitaRetiro,
+      direccionRetiro: donacion.direccionRetiro,
+      pesoEstimadoKg: donacion.pesoEstimadoKg,
+      estado: donacion.estadoDonacion?.descripcion ?? null,
+      donante: { id: donacion.donanteId, nombre: donacion.donante?.nombre ?? null, razonSocial: donacion.donante?.razonSocial ?? null },
+      materiales: (donacion.detalles ?? []).map((d) => ({
+        id: d.id,
+        tipo: d.tipoMaterial?.nombre ?? null,
+        condicion: d.condicionMaterial?.condicion ?? null,
+        cantidad: d.cantidadEstimada,
+      })),
+      turno: turno
+        ? {
+            id: turno.id,
+            fechaHora: turno.fechaHora,
+            estado: turno.estadoTurno?.descripcion ?? null,
+            empleado: persona(turno.empleado),
+            transportista: persona(turno.empleadoTransportista?.empleado),
+          }
+        : null,
+      retiro: retiro ? { id: retiro.id, fechaRetiro: retiro.fechaRetiro, direccion: retiro.direccion } : null,
+      constancia: constancia ? { id: constancia.id, fechaEmision: constancia.fechaEmision } : null,
+      lote: lote ? { id: lote.id, pesoBrutoKg: lote.pesoBrutoKg } : null,
+      certificado: certificado
+        ? {
+            id: certificado.id,
+            numero: certificado.numeroCertificado,
+            fechaEmision: certificado.fechaEmision,
+            gestor: certificado.gestorAmbiental?.razonSocial ?? null,
+            archivoFinalUrl: certificado.archivoFinalUrl,
+          }
+        : null,
+      fotos: fotos.map((f) => ({ id: f.id, url: f.urlImagen, fecha: f.fecha })),
+    };
   }
 
   async update(id: number, dto: UpdateDonacionDto) {

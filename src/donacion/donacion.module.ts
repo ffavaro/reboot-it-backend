@@ -9,6 +9,10 @@ import { TurnoDetalleModule } from '../turno-detalle/turno-detalle.module';
 import { LoteModule } from '../lote/lote.module';
 import { Turno } from '../turno/turno.entity';
 import { Retiro } from '../retiro/retiro.entity';
+import { ConstanciaRetiro } from '../constancia-retiro/constancia-retiro.entity';
+import { Lote } from '../lote/lote.entity';
+import { CertificadoDisposicion } from '../certificado-disposicion/certificado-disposicion.entity';
+import { RegistroFotografico } from '../registro-fotografico/registro-fotografico.entity';
 import { NotificacionesModule } from '../notificaciones/notificaciones.module';
 
 @Module({

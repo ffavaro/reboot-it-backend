@@ -7,6 +7,7 @@ import { ReporteDonacionDto } from './dto/reporte-donacion.dto';
 import { Pantalla } from '../auth/auth.decorators';
 import type { RequestConUsuario } from '../auth/auth-user';
 import { AmbitoService } from '../permisos/ambito.service';
+import { ocultarDatosPrivadosDelTransportista } from '../common/ocultar-datos-transportista';
 
 @Pantalla('donaciones')
 @ApiTags('donacion')
@@ -54,6 +55,16 @@ export class DonacionController {
     this.ambito.exigir(await this.ambito.de(req), 'donaciones', +id);
     this.ambito.exigirEnPlanta(await this.ambito.enPlanta(req, ['donaciones'], true), +id);
     return this.donacionService.findOne(+id);
+  }
+
+  @Get(':id/detalle')
+  @ApiOperation({ summary: 'Detalle de una donación: materiales, turno, fotos, retiro y constancia, lote y certificado' })
+  async detalle(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    const a = await this.ambito.de(req);
+    this.ambito.exigir(a, 'donaciones', +id);
+    const detalle = await this.donacionService.detalle(+id);
+    // el donante ve quién retira (nombre y apellido), no sus datos personales
+    return a?.donanteId != null ? ocultarDatosPrivadosDelTransportista(detalle) : detalle;
   }
 
   @Patch(':id')
