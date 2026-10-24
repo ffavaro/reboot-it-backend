@@ -9,6 +9,8 @@ import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 import { CreateCertificadoDisposicionDto } from './dto/create-certificado-disposicion.dto';
 import { UpdateCertificadoDisposicionDto } from './dto/update-certificado-disposicion.dto';
 import { ESTADO_DONACION, PROCESO_DESTRUCCION_CERRADO } from '../common/constants/estados';
+import { NotificacionDonacionService } from '../notificaciones/notificacion-donacion.service';
+
 
 const ESTADO_DONACION_FINALIZADA = ESTADO_DONACION.FINALIZADA;
 
@@ -23,6 +25,7 @@ export class CertificadoDisposicionService {
     private readonly donacionRepository: Repository<Donacion>,
     @InjectRepository(EstadoDonacion)
     private readonly estadoDonacionRepository: Repository<EstadoDonacion>,
+    private readonly notificaciones: NotificacionDonacionService,
   ) {}
 
   /** El certificado se emite una sola vez por lote y recién cuando no quedan procesos de destrucción abiertos. */
@@ -64,7 +67,9 @@ export class CertificadoDisposicionService {
         where: { descripcion: ESTADO_DONACION_FINALIZADA, isActive: true },
       });
       if (estadoFinalizada) {
+        const antes = await this.notificaciones.estadoActual(lote.donacionId);
         await this.donacionRepository.update(lote.donacionId, { estadoDonacionId: estadoFinalizada.id });
+        void this.notificaciones.estadoCambiado(lote.donacionId, antes);
       }
     }
 

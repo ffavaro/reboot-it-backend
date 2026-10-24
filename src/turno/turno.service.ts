@@ -25,6 +25,8 @@ const CONDICION_PENDIENTE = CONDICION_MATERIAL.A_DEFINIR;
 const RELATIONS = ['donante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'];
 
 import { validarPesoDonacionVehiculo } from '../common/peso-vehiculo';
+import { NotificacionDonacionService } from '../notificaciones/notificacion-donacion.service';
+
 
 // Antelación mínima con la que el donante puede reprogramar o cancelar su turno
 const HORAS_ANTELACION_DONANTE = 24;
@@ -54,6 +56,7 @@ export class TurnoService {
     private readonly loteRepository: Repository<Lote>,
     @InjectRepository(Retiro)
     private readonly retiroRepository: Repository<Retiro>,
+    private readonly notificaciones: NotificacionDonacionService,
   ) {}
 
   create(dto: CreateTurnoDto) {
@@ -153,7 +156,9 @@ export class TurnoService {
     
     // Pasa a "En proceso" la donación asociada a ESTE turno (un donante puede tener varias donaciones)
     if (estadoEnProceso && turno.donacionId) {
+      const antes = await this.notificaciones.estadoActual(turno.donacionId);
       await this.donacionRepository.update(turno.donacionId, { estadoDonacionId: estadoEnProceso.id });
+      void this.notificaciones.estadoCambiado(turno.donacionId, antes);
     }
 
     return this.findOne(id);

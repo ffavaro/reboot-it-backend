@@ -10,6 +10,8 @@ import { EstadoTurno } from '../estado-turno/estado-turno.entity';
 import { CreatePalletDto } from './dto/create-pallet.dto';
 import { UpdatePalletDto } from './dto/update-pallet.dto';
 import { ESTADO_DONACION, ESTADO_TURNO } from '../common/constants/estados';
+import { NotificacionDonacionService } from '../notificaciones/notificacion-donacion.service';
+
 
 const ESTADO_TURNO_FINALIZADO = ESTADO_TURNO.FINALIZADO;
 const ESTADO_DONACION_PENDIENTE_CERT = ESTADO_DONACION.PENDIENTE_CERTIFICADO;
@@ -29,6 +31,7 @@ export class PalletService {
     private readonly estadoDonacionRepository: Repository<EstadoDonacion>,
     @InjectRepository(EstadoTurno)
     private readonly estadoTurnoRepository: Repository<EstadoTurno>,
+    private readonly notificaciones: NotificacionDonacionService,
   ) {}
 
   // Un lote se guarda en un único pallet (y por lo tanto en un único rack)
@@ -56,6 +59,7 @@ export class PalletService {
           this.estadoDonacionRepository.findOne({ where: { descripcion: ESTADO_DONACION_PENDIENTE_CERT, isActive: true } }),
         ]);
 
+        const estadoAntes = await this.notificaciones.estadoActual(lote.donacionId);
         const turno = await this.turnoRepository.findOne({
           where: { donacionId: lote.donacionId, isActive: true },
           order: { createdAt: 'DESC' },
@@ -69,6 +73,7 @@ export class PalletService {
             ? this.donacionRepository.update(lote.donacionId, { estadoDonacionId: estadoDonacion.id })
             : Promise.resolve(),
         ]);
+        if (estadoDonacion) void this.notificaciones.estadoCambiado(lote.donacionId, estadoAntes);
       }
     }
 

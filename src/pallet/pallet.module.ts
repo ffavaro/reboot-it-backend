@@ -8,9 +8,10 @@ import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 import { EstadoTurno } from '../estado-turno/estado-turno.entity';
 import { PalletController } from './pallet.controller';
 import { PalletService } from './pallet.service';
+import { NotificacionesModule } from '../notificaciones/notificaciones.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Pallet, Lote, Turno, Donacion, EstadoDonacion, EstadoTurno])],
+  imports: [TypeOrmModule.forFeature([Pallet, Lote, Turno, Donacion, EstadoDonacion, EstadoTurno]), NotificacionesModule],
   controllers: [PalletController],
   providers: [PalletService],
   exports: [PalletService],

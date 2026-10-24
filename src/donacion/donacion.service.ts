@@ -14,6 +14,7 @@ import { Retiro } from '../retiro/retiro.entity';
 import { RegistroFotografico } from '../registro-fotografico/registro-fotografico.entity';
 import { ESTADO_DONACION } from '../common/constants/estados';
 import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
+import { NotificacionDonacionService } from '../notificaciones/notificacion-donacion.service';
 
 @Injectable()
 export class DonacionService {
@@ -28,6 +29,7 @@ export class DonacionService {
     private readonly donacionDetalleService: DonacionDetalleService,
     private readonly turnoDetalleService: TurnoDetalleService,
     private readonly loteService: LoteService,
+    private readonly notificaciones: NotificacionDonacionService,
   ) {}
 
   // La relación "detalles" trae también los materiales dados de baja: se descartan para no mostrarlos ni duplicarlos
@@ -131,10 +133,12 @@ export class DonacionService {
   }
 
   async update(id: number, dto: UpdateDonacionDto) {
-    await this.findOne(id);
+    const actual = await this.findOne(id);
     const { detalles, ...donacionData } = dto;
     if (Object.keys(donacionData).length) {
       await this.donacionRepository.update(id, donacionData);
+      // si cambió el estado, se le avisa al donante por email
+      if (donacionData.estadoDonacionId !== undefined) void this.notificaciones.estadoCambiado(id, actual.estadoDonacionId);
     }
 
     if (detalles !== undefined) {
