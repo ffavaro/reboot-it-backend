@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Lote } from './lote.entity';
@@ -12,7 +12,10 @@ export class LoteService {
     private readonly loteRepository: Repository<Lote>,
   ) {}
 
-  create(dto: CreateLoteDto) {
+  async create(dto: CreateLoteDto) {
+    // cada donación tiene un único lote (se crea solo al registrar la donación): un segundo lote duplicaría la información
+    const existente = await this.loteRepository.findOne({ where: { donacionId: dto.donacionId, isActive: true } });
+    if (existente) throw new ConflictException(`La donación #${dto.donacionId} ya tiene el lote #${existente.id}.`);
     const lote = this.loteRepository.create(dto);
     return this.loteRepository.save(lote);
   }

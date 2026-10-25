@@ -13,6 +13,12 @@ import { ListarAuditoriaQueryDto } from './dto/listar-auditoria-query.dto';
 export class AuditoriaController {
   constructor(private readonly auditoriaService: AuditoriaService) {}
 
+  @Get('acciones')
+  @ApiOperation({ summary: 'Acciones distintas registradas, para filtrar por acción' })
+  acciones() {
+    return this.auditoriaService.acciones();
+  }
+
   @Get()
   @ApiOperation({
     summary: 'Registro de auditoría (solo admin), paginado y filtrable por usuario, fechas, acción, resultado y entidad',

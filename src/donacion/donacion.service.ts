@@ -168,7 +168,8 @@ export class DonacionService {
       descripcion: donacion.descripcion,
       createdAt: donacion.createdAt,
       necesitaRetiro: donacion.necesitaRetiro,
-      direccionRetiro: donacion.direccionRetiro,
+      // la de la donación o, si no cargó otra, la del retiro o la del donante
+      direccionRetiro: donacion.direccionRetiro || retiro?.direccion || donacion.donante?.direccion || null,
       pesoEstimadoKg: donacion.pesoEstimadoKg,
       estado: donacion.estadoDonacion?.descripcion ?? null,
       donante: { id: donacion.donanteId, nombre: donacion.donante?.nombre ?? null, razonSocial: donacion.donante?.razonSocial ?? null },

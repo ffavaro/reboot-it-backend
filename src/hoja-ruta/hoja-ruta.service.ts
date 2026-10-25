@@ -512,10 +512,11 @@ export class HojaRutaService {
       .leftJoinAndSelect('h.historialKm', 'hk')
       .where('h.isActive = 1')
       .andWhere('h.estado = :estado', { estado: ESTADO_HOJA_FINALIZADA })
-      .orderBy('h.fecha', 'DESC')
+      .orderBy('h.fechaFin', 'DESC')
       .addOrderBy('h.id', 'DESC');
-    if (desde) qb.andWhere('h.fecha >= :desde', { desde });
-    if (hasta) qb.andWhere('h.fecha <= :hasta', { hasta });
+    // el período se mide por la fecha en que se cerró la hoja (si no tiene, por la pactada)
+    if (desde) qb.andWhere('COALESCE(DATE(h.fechaFin), h.fecha) >= :desde', { desde });
+    if (hasta) qb.andWhere('COALESCE(DATE(h.fechaFin), h.fecha) <= :hasta', { hasta });
     if (query.empleadoTransportistaId) qb.andWhere('h.empleadoTransportistaId = :et', { et: query.empleadoTransportistaId });
     if (query.vehiculoId) qb.andWhere('h.vehiculoId = :veh', { veh: query.vehiculoId });
 
