@@ -60,3 +60,41 @@ Si no fuiste vos, contactá a MSIT inmediatamente.
 Reboot IT – MSIT`;
   return { subject: 'Tu contraseña fue modificada – Reboot IT', html, text };
 }
+
+// Qué le contamos al donante en cada estado de su donación (por nombre del estado)
+function mensajeDeEstado(estado: string): string {
+  const e = estado.toLowerCase();
+  if (e.includes('certificado')) return 'Recibimos y procesamos tus equipos. Estamos preparando tu certificado de disposición final.';
+  if (e.includes('finaliz')) return 'Tu donación finalizó. Ya podés descargar tu certificado de disposición desde Reboot IT. ¡Gracias por sumarte al reciclaje tecnológico!';
+  if (e.includes('cancel')) return 'Tu donación fue cancelada. Si fue un error, podés registrar una nueva desde Reboot IT.';
+  if (e.includes('proceso')) return 'Tu donación ya está en proceso: nuestro equipo está gestionando el retiro o la recepción de tus equipos.';
+  if (e.includes('pendiente')) return 'Registramos tu donación y está pendiente de gestión.';
+  return `El estado de tu donación cambió a "${estado}".`;
+}
+
+export function plantillaEstadoDonacion(nombre: string, donacionId: number, estado: string, url?: string, estadoTurno?: string | null) {
+  const mensaje = mensajeDeEstado(estado);
+  const boton = url
+    ? `<p style="margin:20px 0 0;"><a href="${escapar(url)}" style="display:inline-block;background:#dc2626;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:bold;">Ver mis donaciones</a></p>`
+    : '';
+  const turno = estadoTurno
+    ? `<p style="margin:16px 0 0;padding:10px 12px;background:#f4f4f5;border-radius:6px;">Estado de tu turno: <strong>${escapar(estadoTurno)}</strong></p>`
+    : '';
+  const html = marco(
+    `Tu donación #${donacionId} cambió de estado`,
+    `<p style="margin:0 0 12px;">Hola ${escapar(nombre)},</p>
+     <p style="margin:0 0 12px;">El nuevo estado de tu donación es:</p>
+     <p style="margin:12px 0;text-align:center;font-size:20px;font-weight:bold;color:#0f172a;">${escapar(estado)}</p>
+     <p style="margin:0;">${escapar(mensaje)}</p>
+     ${turno}
+     ${boton}`,
+  );
+  const text = `Hola ${nombre},
+
+El nuevo estado de tu donación #${donacionId} es: ${estado}.
+
+${mensaje}${estadoTurno ? `\n\nEstado de tu turno: ${estadoTurno}` : ''}${url ? `\n\nVer mis donaciones: ${url}` : ''}
+
+Reboot IT – MSIT`;
+  return { subject: `Tu donación #${donacionId} cambió de estado – Reboot IT`, html, text };
+}

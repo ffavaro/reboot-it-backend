@@ -6,9 +6,10 @@ import { Donacion } from '../donacion/donacion.entity';
 import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 import { CertificadoDisposicionController } from './certificado-disposicion.controller';
 import { CertificadoDisposicionService } from './certificado-disposicion.service';
+import { NotificacionesModule } from '../notificaciones/notificaciones.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CertificadoDisposicion, Lote, Donacion, EstadoDonacion])],
+  imports: [TypeOrmModule.forFeature([CertificadoDisposicion, Lote, Donacion, EstadoDonacion]), NotificacionesModule],
   controllers: [CertificadoDisposicionController],
   providers: [CertificadoDisposicionService],
   exports: [CertificadoDisposicionService],

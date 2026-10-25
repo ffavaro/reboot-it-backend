@@ -13,9 +13,10 @@ import { Donacion } from '../donacion/donacion.entity';
 import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 import { Lote } from '../lote/lote.entity';
 import { Retiro } from '../retiro/retiro.entity';
+import { NotificacionesModule } from '../notificaciones/notificaciones.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Turno, EstadoTurno, Empleado, EmpleadoTransportista, RegistroFotografico, Material, CondicionMaterial, Donacion, EstadoDonacion, Lote, Retiro])],
+  imports: [TypeOrmModule.forFeature([Turno, EstadoTurno, Empleado, EmpleadoTransportista, RegistroFotografico, Material, CondicionMaterial, Donacion, EstadoDonacion, Lote, Retiro]), NotificacionesModule],
   controllers: [TurnoController],
   providers: [TurnoService],
   exports: [TurnoService],
