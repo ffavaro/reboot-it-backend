@@ -1,9 +1,9 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DonantesService } from './donantes.service';
 import { CreateDonanteDto } from './dto/create-donante.dto';
 import { UpdateDonanteDto } from './dto/update-donante.dto';
-import { Pantalla, Authenticated, ROL_ID_DONANTE } from '../auth/auth.decorators';
+import { Pantalla, Accion, Authenticated, ROL_ID_DONANTE } from '../auth/auth.decorators';
 import type { RequestConUsuario } from '../auth/auth-user';
 import { PermisosService } from '../permisos/permisos.service';
 import { AmbitoService } from '../permisos/ambito.service';
@@ -80,6 +80,16 @@ export class DonantesController {
       throw new ForbiddenException('No podés cambiar el usuario vinculado al donante.');
     }
     return this.donantesService.update(+id, dto);
+  }
+
+  // Es una edición del donante: lo hace quien puede editar Donantes (no el propio donante)
+  @Accion('editar')
+  @HttpCode(HttpStatus.OK)
+  @Post(':id/restablecer-contrasena')
+  @ApiOperation({ summary: 'Restablecer la contraseña del usuario del donante (devuelve una contraseña temporal una sola vez)' })
+  async restablecerContrasena(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    this.ambito.exigir(await this.ambito.de(req), 'donantes', +id);
+    return this.donantesService.restablecerContrasena(+id);
   }
 
   @Delete(':id')

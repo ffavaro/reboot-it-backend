@@ -1,4 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { randomInt } from 'crypto';
+import { MailService } from '../mail/mail.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Donante } from './donante.entity';
@@ -14,6 +17,7 @@ export class DonantesService {
     private readonly donanteRepository: Repository<Donante>,
     private readonly dataSource: DataSource,
     private readonly usuariosService: UsuariosService,
+    private readonly mail: MailService,
   ) {}
 
   /**
@@ -73,5 +77,30 @@ export class DonantesService {
     await this.findOne(id);
     await this.donanteRepository.update(id, { isActive: false });
     return { message: 'Donante desactivado' };
+  }
+
+  /**
+   * Restablece la contraseña del usuario del donante: genera una temporal (con mayúsculas, minúsculas y números), la guarda
+   * hasheada y la devuelve una sola vez para que se la den al donante. Si el usuario tiene email, se le avisa del cambio.
+   * La contraseña temporal nunca se guarda en claro ni se registra en la auditoría.
+   */
+  async restablecerContrasena(id: number) {
+    const donante = await this.findOne(id);
+    if (!donante.usuarioId) throw new BadRequestException('El donante no tiene un usuario asociado.');
+    const usuario = await this.usuariosService.findOne(donante.usuarioId);
+    const elegir = (caracteres: string, n: number) => Array.from({ length: n }, () => caracteres[randomInt(0, caracteres.length)]);
+    const caracteres = [
+      ...elegir('ABCDEFGHJKLMNPQRSTUVWXYZ', 3),
+      ...elegir('abcdefghijkmnpqrstuvwxyz', 5),
+      ...elegir('23456789', 3),
+    ];
+    for (let i = caracteres.length - 1; i > 0; i--) {
+      const j = randomInt(0, i + 1);
+      [caracteres[i], caracteres[j]] = [caracteres[j], caracteres[i]];
+    }
+    const password = caracteres.join('');
+    await this.usuariosService.updatePassword(usuario.id, await bcrypt.hash(password, 10));
+    const avisado = usuario.email ? await this.mail.sendPasswordChangedNotice(usuario.email, donante.nombre || usuario.nombre, new Date()) : false;
+    return { password, email: usuario.email ?? null, avisoEnviado: avisado };
   }
 }
