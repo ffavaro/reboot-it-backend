@@ -22,7 +22,7 @@ const ESTADO_DONACION_EN_PROCESO = ESTADO_DONACION.EN_PROCESO;
 const ESTADO_EN_CLASIFICACION = ESTADO_TURNO.EN_CLASIFICACION;
 // Los materiales de un turno finalizado quedan "A definir" hasta que se los clasifica
 const CONDICION_PENDIENTE = CONDICION_MATERIAL.A_DEFINIR;
-const RELATIONS = ['donante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'];
+const RELATIONS = ['donante', 'donante.tipoDonante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'];
 
 import { validarPesoDonacionVehiculo } from '../common/peso-vehiculo';
 import { NotificacionDonacionService } from '../notificaciones/notificacion-donacion.service';

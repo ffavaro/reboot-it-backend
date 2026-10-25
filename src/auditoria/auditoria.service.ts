@@ -99,4 +99,15 @@ export class AuditoriaService {
     const [data, total] = await qb.getManyAndCount();
     return { data, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
   }
+
+  /** Acciones distintas registradas (para el filtro por acción de la pantalla de auditoría). */
+  async acciones(): Promise<string[]> {
+    const filas: { accion: string }[] = await this.logRepository
+      .createQueryBuilder('l')
+      .select('DISTINCT l.accion', 'accion')
+      .orderBy('l.accion', 'ASC')
+      .limit(300)
+      .getRawMany();
+    return filas.map((f) => f.accion);
+  }
 }
