@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEmail, IsNumber, IsOptional, IsString, Matches, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import { IsEmail, IsIn, IsNumber, IsOptional, IsString, Matches, MaxLength, MinLength, ValidateNested } from 'class-validator';
+
+export const JURISDICCIONES = ['Nacional', 'Provincial', 'Municipal'];
 
 // Datos del usuario que se crea junto con el donante (rol Donante, con el nombre del donante)
 export class DatosUsuarioDonanteDto {
@@ -56,4 +58,21 @@ export class CreateDonanteDto {
   @IsString({ message: 'La dirección debe ser un texto' })
   @IsOptional()
   direccion?: string;
+
+  @ApiPropertyOptional({ example: 'Provincial', enum: JURISDICCIONES, description: 'Solo organismos públicos' })
+  @IsIn(JURISDICCIONES, { message: 'La jurisdicción debe ser Nacional, Provincial o Municipal' })
+  @IsOptional()
+  jurisdiccion?: string;
+
+  @ApiPropertyOptional({ example: 'Gómez Laura', description: 'Responsable a cargo (apellido y nombre). Solo organismos públicos' })
+  @IsString({ message: 'El responsable debe ser un texto' })
+  @MaxLength(100, { message: 'El responsable puede tener como máximo 100 caracteres' })
+  @IsOptional()
+  responsable?: string;
+
+  @ApiPropertyOptional({ example: 'Directora de Compras', description: 'Cargo del responsable. Solo organismos públicos' })
+  @IsString({ message: 'El cargo debe ser un texto' })
+  @MaxLength(100, { message: 'El cargo puede tener como máximo 100 caracteres' })
+  @IsOptional()
+  cargoResponsable?: string;
 }

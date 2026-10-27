@@ -19,8 +19,9 @@ export class TipoVehiculoService {
   }
 
   create(dto: CreateTipoVehiculoDto) {
-    this.validarRango(dto.pesoMinimo, dto.pesoMaximo);
-    const tipo = this.tipoVehiculoRepository.create(dto);
+    this.validarRango(dto.pesoMinimo ?? 1, dto.pesoMaximo);
+    // Sin peso mínimo, el vehículo soporta desde 1 kg
+    const tipo = this.tipoVehiculoRepository.create({ ...dto, pesoMinimo: dto.pesoMinimo ?? 1 });
     return this.tipoVehiculoRepository.save(tipo);
   }
 

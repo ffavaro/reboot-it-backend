@@ -55,7 +55,7 @@ export class CreateEmpleadoDto {
   @Transform(trim)
   @IsString({ message: 'El teléfono debe ser un texto' })
   @IsNotEmpty({ message: 'El teléfono es obligatorio' })
-  @Matches(/^\d{6,20}$/, { message: 'El teléfono debe tener entre 6 y 20 dígitos numéricos' })
+  @Matches(/^(?:54)?9?[1-9]\d{9}$/, { message: 'El teléfono debe ser un número argentino válido: código de área + número, 10 dígitos (ej. 1123456789)' })
   telefono: string;
 
   @ApiPropertyOptional({ example: 'Técnico IT' })

@@ -13,9 +13,8 @@ export class CreateTipoVehiculoDto {
   @IsOptional()
   pesoMinimo?: number;
 
-  @ApiPropertyOptional({ example: 90, description: 'Peso máximo que soporta el vehículo (kg)' })
+  @ApiProperty({ example: 90, description: 'Peso máximo que soporta el vehículo (kg)' })
   @IsNumber({}, { message: 'El peso máximo debe ser un número' })
   @IsPositive({ message: 'El peso máximo debe ser mayor a 0' })
-  @IsOptional()
-  pesoMaximo?: number;
+  pesoMaximo: number;
 }
