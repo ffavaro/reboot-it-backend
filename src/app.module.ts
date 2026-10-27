@@ -39,6 +39,7 @@ import { ModeloModule } from './modelo/modelo.module';
 import { UploadModule } from './upload/upload.module';
 import { HistorialKmVehiculoModule } from './historial-km-vehiculo/historial-km-vehiculo.module';
 import { HojaRutaModule } from './hoja-ruta/hoja-ruta.module';
+import { GeoModule } from './geo/geo.module';
 import { AuditoriaModule } from './auditoria/auditoria.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 
@@ -99,6 +100,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     UploadModule,
     HistorialKmVehiculoModule,
     HojaRutaModule,
+    GeoModule,
     AuditoriaModule,
     DashboardModule,
   ],

@@ -24,6 +24,16 @@ export class Donante {
   @Column({ length: 255, nullable: true })
   direccion: string;
 
+  // Solo organismos públicos
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  jurisdiccion: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  responsable: string | null;
+
+  @Column({ name: 'cargo_responsable', type: 'varchar', length: 100, nullable: true })
+  cargoResponsable: string | null;
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 
