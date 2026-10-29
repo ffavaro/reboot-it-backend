@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateRolDto } from './dto/create-rol.dto';
@@ -29,19 +30,19 @@ export class RolesController {
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un rol por ID' })
   @ApiResponse({ status: 404, description: 'Rol no encontrado' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.rolesService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un rol' })
-  update(@Param('id') id: string, @Body() dto: UpdateRolDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateRolDto) {
     return this.rolesService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un rol (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.rolesService.remove(+id);
   }
 }

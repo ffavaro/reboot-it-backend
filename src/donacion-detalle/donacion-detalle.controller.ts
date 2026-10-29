@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DonacionDetalleService } from './donacion-detalle.service';
@@ -27,25 +28,25 @@ export class DonacionDetalleController {
 
   @Get('donacion/:donacionId')
   @ApiOperation({ summary: 'Listar detalles de una donación específica' })
-  findByDonacion(@Param('donacionId') donacionId: string) {
+  findByDonacion(@Param('donacionId', ParseIdPipe) donacionId: number) {
     return this.service.findByDonacion(+donacionId);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un detalle por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.service.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un detalle de donación' })
-  update(@Param('id') id: string, @Body() dto: UpdateDonacionDetalleDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateDonacionDetalleDto) {
     return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un detalle (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.service.remove(+id);
   }
 }

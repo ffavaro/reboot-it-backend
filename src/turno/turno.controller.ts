@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TurnoService } from './turno.service';
@@ -38,7 +39,7 @@ export class TurnoController {
   @Pantalla('turnos', 'agenda', 'donaciones', 'retiros')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un turno por ID' })
-  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req, ['turnos', 'agenda']);
     this.ambito.exigir(a, 'turnos', +id);
     const turno = await this.turnoService.findOne(+id);
@@ -47,7 +48,7 @@ export class TurnoController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un turno' })
-  async update(@Param('id') id: string, @Body() dto: UpdateTurnoDto, @Req() req: RequestConUsuario) {
+  async update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateTurnoDto, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
     if (req.permiso?.alcance === 'LIMITADO') await this.turnoService.validarCambioDelDonante(+id, dto.fechaHora);
     return this.turnoService.update(+id, dto);
@@ -57,7 +58,7 @@ export class TurnoController {
   @Pantalla('turnos!')
   @Patch(':id/asignar')
   @ApiOperation({ summary: 'Asignar empleado al turno y pasar a estado Asignado' })
-  async asignarEmpleado(@Param('id') id: string, @Body() dto: AsignarEmpleadoDto, @Req() req: RequestConUsuario) {
+  async asignarEmpleado(@Param('id', ParseIdPipe) id: number, @Body() dto: AsignarEmpleadoDto, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
     return this.turnoService.asignarEmpleado(+id, dto);
   }
@@ -65,7 +66,7 @@ export class TurnoController {
   @Pantalla('turnos!')
   @Patch(':id/confirmar-recepcion')
   @ApiOperation({ summary: 'Turno de sucursal: pasa de Asignado a Retiro confirmado para poder clasificar los materiales' })
-  async confirmarRecepcion(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async confirmarRecepcion(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
     return this.turnoService.confirmarRecepcion(+id);
   }
@@ -73,14 +74,14 @@ export class TurnoController {
   @Pantalla('turnos!')
   @Patch(':id/finalizar')
   @ApiOperation({ summary: 'Finalizar un turno (requiere al menos una foto registrada)' })
-  async finalizar(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async finalizar(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
     return this.turnoService.finalizarTurno(+id);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un turno (soft delete)' })
-  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async remove(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'turnos', +id);
     if (req.permiso?.alcance === 'LIMITADO') await this.turnoService.validarCambioDelDonante(+id);
     return this.turnoService.remove(+id);

@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PalletService } from './pallet.service';
@@ -28,19 +29,19 @@ export class PalletController {
   @Pantalla('pallets', 'racks', 'lotes')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un pallet por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.palletService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un pallet' })
-  update(@Param('id') id: string, @Body() dto: UpdatePalletDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdatePalletDto) {
     return this.palletService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un pallet (soft delete)' })
-  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async remove(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     if (req.permiso?.alcance === 'LIMITADO') await this.palletService.validarBajaDelTecnico(+id);
     return this.palletService.remove(+id);
   }

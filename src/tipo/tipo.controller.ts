@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TipoService } from './tipo.service';
@@ -27,19 +28,19 @@ export class TipoController {
   @Pantalla('tipos', 'medio_almacenamiento')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un tipo por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.tipoService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un tipo' })
-  update(@Param('id') id: string, @Body() dto: UpdateTipoDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateTipoDto) {
     return this.tipoService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un tipo (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.tipoService.remove(+id);
   }
 }

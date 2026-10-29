@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, ForbiddenException } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DonacionService } from './donacion.service';
@@ -51,7 +52,7 @@ export class DonacionController {
   @Pantalla('donaciones', 'lotes', 'turnos', 'agenda', 'constancia_retiro', 'retiros')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una donación por ID' })
-  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'donaciones', +id);
     this.ambito.exigirEnPlanta(await this.ambito.enPlanta(req, ['donaciones'], true), +id);
     return this.donacionService.findOne(+id);
@@ -59,7 +60,7 @@ export class DonacionController {
 
   @Get(':id/detalle')
   @ApiOperation({ summary: 'Detalle de una donación: materiales, turno, fotos, retiro y constancia, lote y certificado' })
-  async detalle(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async detalle(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
     this.ambito.exigir(a, 'donaciones', +id);
     const detalle = await this.donacionService.detalle(+id);
@@ -69,7 +70,7 @@ export class DonacionController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una donación' })
-  async update(@Param('id') id: string, @Body() dto: UpdateDonacionDto, @Req() req: RequestConUsuario) {
+  async update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateDonacionDto, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
     this.ambito.exigir(a, 'donaciones', +id);
     if (dto.donanteId !== undefined) this.ambito.exigir(a, 'donantes', dto.donanteId);
@@ -86,7 +87,7 @@ export class DonacionController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar una donación (soft delete)' })
-  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async remove(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'donaciones', +id);
     if (req.permiso?.alcance === 'LIMITADO') await this.donacionService.validarCambioDelDonante(+id);
     return this.donacionService.remove(+id);

@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsDateString, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, MaxLength, MinLength, IsBoolean, IsInt, Min, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDateString, IsEmail, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, MaxLength, Min, MinLength, ValidateNested } from 'class-validator';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
@@ -14,7 +14,7 @@ export class DatosTransportistaDto {
   @ApiProperty({ example: 'http://localhost:3001/uploads/123-456.jpg', description: 'URL de la foto del carnet de conducir' })
   @IsString({ message: 'La foto del carnet debe ser un texto' })
   @IsNotEmpty({ message: 'La foto del carnet de conducir es obligatoria' })
-  @MaxLength(500, { message: 'La foto del carnet no puede superar los 500 caracteres' })
+  @MaxLength(300, { message: 'La foto del carnet no puede superar los 300 caracteres' })
   carnetUrl: string;
 
   @ApiProperty({ example: '2028-05-20', description: 'Vencimiento del carnet (yyyy-MM-dd)' })
@@ -25,14 +25,23 @@ export class DatosTransportistaDto {
 export class CreateEmpleadoDto {
   @ApiProperty({ example: 2 })
   @IsNumber({}, { message: 'El rol debe ser un número' })
+  @Min(1, { message: 'Seleccioná una opción válida' })
   rolId: number;
 
   @ApiProperty({ example: 'Juan' })
   @IsString({ message: 'El nombre debe ser un texto' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsNotEmpty({ message: 'El nombre es obligatorio' })
+  @MaxLength(100, { message: 'El nombre no puede superar los 100 caracteres' })
+  @Matches(/^[\p{L} ]+$/u, { message: 'Solo puede contener letras' })
   nombre: string;
 
   @ApiProperty({ example: 'Pérez' })
   @IsString({ message: 'El apellido debe ser un texto' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsNotEmpty({ message: 'El apellido es obligatorio' })
+  @MaxLength(100, { message: 'El apellido no puede superar los 100 caracteres' })
+  @Matches(/^[\p{L} ]+$/u, { message: 'Solo puede contener letras' })
   apellido: string;
 
   @ApiProperty({ example: '30123456', description: 'DNI (8 dígitos) o CUIT (11 dígitos), solo números' })
@@ -61,6 +70,8 @@ export class CreateEmpleadoDto {
   @ApiPropertyOptional({ example: 'Técnico IT' })
   @IsString({ message: 'El cargo debe ser un texto' })
   @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @MaxLength(100, { message: 'El cargo no puede superar los 100 caracteres' })
   cargo?: string;
 
   @ApiPropertyOptional({ example: true, description: 'Tiene carnet de conducir (necesario para ser transportista)' })
@@ -93,6 +104,6 @@ export class CreateEmpleadoDto {
   @ApiProperty({ example: 'clave123', minLength: 6, description: 'Contraseña inicial del usuario' })
   @IsString({ message: 'La contraseña debe ser un texto' })
   @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
-  @MaxLength(72, { message: 'La contraseña no puede superar los 72 caracteres' })
+  @MaxLength(12, { message: 'La contraseña no puede superar los 12 caracteres' })
   password: string;
 }

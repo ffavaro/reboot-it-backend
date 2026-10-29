@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ModeloService } from './modelo.service';
@@ -31,19 +32,19 @@ export class ModeloController {
   @Pantalla('modelos', 'medio_almacenamiento')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un modelo por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.modeloService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un modelo' })
-  update(@Param('id') id: string, @Body() dto: UpdateModeloDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateModeloDto) {
     return this.modeloService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un modelo (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.modeloService.remove(+id);
   }
 }

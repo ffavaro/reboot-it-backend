@@ -1,19 +1,21 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 
 export class CreateCertificadoDisposicionDto {
   @ApiProperty({ example: 1, description: 'ID del lote' })
   @IsNumber({}, { message: 'El lote debe ser un número' })
+  @Min(1, { message: 'El lote no es válido' })
   loteId: number;
 
   @ApiProperty({ example: 1, description: 'ID del gestor ambiental' })
   @IsNumber({}, { message: 'El gestor ambiental debe ser un número' })
+  @Min(1, { message: 'El gestor ambiental no es válido' })
   gestorAmbientalId: number;
 
   @ApiProperty({ example: 'http://localhost:3001/uploads/123-456.pdf', description: 'URL de la foto o PDF del certificado de disposición final (se sube antes con POST /upload)' })
   @IsString({ message: 'El archivo del certificado debe ser un texto (URL)' })
   @IsNotEmpty({ message: 'El archivo del certificado de disposición final es obligatorio' })
-  @MaxLength(500, { message: 'La URL del archivo no puede superar los 500 caracteres' })
+  @MaxLength(300, { message: 'La URL del archivo no puede superar los 300 caracteres' })
   archivoFinalUrl: string;
 
   // fechaEmision y numeroCertificado no se reciben del cliente: el service

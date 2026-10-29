@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsPositive, IsString, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 
 export class DetalleInlineDto {
   @ApiProperty({ example: 1 })
@@ -23,6 +23,7 @@ export class DetalleInlineDto {
 export class CreateDonacionDto {
   @ApiProperty({ example: 1, description: 'ID del donante' })
   @IsNumber({}, { message: 'El donante debe ser un número' })
+  @Min(1, { message: 'El donante no es válido' })
   donanteId: number;
 
   @ApiProperty({ example: '2024-06-15T10:00:00Z', description: 'Fecha y hora del turno a crear' })
@@ -32,11 +33,14 @@ export class CreateDonacionDto {
   @ApiPropertyOptional({ example: 1, description: 'ID del estado de la donación' })
   @IsNumber({}, { message: 'El estado de la donación debe ser un número' })
   @IsOptional()
+  @Min(1, { message: 'Seleccioná una opción válida' })
   estadoDonacionId?: number;
 
   @ApiPropertyOptional({ example: 'Equipos informáticos en desuso' })
   @IsString({ message: 'La descripción debe ser un texto' })
   @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @MaxLength(255, { message: 'La descripción no puede superar los 255 caracteres' })
   descripcion?: string;
 
   @ApiPropertyOptional({ example: false })
@@ -59,6 +63,8 @@ export class CreateDonacionDto {
   })
   @IsNumber({}, { message: 'El peso estimado debe ser un número' })
   @IsOptional()
+  @IsPositive({ message: 'El peso estimado debe ser mayor a 0' })
+  @Max(99999999.99, { message: 'El peso estimado no puede superar 99999999.99' })
   pesoEstimadoKg?: number;
 
   @ApiPropertyOptional({
@@ -72,10 +78,10 @@ export class CreateDonacionDto {
   @MaxLength(255, { each: true, message: 'La URL de cada foto no puede superar los 255 caracteres' })
   fotosUrls?: string[];
 
-  @ApiPropertyOptional({ type: [DetalleInlineDto] })
-  @IsOptional()
+  @ApiProperty({ type: [DetalleInlineDto] })
   @IsArray({ message: 'Los detalles deben ser una lista' })
+  @ArrayMinSize(1, { message: 'Agregá al menos un material a la donación' })
   @ValidateNested({ each: true })
   @Type(() => DetalleInlineDto)
-  detalles?: DetalleInlineDto[];
+  detalles: DetalleInlineDto[];
 }
