@@ -6,7 +6,9 @@ import { RequestConUsuario } from '../auth/auth-user';
 import { AuditoriaService, RESULTADO_ERROR, RESULTADO_EXITO } from './auditoria.service';
 import { NO_AUDITAR_KEY, describirAccion } from './auditoria.acciones';
 
-const esId = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0;
+// tope de un INT de MySQL: un id mayor (ej. /donacion/99999999999) rompería el insert de entidad_id
+const ID_MAXIMO = 2147483647;
+const esId = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0 && v <= ID_MAXIMO;
 
 /**
  * Interceptor global: registra en `logacceso` cada request que llega a un endpoint, con su resultado.
@@ -50,7 +52,7 @@ export class AuditoriaInterceptor implements NestInterceptor {
   private guardar(req: RequestConUsuario, codigoHttp: number, resultado: typeof RESULTADO_EXITO | typeof RESULTADO_ERROR, body?: any) {
     const { accion, entidad } = describirAccion(req.method, req.route?.path);
     const idParam = Number(req.params?.id);
-    const entidadId = Number.isInteger(idParam) && idParam > 0 ? idParam : esId(body?.id) ? body.id : esId(body?.hojaRuta?.id) ? body.hojaRuta.id : null;
+    const entidadId = esId(idParam) ? idParam : esId(body?.id) ? body.id : esId(body?.hojaRuta?.id) ? body.hojaRuta.id : null;
 
     // Sin await: la auditoría no demora la respuesta, y registrar() nunca lanza
     void this.auditoria.registrar({

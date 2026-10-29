@@ -20,6 +20,8 @@ export interface RutaCalculada {
   // Índices de las direcciones recibidas, en el orden de visita recomendado
   orden: number[];
   kmEstimados: number | null;
+  // Tiempo de manejo estimado del recorrido completo, sin contar el tiempo en cada parada
+  duracionMinutos: number | null;
   mapsUrl: string | null;
   // URL para mostrar la ruta en un iframe (mapa embebido)
   embedUrl: string | null;
@@ -120,7 +122,7 @@ export class GoogleMapsService {
 
     if (validas.length === 0) {
       return {
-        orden: sinDireccion, kmEstimados: null, mapsUrl: null, embedUrl: null, mapa: null, origen: base || null, puntos: [], optimizada: false,
+        orden: sinDireccion, kmEstimados: null, duracionMinutos: null, mapsUrl: null, embedUrl: null, mapa: null, origen: base || null, puntos: [], optimizada: false,
         advertencia: 'Ninguna parada tiene dirección cargada',
       };
     }
@@ -135,6 +137,7 @@ export class GoogleMapsService {
 
     let ordenIntermedias = intermedias.map((x) => x.i);
     let kmEstimados: number | null = null;
+    let duracionMinutos: number | null = null;
     let optimizada = false;
     let advertencia: string | undefined;
     let mapa: MapaRuta | null = null;
@@ -167,7 +170,7 @@ export class GoogleMapsService {
           headers: {
             'Content-Type': 'application/json',
             'X-Goog-Api-Key': key,
-            'X-Goog-FieldMask': 'routes.distanceMeters,routes.optimizedIntermediateWaypointIndex,routes.polyline.encodedPolyline,routes.legs.startLocation,routes.legs.endLocation',
+            'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration,routes.optimizedIntermediateWaypointIndex,routes.polyline.encodedPolyline,routes.legs.startLocation,routes.legs.endLocation',
           },
           body: JSON.stringify(body),
         }).finally(() => clearTimeout(timer));
@@ -176,7 +179,10 @@ export class GoogleMapsService {
         const route = data.routes?.[0];
         if (res.ok && route && typeof route.distanceMeters === 'number') {
           kmEstimados = Math.round((route.distanceMeters / 1000) * 100) / 100;
-          const kmAlerta = Number(this.config.get<string>('HOJA_RUTA_KM_ALERTA')) || KM_ALERTA_DEFAULT;
+          // La duración llega como texto en segundos ("1234s")
+          const segundos = parseFloat(String(route.duration ?? ''));
+          if (Number.isFinite(segundos)) duracionMinutos = Math.max(1, Math.round(segundos / 60));
+          const kmAlerta =Number(this.config.get<string>('HOJA_RUTA_KM_ALERTA')) || KM_ALERTA_DEFAULT;
           if (kmEstimados > kmAlerta) {
             advertencia = `La distancia estimada (${kmEstimados} km) es muy alta para una ruta local: revisá que las direcciones tengan calle, número y ciudad correctos`;
           }
@@ -236,6 +242,6 @@ export class GoogleMapsService {
           direccion: direccionDe(i),
         }));
 
-    return { orden: [...ordenValidas, ...sinDireccion], kmEstimados, mapsUrl, embedUrl, mapa, origen: base || null, puntos, optimizada, advertencia };
+    return { orden: [...ordenValidas, ...sinDireccion], kmEstimados, duracionMinutos, mapsUrl, embedUrl, mapa, origen: base || null, puntos, optimizada, advertencia };
   }
 }
