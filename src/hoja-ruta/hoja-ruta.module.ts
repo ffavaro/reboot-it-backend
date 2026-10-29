@@ -4,6 +4,7 @@ import { HojaRuta } from './hoja-ruta.entity';
 import { HojaRutaController } from './hoja-ruta.controller';
 import { HojaRutaService } from './hoja-ruta.service';
 import { GoogleMapsService } from './google-maps.service';
+import { ClimaService } from './clima.service';
 import { Turno } from '../turno/turno.entity';
 import { Donacion } from '../donacion/donacion.entity';
 import { Vehiculo } from '../vehiculos/vehiculo.entity';
@@ -15,6 +16,6 @@ import { ConstanciaRetiroModule } from '../constancia-retiro/constancia-retiro.m
 @Module({
   imports: [TypeOrmModule.forFeature([HojaRuta, HojaRutaTurno, Turno, Donacion, Vehiculo]), TurnoModule, ConstanciaRetiroModule],
   controllers: [HojaRutaController],
-  providers: [HojaRutaService, GoogleMapsService],
+  providers: [HojaRutaService, GoogleMapsService, ClimaService],
 })
 export class HojaRutaModule {}

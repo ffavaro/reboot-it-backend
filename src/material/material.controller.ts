@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MaterialService } from './material.service';
@@ -37,25 +38,25 @@ export class MaterialController {
   @Pantalla('materiales', 'dashboard+', 'proceso_destruccion', 'lotes')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un material por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.materialService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un material' })
-  update(@Param('id') id: string, @Body() dto: UpdateMaterialDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateMaterialDto) {
     return this.materialService.update(+id, dto);
   }
 
   @Patch(':id/clasificar')
   @ApiOperation({ summary: 'Clasificar material: actualizar condición y crear proceso de destrucción si aplica' })
-  clasificar(@Param('id') id: string, @Body() dto: ClasificarMaterialDto) {
+  clasificar(@Param('id', ParseIdPipe) id: number, @Body() dto: ClasificarMaterialDto) {
     return this.materialService.clasificarMaterial(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un material (soft delete)' })
-  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async remove(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     if (req.permiso?.alcance === 'LIMITADO') await this.materialService.validarBajaDelTecnico(+id);
     return this.materialService.remove(+id);
   }

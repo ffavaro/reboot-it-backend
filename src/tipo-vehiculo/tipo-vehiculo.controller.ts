@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TipoVehiculoService } from './tipo-vehiculo.service';
@@ -36,20 +37,20 @@ export class TipoVehiculoController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un tipo de vehículo por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.tipoVehiculoService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un tipo de vehículo' })
-  async update(@Param('id') id: string, @Body() dto: UpdateTipoVehiculoDto, @Req() req: RequestConUsuario) {
+  async update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateTipoVehiculoDto, @Req() req: RequestConUsuario) {
     await this.soloEquipo(req);
     return this.tipoVehiculoService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un tipo de vehículo (soft delete)' })
-  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async remove(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     await this.soloEquipo(req);
     return this.tipoVehiculoService.remove(+id);
   }

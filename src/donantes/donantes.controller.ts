@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DonantesService } from './donantes.service';
@@ -63,7 +64,7 @@ export class DonantesController {
   @Pantalla(...PANTALLAS_CONSULTA_DONANTES)
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un donante por ID' })
-  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req, ['donantes']);
     this.ambito.exigir(a, 'donantes', +id);
     const donante = await this.donantesService.findOne(+id);
@@ -73,7 +74,7 @@ export class DonantesController {
   @Pantalla('donantes', 'mi_perfil')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un donante' })
-  async update(@Param('id') id: string, @Body() dto: UpdateDonanteDto, @Req() req: RequestConUsuario) {
+  async update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateDonanteDto, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'donantes', +id);
     // quien solo ve lo propio no puede reasignar el usuario al que está vinculado el donante
     if (req.permiso?.alcance === 'PROPIO' && dto.usuarioId !== undefined) {
@@ -87,14 +88,14 @@ export class DonantesController {
   @HttpCode(HttpStatus.OK)
   @Post(':id/restablecer-contrasena')
   @ApiOperation({ summary: 'Restablecer la contraseña del usuario del donante (devuelve una contraseña temporal una sola vez)' })
-  async restablecerContrasena(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async restablecerContrasena(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'donantes', +id);
     return this.donantesService.restablecerContrasena(+id);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un donante (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.donantesService.remove(+id);
   }
 }

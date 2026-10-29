@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MarcaService } from './marca.service';
@@ -27,19 +28,19 @@ export class MarcaController {
   @Pantalla('marcas', 'medio_almacenamiento', 'modelos')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una marca por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.marcaService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una marca' })
-  update(@Param('id') id: string, @Body() dto: UpdateMarcaDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateMarcaDto) {
     return this.marcaService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar una marca (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.marcaService.remove(+id);
   }
 }

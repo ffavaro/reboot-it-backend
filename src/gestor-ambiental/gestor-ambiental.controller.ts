@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GestorAmbientalService } from './gestor-ambiental.service';
@@ -27,19 +28,19 @@ export class GestorAmbientalController {
   @Pantalla('gestora_ambiental', 'certificado_disposicion', 'proceso_destruccion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un gestor ambiental por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.gestorAmbientalService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un gestor ambiental' })
-  update(@Param('id') id: string, @Body() dto: UpdateGestorAmbientalDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateGestorAmbientalDto) {
     return this.gestorAmbientalService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un gestor ambiental (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.gestorAmbientalService.remove(+id);
   }
 }

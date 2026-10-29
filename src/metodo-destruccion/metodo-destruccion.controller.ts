@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MetodoDestruccionService } from './metodo-destruccion.service';
@@ -27,19 +28,19 @@ export class MetodoDestruccionController {
   @Pantalla('metodos_destruccion', 'proceso_destruccion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un método de destrucción por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.service.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un método de destrucción' })
-  update(@Param('id') id: string, @Body() dto: UpdateMetodoDestruccionDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateMetodoDestruccionDto) {
     return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un método de destrucción (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.service.remove(+id);
   }
 }

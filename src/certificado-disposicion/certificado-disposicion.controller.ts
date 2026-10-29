@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CertificadoDisposicionService } from './certificado-disposicion.service';
@@ -32,7 +33,7 @@ export class CertificadoDisposicionController {
 
   @Get(':id/datos')
   @ApiOperation({ summary: 'Datos del certificado para generar su PDF' })
-  async datos(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async datos(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
     const certificado = await this.certificadoDisposicionService.findOne(+id);
     this.ambito.exigir(a, 'lotes', certificado.loteId);
@@ -41,7 +42,7 @@ export class CertificadoDisposicionController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un certificado de disposición por ID' })
-  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
     const certificado = await this.certificadoDisposicionService.findOne(+id);
     this.ambito.exigir(a, 'lotes', certificado.loteId);
@@ -50,13 +51,13 @@ export class CertificadoDisposicionController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un certificado de disposición' })
-  update(@Param('id') id: string, @Body() dto: UpdateCertificadoDisposicionDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateCertificadoDisposicionDto) {
     return this.certificadoDisposicionService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un certificado de disposición (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.certificadoDisposicionService.remove(+id);
   }
 }

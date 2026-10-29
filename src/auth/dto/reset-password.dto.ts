@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
-  IsEmail, IsNotEmpty, IsString, Matches, MinLength, registerDecorator, ValidationArguments, ValidationOptions,
+  IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength, registerDecorator, ValidationArguments, ValidationOptions,
 } from 'class-validator';
 
 // confirmPassword tiene que coincidir con otro campo del mismo DTO
@@ -36,6 +36,7 @@ export class ResetPasswordDto {
   @Matches(/[A-Z]/, { message: 'La contraseña debe tener al menos una mayúscula' })
   @Matches(/[a-z]/, { message: 'La contraseña debe tener al menos una minúscula' })
   @Matches(/\d/, { message: 'La contraseña debe tener al menos un número' })
+  @MaxLength(12, { message: 'La contraseña no puede superar los 12 caracteres' })
   newPassword: string;
 
   @CoincideCon('newPassword', { message: 'Las contraseñas no coinciden' })

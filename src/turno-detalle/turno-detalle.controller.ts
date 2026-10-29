@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TurnoDetalleService } from './turno-detalle.service';
@@ -27,25 +28,25 @@ export class TurnoDetalleController {
 
   @Get('turno/:turnoId')
   @ApiOperation({ summary: 'Listar detalles de un turno específico' })
-  findByTurno(@Param('turnoId') turnoId: string) {
+  findByTurno(@Param('turnoId', ParseIdPipe) turnoId: number) {
     return this.service.findByTurno(+turnoId);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un detalle de turno por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.service.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un detalle de turno' })
-  update(@Param('id') id: string, @Body() dto: UpdateTurnoDetalleDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateTurnoDetalleDto) {
     return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un detalle de turno (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.service.remove(+id);
   }
 }

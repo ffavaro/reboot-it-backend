@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoteService } from './lote.service';
@@ -34,7 +35,7 @@ export class LoteController {
   @Pantalla('lotes', 'dashboard+', 'certificado_disposicion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un lote por ID' })
-  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
     const lote = await this.loteService.findOne(+id);
     this.ambito.exigir(a, 'donaciones', lote.donacionId);
@@ -43,7 +44,7 @@ export class LoteController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un lote' })
-  async update(@Param('id') id: string, @Body() dto: UpdateLoteDto, @Req() req: RequestConUsuario) {
+  async update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateLoteDto, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
     this.ambito.exigir(a, 'donaciones', (await this.loteService.findOne(+id)).donacionId);
     return this.loteService.update(+id, dto);
@@ -51,7 +52,7 @@ export class LoteController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un lote (soft delete)' })
-  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async remove(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
     this.ambito.exigir(a, 'donaciones', (await this.loteService.findOne(+id)).donacionId);
     return this.loteService.remove(+id);

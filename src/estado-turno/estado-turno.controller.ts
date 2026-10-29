@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EstadoTurnoService } from './estado-turno.service';
@@ -27,19 +28,19 @@ export class EstadoTurnoController {
   @Authenticated()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un estado de turno por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.estadoTurnoService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un estado de turno' })
-  update(@Param('id') id: string, @Body() dto: UpdateEstadoTurnoDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateEstadoTurnoDto) {
     return this.estadoTurnoService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un estado de turno (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.estadoTurnoService.remove(+id);
   }
 }

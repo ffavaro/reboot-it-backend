@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CondicionMaterialService } from './condicion-material.service';
@@ -27,19 +28,19 @@ export class CondicionMaterialController {
   @Authenticated()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una condición de material por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.condicionMaterialService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una condición de material' })
-  update(@Param('id') id: string, @Body() dto: UpdateCondicionMaterialDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateCondicionMaterialDto) {
     return this.condicionMaterialService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar una condición de material (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.condicionMaterialService.remove(+id);
   }
 }

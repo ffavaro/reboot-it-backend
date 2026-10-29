@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ConstanciaRetiroService } from './constancia-retiro.service';
@@ -34,7 +35,7 @@ export class ConstanciaRetiroController {
 
   @Get(':id/datos')
   @ApiOperation({ summary: 'Datos de la constancia para mostrarla y descargarla en PDF' })
-  async datos(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async datos(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
     const constancia = await this.constanciaRetiroService.findOne(+id);
     this.ambito.exigir(a, 'retiros', constancia.retiroId);
@@ -44,7 +45,7 @@ export class ConstanciaRetiroController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una constancia de retiro por ID' })
-  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
     const constancia = await this.constanciaRetiroService.findOne(+id);
     this.ambito.exigir(a, 'retiros', constancia.retiroId);
@@ -53,13 +54,13 @@ export class ConstanciaRetiroController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una constancia de retiro' })
-  update(@Param('id') id: string, @Body() dto: UpdateConstanciaRetiroDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateConstanciaRetiroDto) {
     return this.constanciaRetiroService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar una constancia de retiro (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.constanciaRetiroService.remove(+id);
   }
 }

@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProcesoDestruccionService } from './proceso-destruccion.service';
@@ -33,25 +34,25 @@ export class ProcesoDestruccionController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un proceso de destrucción por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.procesoDestruccionService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un proceso de destrucción' })
-  update(@Param('id') id: string, @Body() dto: UpdateProcesoDestruccionDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateProcesoDestruccionDto) {
     return this.procesoDestruccionService.update(+id, dto);
   }
 
   @Patch(':id/finalizar')
   @ApiOperation({ summary: 'Finalizar un proceso de destrucción (Técnico o Administrativo)' })
-  finalizar(@Param('id') id: string) {
+  finalizar(@Param('id', ParseIdPipe) id: number) {
     return this.procesoDestruccionService.finalizar(+id);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un proceso de destrucción (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.procesoDestruccionService.remove(+id);
   }
 }

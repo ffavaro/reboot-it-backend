@@ -27,15 +27,20 @@ export class RegisterDto {
 
   @ApiProperty({ example: 'juan@email.com' })
   @IsEmail({}, { message: 'Correo inválido' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @MaxLength(150, { message: 'El correo no puede superar los 150 caracteres' })
   email: string;
 
   @ApiProperty({ example: 'password123', minLength: 6 })
   @IsString({ message: 'La contraseña debe ser un texto' })
   @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
+  @MaxLength(12, { message: 'La contraseña no puede superar los 12 caracteres' })
   password: string;
 
   @ApiProperty({ example: '20123456789' })
   @IsString({ message: 'El CUIT/DNI debe ser un texto' })
   @IsNotEmpty({ message: 'El CUIT/DNI es obligatorio' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @Matches(/^(\d{8}|\d{11})$/, { message: 'El CUIT/DNI debe tener 8 (DNI) u 11 (CUIT) dígitos numéricos' })
   cuitDni: string;
 }

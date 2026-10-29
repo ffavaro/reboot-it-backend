@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EmpleadoTransportistaService } from './empleado-transportista.service';
@@ -36,21 +37,21 @@ export class EmpleadoTransportistaController {
   @Pantalla('empleado_transportista', 'turnos', 'retiros', 'hoja_ruta')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un empleado transportista por ID' })
-  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req, ['empleado_transportista', 'turnos', 'retiros', 'hoja_ruta']), 'transportistas', +id);
     return this.empleadoTransportistaService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un empleado transportista' })
-  async update(@Param('id') id: string, @Body() dto: UpdateEmpleadoTransportistaDto, @Req() req: RequestConUsuario) {
+  async update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateEmpleadoTransportistaDto, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'transportistas', +id);
     return this.empleadoTransportistaService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un empleado transportista (soft delete)' })
-  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async remove(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'transportistas', +id);
     return this.empleadoTransportistaService.remove(+id);
   }

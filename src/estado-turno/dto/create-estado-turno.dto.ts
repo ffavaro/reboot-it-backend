@@ -1,8 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateEstadoTurnoDto {
   @ApiProperty({ example: 'Pendiente' })
   @IsString({ message: 'La descripción debe ser un texto' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsNotEmpty({ message: 'La descripción es obligatoria' })
+  @MaxLength(100, { message: 'La descripción no puede superar los 100 caracteres' })
   descripcion: string;
 }

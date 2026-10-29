@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
@@ -49,21 +50,21 @@ export class EmpleadosController {
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un empleado por ID' })
   @ApiResponse({ status: 404, description: 'Empleado no encontrado' })
-  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req, ['empleados', 'empleado_transportista', 'hoja_ruta', 'usuarios']), 'empleados', +id);
     return this.empleadosService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un empleado' })
-  async update(@Param('id') id: string, @Body() dto: UpdateEmpleadoDto, @Req() req: RequestConUsuario) {
+  async update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateEmpleadoDto, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'empleados', +id);
     return this.empleadosService.update(+id, dto, req.user);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un empleado y su usuario sin borrar sus datos (solo SysAdmin)' })
-  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async remove(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'empleados', +id);
     return this.empleadosService.remove(+id, req.user);
   }
@@ -71,7 +72,7 @@ export class EmpleadosController {
   @Accion('baja')
   @Patch(':id/reactivar')
   @ApiOperation({ summary: 'Reactivar un empleado desactivado, con su usuario (solo SysAdmin)' })
-  async reactivar(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async reactivar(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'empleados', +id);
     return this.empleadosService.reactivar(+id);
   }

@@ -8,6 +8,7 @@ import {
   HojaRuta,
 } from './hoja-ruta.entity';
 import { GoogleMapsService } from './google-maps.service';
+import { ClimaDia, ClimaService } from './clima.service';
 import { Turno } from '../turno/turno.entity';
 import { Donacion } from '../donacion/donacion.entity';
 import { Vehiculo } from '../vehiculos/vehiculo.entity';
@@ -59,6 +60,10 @@ export interface HojaRutaDia {
   paradas: ParadaHojaRuta[];
   cantidadPedidos: number;
   kmEstimados: number | null;
+  // Tiempo de manejo estimado del recorrido (sin contar el tiempo en cada parada)
+  duracionMinutos: number | null;
+  // Pronóstico del día de la ruta (null si no está disponible)
+  clima: ClimaDia | null;
   mapsUrl: string | null;
   embedUrl: string | null;
   // Línea y coordenadas del recorrido para dibujarlo en el mapa (null si Google no calculó la ruta)
@@ -107,6 +112,7 @@ export class HojaRutaService {
     @InjectRepository(Vehiculo) private readonly vehiculoRepository: Repository<Vehiculo>,
     private readonly dataSource: DataSource,
     private readonly mapsService: GoogleMapsService,
+    private readonly climaService: ClimaService,
     private readonly turnoService: TurnoService,
     private readonly constanciaService: ConstanciaRetiroService,
   ) {}
@@ -259,7 +265,7 @@ export class HojaRutaService {
       // Una hoja finalizada ya no se recalcula: se conserva lo estimado al momento de crearse
       const finalizada = hoja?.estado === ESTADO_HOJA_FINALIZADA;
       const ruta = finalizada
-        ? { orden: base.map((_, i) => i), kmEstimados: hoja!.kmEstimados, mapsUrl: null, embedUrl: null, mapa: null, origen: null, puntos: [], optimizada: false, advertencia: undefined }
+        ? { orden: base.map((_, i) => i), kmEstimados: hoja!.kmEstimados, duracionMinutos: null, mapsUrl: null, embedUrl: null, mapa: null, origen: null, puntos: [], optimizada: false, advertencia: undefined }
         : await this.mapsService.calcular(base.map((b) => b.direccion));
 
       const paradas: ParadaHojaRuta[] = ruta.orden.map((idx, pos) => ({
@@ -287,6 +293,10 @@ export class HojaRutaService {
         hoja.kmEstimados = ruta.kmEstimados;
       }
 
+      // Clima en la base (o, sin base, en la primera parada) el día de la ruta; solo si Google calculó el mapa
+      const centro = ruta.mapa?.puntos[0];
+      const clima = centro && !finalizada ? await this.climaService.pronostico(centro.lat, centro.lng, fecha) : null;
+
       const advertencias = [ruta.advertencia, !vehiculo ? 'El transportista no tiene un vehículo asignado' : undefined].filter(Boolean);
       grupos.push({
         empleadoTransportistaId: transportistaId,
@@ -302,6 +312,8 @@ export class HojaRutaService {
         cantidadPedidos: hoja?.cantidadPedidos ?? paradas.length,
         // generada: los km estimados quedan fijos como al generarla; sin generar, se calculan con los pedidos actuales
         kmEstimados: hoja && hoja.estado !== ESTADO_HOJA_PENDIENTE ? hoja.kmEstimados : ruta.kmEstimados,
+        duracionMinutos: ruta.duracionMinutos,
+        clima,
         mapsUrl: ruta.mapsUrl,
         embedUrl: ruta.embedUrl,
         mapa: ruta.mapa,

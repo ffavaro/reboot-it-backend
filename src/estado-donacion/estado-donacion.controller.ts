@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EstadoDonacionService } from './estado-donacion.service';
@@ -27,19 +28,19 @@ export class EstadoDonacionController {
   @Authenticated()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un estado de donación por ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.service.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un estado de donación' })
-  update(@Param('id') id: string, @Body() dto: UpdateEstadoDonacionDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateEstadoDonacionDto) {
     return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un estado de donación (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.service.remove(+id);
   }
 }

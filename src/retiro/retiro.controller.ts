@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RetiroService } from './retiro.service';
@@ -46,7 +47,7 @@ export class RetiroController {
   @Pantalla('retiros', 'constancia_retiro')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un retiro por ID' })
-  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req);
     this.ambito.exigir(a, 'retiros', +id);
     const retiro = await this.retiroService.findOne(+id);
@@ -56,14 +57,14 @@ export class RetiroController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un retiro' })
-  async update(@Param('id') id: string, @Body() dto: UpdateRetiroDto, @Req() req: RequestConUsuario) {
+  async update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateRetiroDto, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'retiros', +id);
     return this.retiroService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un retiro (soft delete)' })
-  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async remove(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'retiros', +id);
     return this.retiroService.remove(+id);
   }

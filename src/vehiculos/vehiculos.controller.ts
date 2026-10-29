@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { VehiculosService } from './vehiculos.service';
@@ -35,21 +36,21 @@ export class VehiculosController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un vehículo por ID' })
-  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'vehiculos', +id);
     return this.vehiculosService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un vehículo' })
-  async update(@Param('id') id: string, @Body() dto: UpdateVehiculoDto, @Req() req: RequestConUsuario) {
+  async update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateVehiculoDto, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'vehiculos', +id);
     return this.vehiculosService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un vehículo (soft delete)' })
-  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async remove(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req), 'vehiculos', +id);
     return this.vehiculosService.remove(+id);
   }

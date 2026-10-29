@@ -44,6 +44,13 @@ export class DonacionService {
   async create(dto: CreateDonacionDto) {
     const { fechaHora, detalles, fotosUrls, ...donacionData } = dto;
 
+    // El turno no puede ser de un día ya pasado (hora de Argentina, UTC-3); el horario del día lo valida el frontend
+    const ahoraAR = new Date(Date.now() - 3 * 3600 * 1000);
+    const inicioHoyAR = Date.UTC(ahoraAR.getUTCFullYear(), ahoraAR.getUTCMonth(), ahoraAR.getUTCDate()) + 3 * 3600 * 1000;
+    if (new Date(fechaHora).getTime() < inicioHoyAR) {
+      throw new BadRequestException('La fecha del turno no puede ser anterior a hoy.');
+    }
+
     // Toda donación nueva arranca "Pendiente" (quien dona no elige el estado y el equipo tampoco lo deja vacío)
     if (donacionData.estadoDonacionId == null) {
       const pendiente = await this.donacionRepository.manager

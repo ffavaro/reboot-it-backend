@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RegistroFotograficoService } from './registro-fotografico.service';
@@ -44,7 +45,7 @@ export class RegistroFotograficoController {
   @Pantalla('registro_fotografico', 'turnos')
   @Get('by-turno/:turnoId')
   @ApiOperation({ summary: 'Listar registros fotográficos de un turno' })
-  async findByTurno(@Param('turnoId') turnoId: string, @Req() req: RequestConUsuario) {
+  async findByTurno(@Param('turnoId', ParseIdPipe) turnoId: number, @Req() req: RequestConUsuario) {
     this.ambito.exigir(await this.ambito.de(req, ['registro_fotografico']), 'turnos', +turnoId);
     return this.registroFotograficoService.findByTurno(+turnoId);
   }
@@ -52,7 +53,7 @@ export class RegistroFotograficoController {
   @Pantalla('registro_fotografico', 'lotes')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un registro fotográfico por ID' })
-  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  async findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     const a = await this.ambito.de(req, ['registro_fotografico']);
     const foto = await this.registroFotograficoService.findOne(+id);
     if (a && !((!!foto.loteId && a.lotes.has(foto.loteId)) || (!!foto.turnoId && a.turnos.has(foto.turnoId)))) {
@@ -63,13 +64,13 @@ export class RegistroFotograficoController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un registro fotográfico' })
-  update(@Param('id') id: string, @Body() dto: UpdateRegistroFotograficoDto) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateRegistroFotograficoDto) {
     return this.registroFotograficoService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un registro fotográfico (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.registroFotograficoService.remove(+id);
   }
 }

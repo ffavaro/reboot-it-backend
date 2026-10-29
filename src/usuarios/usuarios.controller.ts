@@ -1,3 +1,4 @@
+import { ParseIdPipe } from '../common/pipes/parse-id.pipe';
 import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
@@ -44,7 +45,7 @@ export class UsuariosController {
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un usuario por ID' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+  findOne(@Param('id', ParseIdPipe) id: number, @Req() req: RequestConUsuario) {
     soloSiMismo(req, +id);
     return this.usuariosService.findOne(+id);
   }
@@ -52,7 +53,7 @@ export class UsuariosController {
   @Pantalla('usuarios', 'mi_perfil')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un usuario' })
-  update(@Param('id') id: string, @Body() dto: UpdateUsuarioDto, @Req() req: RequestConUsuario) {
+  update(@Param('id', ParseIdPipe) id: number, @Body() dto: UpdateUsuarioDto, @Req() req: RequestConUsuario) {
     soloSiMismo(req, +id);
     // Desde Mi Perfil (permiso "propio") no se cambian el rol, el estado ni el vínculo con el empleado
     if (req.permiso?.alcance === 'PROPIO') {
@@ -66,7 +67,7 @@ export class UsuariosController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un usuario (soft delete)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIdPipe) id: number) {
     return this.usuariosService.remove(+id);
   }
 }
