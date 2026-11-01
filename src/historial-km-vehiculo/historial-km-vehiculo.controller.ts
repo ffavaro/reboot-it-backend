@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, ParseDatePipe } from '@nestjs/common';
 import { HistorialKmVehiculoService } from './historial-km-vehiculo.service';
 import { CreateHistorialKmVehiculoDto } from './dto/create-historial-km-vehiculo.dto';
 import { UpdateHistorialKmVehiculoDto } from './dto/update-historial-km-vehiculo.dto';
 
 @Controller('historial-km-vehiculo')
 export class HistorialKmVehiculoController {
-  constructor(private readonly historialKmVehiculoService: HistorialKmVehiculoService) {}
+  constructor(private readonly historialKmVehiculoService: HistorialKmVehiculoService) { }
 
   @Post()
   create(@Body() createHistorialKmVehiculoDto: CreateHistorialKmVehiculoDto) {
