@@ -1,4 +1,4 @@
-import { ContenidoMail } from '../mail.types';
+import { ContenidoMail } from '../../interfaces/mail.types';
 import { escapar, layout, parrafo, textoPlano } from './layout';
 
 export interface DatosEstadoDonacion {

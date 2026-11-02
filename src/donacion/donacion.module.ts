@@ -9,9 +9,10 @@ import { TurnoDetalleModule } from '../turno-detalle/turno-detalle.module';
 import { LoteModule } from '../lote/lote.module';
 import { Turno } from '../turno/turno.entity';
 import { Retiro } from '../retiro/retiro.entity';
+import { NotificacionesModule } from '../notificaciones/notificaciones.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Donacion, Turno, Retiro]), TurnoModule, DonacionDetalleModule, TurnoDetalleModule, LoteModule],
+  imports: [TypeOrmModule.forFeature([Donacion, Turno, Retiro]), TurnoModule, DonacionDetalleModule, TurnoDetalleModule, LoteModule, NotificacionesModule],
   controllers: [DonacionController],
   providers: [DonacionService],
   exports: [DonacionService],
