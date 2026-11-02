@@ -44,6 +44,7 @@ import { LogaccesoModule } from './logacceso/logacceso.module';
 import { PasswordResetCodeModule } from './password-reset-code/password-reset-code.module';
 import { MailModule } from './mail/mail.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
+import { GeoModule } from './geo/geo.module';
 
 @Module({
   imports: [
@@ -108,6 +109,7 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
     PasswordResetCodeModule,
     MailModule,
     NotificacionesModule,
+    GeoModule,
   ],
 })
 export class AppModule {}

@@ -18,6 +18,9 @@ export class Vehiculo {
   @Column({ length: 50 })
   modelo: string;
 
+  @Column({ type: 'int', unsigned: true, nullable: true })
+  kilometraje: number | null;
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 

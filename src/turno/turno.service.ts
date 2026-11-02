@@ -15,11 +15,9 @@ import { Donacion } from '../donacion/donacion.entity';
 import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 import { Lote } from '../lote/lote.entity';
 import { Retiro } from '../retiro/retiro.entity';
+import { validarPesoDonacionVehiculo } from '../utils/peso-vehiculo';
+import { CONDICION_PENDIENTE, ESTADO_ASIGNADO, ESTADO_DONACION_EN_PROCESO, ESTADO_EN_CLASIFICACION } from '@app/utils/helpers';
 
-const ESTADO_ASIGNADO = 'Asignado';
-const ESTADO_DONACION_EN_PROCESO = 'En proceso';
-const ESTADO_EN_CLASIFICACION = 'En Clasificacion';
-const CONDICION_PENDIENTE = 'Pendiente de Clasificar';
 const RELATIONS = ['donante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'];
 
 @Injectable()
@@ -89,6 +87,7 @@ export class TurnoService {
         where: { id: dto.empleadoTransportistaId, isActive: true },
       });
       if (!transportista) throw new NotFoundException('Empleado transportista no encontrado.');
+      await validarPesoDonacionVehiculo(this.turnoRepository.manager, turno.donacionId, transportista.vehiculoId);
     } else {
       if (!dto.empleadoId) {
         throw new BadRequestException('Debe asignarse un empleado.');
