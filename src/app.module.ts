@@ -36,7 +36,6 @@ import { MarcaModule } from './marca/marca.module';
 import { ModeloModule } from './modelo/modelo.module';
 import { UploadModule } from './upload/upload.module';
 import { HojaRutaModule } from './hoja-ruta/hoja-ruta.module';
-import { HojaRutaTurnoModule } from './hoja-ruta-turno/hoja-ruta-turno.module';
 import { HistorialKmVehiculoModule } from './historial-km-vehiculo/historial-km-vehiculo.module';
 import { PantallaModule } from './pantalla/pantalla.module';
 import { RolPermisoModule } from './rol-permiso/rol-permiso.module';
@@ -101,7 +100,6 @@ import { GeoModule } from './geo/geo.module';
     ModeloModule,
     UploadModule,
     HojaRutaModule,
-    HojaRutaTurnoModule,
     HistorialKmVehiculoModule,
     PantallaModule,
     RolPermisoModule,
