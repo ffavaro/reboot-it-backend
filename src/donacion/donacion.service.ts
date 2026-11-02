@@ -11,6 +11,7 @@ import { TurnoDetalleService } from '../turno-detalle/turno-detalle.service';
 import { LoteService } from '../lote/lote.service';
 import { Turno } from '../turno/turno.entity';
 import { Retiro } from '../retiro/retiro.entity';
+import { NotificacionDonacionService } from '../notificaciones/notificacion-donacion.service';
 
 @Injectable()
 export class DonacionService {
@@ -25,6 +26,7 @@ export class DonacionService {
     private readonly donacionDetalleService: DonacionDetalleService,
     private readonly turnoDetalleService: TurnoDetalleService,
     private readonly loteService: LoteService,
+    private readonly notificacionDonacionService: NotificacionDonacionService,
   ) {}
 
   async create(dto: CreateDonacionDto) {
@@ -101,10 +103,13 @@ export class DonacionService {
   }
 
   async update(id: number, dto: UpdateDonacionDto) {
-    await this.findOne(id);
+    const actual = await this.findOne(id);
     const { detalles, ...donacionData } = dto;
     if (Object.keys(donacionData).length) {
       await this.donacionRepository.update(id, donacionData);
+      if (donacionData.estadoDonacionId !== undefined) {
+        void this.notificacionDonacionService.notificarSiCambio(id, actual.estadoDonacionId);
+      }
     }
 
     if (detalles !== undefined) {

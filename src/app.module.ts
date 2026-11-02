@@ -42,6 +42,8 @@ import { PantallaModule } from './pantalla/pantalla.module';
 import { RolPermisoModule } from './rol-permiso/rol-permiso.module';
 import { LogaccesoModule } from './logacceso/logacceso.module';
 import { PasswordResetCodeModule } from './password-reset-code/password-reset-code.module';
+import { MailModule } from './mail/mail.module';
+import { NotificacionesModule } from './notificaciones/notificaciones.module';
 
 @Module({
   imports: [
@@ -104,6 +106,8 @@ import { PasswordResetCodeModule } from './password-reset-code/password-reset-co
     RolPermisoModule,
     LogaccesoModule,
     PasswordResetCodeModule,
+    MailModule,
+    NotificacionesModule,
   ],
 })
 export class AppModule {}
