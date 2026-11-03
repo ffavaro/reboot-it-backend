@@ -2,7 +2,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Vehiculo } from '../../vehiculos/vehiculo.entity';
 
 @Entity('historial_km_vehiculo')
 export class HistorialKmVehiculo {
@@ -32,4 +35,8 @@ export class HistorialKmVehiculo {
 
   @Column({ type: 'int', name: 'hoja_ruta_id', nullable: true })
   hojaRutaId: number | null;
+
+  @ManyToOne(() => Vehiculo)
+  @JoinColumn({ name: 'vehiculo_id' })
+  vehiculo: Vehiculo;
 }

@@ -36,14 +36,13 @@ import { MarcaModule } from './marca/marca.module';
 import { ModeloModule } from './modelo/modelo.module';
 import { UploadModule } from './upload/upload.module';
 import { HojaRutaModule } from './hoja-ruta/hoja-ruta.module';
-import { HojaRutaTurnoModule } from './hoja-ruta-turno/hoja-ruta-turno.module';
 import { HistorialKmVehiculoModule } from './historial-km-vehiculo/historial-km-vehiculo.module';
 import { PantallaModule } from './pantalla/pantalla.module';
 import { RolPermisoModule } from './rol-permiso/rol-permiso.module';
 import { LogaccesoModule } from './logacceso/logacceso.module';
-import { PasswordResetCodeModule } from './password-reset-code/password-reset-code.module';
 import { MailModule } from './mail/mail.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
+import { GeoModule } from './geo/geo.module';
 
 @Module({
   imports: [
@@ -100,14 +99,13 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
     ModeloModule,
     UploadModule,
     HojaRutaModule,
-    HojaRutaTurnoModule,
     HistorialKmVehiculoModule,
     PantallaModule,
     RolPermisoModule,
     LogaccesoModule,
-    PasswordResetCodeModule,
     MailModule,
     NotificacionesModule,
+    GeoModule,
   ],
 })
 export class AppModule {}
