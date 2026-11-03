@@ -39,10 +39,10 @@ import { HojaRutaModule } from './hoja-ruta/hoja-ruta.module';
 import { HistorialKmVehiculoModule } from './historial-km-vehiculo/historial-km-vehiculo.module';
 import { PantallaModule } from './pantalla/pantalla.module';
 import { RolPermisoModule } from './rol-permiso/rol-permiso.module';
-import { LogaccesoModule } from './logacceso/logacceso.module';
 import { MailModule } from './mail/mail.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { GeoModule } from './geo/geo.module';
+import { AuditoriaModule } from './auditoria/auditoria.module';
 
 @Module({
   imports: [
@@ -102,10 +102,10 @@ import { GeoModule } from './geo/geo.module';
     HistorialKmVehiculoModule,
     PantallaModule,
     RolPermisoModule,
-    LogaccesoModule,
     MailModule,
     NotificacionesModule,
     GeoModule,
+    AuditoriaModule,
   ],
 })
 export class AppModule {}

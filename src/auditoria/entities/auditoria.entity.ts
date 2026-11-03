@@ -2,13 +2,18 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Usuario } from '../../usuarios/usuario.entity';
 
-@Entity('log_acceso')
+@Entity('logacceso')
+@Index('usuario_id', ['usuarioId', 'fechaHora'])
 export class LogAcceso {
-  @PrimaryGeneratedColumn({ type: 'int' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ name: 'usuario_id', type: 'int', nullable: true })
@@ -26,7 +31,7 @@ export class LogAcceso {
   @Column({ type: 'varchar', length: 45, nullable: true })
   ip: string | null;
 
-  @Column({ name: 'is_active', type: 'tinyint', width: 1, default: 1 })
+  @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 
   @CreateDateColumn({ name: 'created_at', type: 'datetime', precision: 6 })
@@ -35,7 +40,12 @@ export class LogAcceso {
   @UpdateDateColumn({ name: 'updated_at', type: 'datetime', precision: 6 })
   updatedAt: Date;
 
-  @Column({ name: 'usuario_intentado', type: 'varchar', length: 150, nullable: true })
+  @Column({
+    name: 'usuario_intentado',
+    type: 'varchar',
+    length: 150,
+    nullable: true,
+  })
   usuarioIntentado: string | null;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
@@ -58,4 +68,8 @@ export class LogAcceso {
 
   @Column({ name: 'user_agent', type: 'varchar', length: 255, nullable: true })
   userAgent: string | null;
+
+  @ManyToOne(() => Usuario, { nullable: true })
+  @JoinColumn({ name: 'usuario_id' })
+  usuario: Usuario | null;
 }

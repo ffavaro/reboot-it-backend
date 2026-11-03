@@ -8,10 +8,12 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { GeoService } from './geo.service';
+import { NoAuditar } from '@app/auditoria/acciones';
 
 const MIN_CARACTERES = 3;
 const MAX_CARACTERES = 200;
 
+@NoAuditar()
 @ApiTags('geo')
 @UseGuards(ThrottlerGuard)
 @Throttle({ default: { limit: 60, ttl: 60_000 } })
