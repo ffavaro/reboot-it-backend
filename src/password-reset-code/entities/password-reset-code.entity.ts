@@ -2,12 +2,15 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Usuario } from '../../usuarios/usuario.entity';
 
 @Entity('password_reset_codes')
 export class PasswordResetCode {
-  @PrimaryGeneratedColumn({ type: 'int' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ name: 'user_id', type: 'int' })
@@ -30,4 +33,8 @@ export class PasswordResetCode {
 
   @Column({ name: 'request_ip', type: 'varchar', length: 45, nullable: true })
   requestIp: string | null;
+
+  @ManyToOne(() => Usuario, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  usuario: Usuario;
 }

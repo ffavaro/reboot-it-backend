@@ -40,7 +40,6 @@ import { HistorialKmVehiculoModule } from './historial-km-vehiculo/historial-km-
 import { PantallaModule } from './pantalla/pantalla.module';
 import { RolPermisoModule } from './rol-permiso/rol-permiso.module';
 import { LogaccesoModule } from './logacceso/logacceso.module';
-import { PasswordResetCodeModule } from './password-reset-code/password-reset-code.module';
 import { MailModule } from './mail/mail.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { GeoModule } from './geo/geo.module';
@@ -104,7 +103,6 @@ import { GeoModule } from './geo/geo.module';
     PantallaModule,
     RolPermisoModule,
     LogaccesoModule,
-    PasswordResetCodeModule,
     MailModule,
     NotificacionesModule,
     GeoModule,
