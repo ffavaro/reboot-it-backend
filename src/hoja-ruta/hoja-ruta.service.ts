@@ -170,7 +170,7 @@ export class HojaRutaService {
         'Este turno todavía no tiene constancia de retiro: confirmá el retiro primero',
       );
     }
-    return this.constanciaService.findOne(constancia.id);
+    return this.constanciaService.datosDocumento(constancia.id);
   }
 
   private async verificarHojasAbiertas(empleadoTransportistaId: number) {

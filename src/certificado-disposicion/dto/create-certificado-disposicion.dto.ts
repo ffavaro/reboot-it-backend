@@ -10,9 +10,6 @@ export class CreateCertificadoDisposicionDto {
   @IsNumber()
   gestorAmbientalId: number;
 
-  // fechaEmision y numeroCertificado no se reciben del cliente: el service
-  // los genera automáticamente (fecha del día y numeración correlativa).
-
   @ApiPropertyOptional({ example: 'Material procesado conforme normativa vigente' })
   @IsString()
   @IsOptional()
