@@ -5,6 +5,10 @@ import { ConstanciaRetiro } from './constancia-retiro.entity';
 import { Retiro } from '../retiro/retiro.entity';
 import { CreateConstanciaRetiroDto } from './dto/create-constancia-retiro.dto';
 import { UpdateConstanciaRetiroDto } from './dto/update-constancia-retiro.dto';
+import { Turno } from '../turno/turno.entity';
+import { TurnoDetalle } from '../turno-detalle/turno-detalle.entity';
+import { DonacionDetalle } from '../donacion-detalle/donacion-detalle.entity';
+import { Usuario } from '../usuarios/usuario.entity';
 
 @Injectable()
 export class ConstanciaRetiroService {
@@ -38,6 +42,96 @@ export class ConstanciaRetiroService {
     });
     if (!constanciaRetiro) throw new NotFoundException(`ConstanciaRetiro ${id} no encontrada`);
     return constanciaRetiro;
+  }
+
+  async datosDocumento(id: number) {
+    const constancia = await this.findOne(id);
+    const manager = this.constanciaRetiroRepository.manager;
+
+    const retiro = await manager.findOne(Retiro, {
+      where: { id: constancia.retiroId },
+      relations: [
+        'donacion',
+        'donacion.donante',
+        'empleadoTransportista',
+        'empleadoTransportista.empleado',
+        'vehiculo',
+      ],
+    });
+    if (!retiro) throw new NotFoundException('El retiro de la constancia no existe');
+
+    const turno = await manager.findOne(Turno, {
+      where: { donacionId: retiro.donacionId, isActive: true },
+      order: { id: 'DESC' },
+    });
+
+    const detallesTurno = turno
+      ? await manager.find(TurnoDetalle, {
+          where: { turnoId: turno.id, isActive: true },
+          relations: ['tipoMaterial'],
+        })
+      : [];
+    const materiales = detallesTurno.length
+      ? detallesTurno.map((d) => ({
+          tipo: d.tipoMaterial?.nombre ?? '—',
+          cantidad: d.cantidadConfirmada,
+        }))
+      : (
+          await manager.find(DonacionDetalle, {
+            where: { donacionId: retiro.donacionId, isActive: true },
+            relations: ['tipoMaterial'],
+          })
+        ).map((d) => ({
+          tipo: d.tipoMaterial?.nombre ?? '—',
+          cantidad: d.cantidadEstimada,
+        }));
+
+    const empleado = retiro.empleadoTransportista?.empleado;
+    const usuario = empleado
+      ? await manager.findOne(Usuario, { where: { empleadoId: empleado.id } })
+      : null;
+    const peso = retiro.donacion?.pesoEstimadoKg;
+
+    return {
+      constanciaId: constancia.id,
+      turnoId: turno?.id ?? null,
+      donacionId: retiro.donacionId,
+      fechaEmision: constancia.fechaEmision
+        ? String(constancia.fechaEmision).slice(0, 10)
+        : null,
+      fechaRetiro: retiro.fechaRetiro
+        ? new Date(retiro.fechaRetiro).toISOString()
+        : null,
+      observaciones: constancia.observaciones ?? null,
+      donante: {
+        nombre:
+          retiro.donacion?.donante?.razonSocial ||
+          retiro.donacion?.donante?.nombre ||
+          '',
+        telefono: retiro.donacion?.donante?.telefono ?? null,
+      },
+      direccion:
+        retiro.direccion ||
+        retiro.donacion?.direccionRetiro ||
+        retiro.donacion?.donante?.direccion ||
+        null,
+      transportista: empleado
+        ? {
+            nombre: empleado.nombre,
+            apellido: empleado.apellido,
+            cuitDni: usuario?.cuitDni ?? null,
+          }
+        : null,
+      vehiculo: retiro.vehiculo
+        ? {
+            patente: retiro.vehiculo.patente,
+            marca: retiro.vehiculo.marca,
+            modelo: retiro.vehiculo.modelo,
+          }
+        : null,
+      pesoEstimadoKg: peso ?? null,
+      materiales,
+    };
   }
 
   async update(id: number, dto: UpdateConstanciaRetiroDto) {
