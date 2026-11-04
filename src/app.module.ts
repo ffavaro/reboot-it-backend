@@ -43,6 +43,7 @@ import { MailModule } from './mail/mail.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { GeoModule } from './geo/geo.module';
 import { AuditoriaModule } from './auditoria/auditoria.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -106,6 +107,7 @@ import { AuditoriaModule } from './auditoria/auditoria.module';
     NotificacionesModule,
     GeoModule,
     AuditoriaModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}
