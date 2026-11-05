@@ -1,3 +1,13 @@
+services:
+
+  reboot-it-frontend:
+    restart: always
+    ports:
+      - "3000:3000"
+    build: ./reboot-it-frontend
+    networks:
+      - reboot-it-network
+
   reboot-it-backend:
     restart: always
     ports:
@@ -18,6 +28,22 @@
       - db
     networks:
       - reboot-it-network
+
+  db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: reboot_it
+    ports:
+      - "3306:3306"
+    volumes:
+      - reboot-it-mysql:/var/lib/mysql
+    networks:
+      - reboot-it-network
+
+networks:
+  reboot-it-network:
 
 volumes:
   reboot-it-mysql:
