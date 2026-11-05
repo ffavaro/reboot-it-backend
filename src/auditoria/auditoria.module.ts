@@ -4,11 +4,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuditoriaController } from './auditoria.controller';
 import { AuditoriaInterceptor } from './auditoria.interceptor';
 import { AuditoriaService } from './auditoria.service';
-import { LogAcceso } from './entities/auditoria.entity';
+import { Auditoria } from './entities/auditoria.entity';
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([LogAcceso])],
+  imports: [TypeOrmModule.forFeature([Auditoria])],
   controllers: [AuditoriaController],
   providers: [
     AuditoriaService,

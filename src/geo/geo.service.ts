@@ -1,9 +1,9 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DireccionGeo, RespuestaGeocode, ResultadoGeocode } from '../interfaces/geo.types';
+import { MAX_SUGERENCIAS } from '@app/utils/helpers';
 
 const GEOCODE_URL = 'https://maps.googleapis.com/maps/api/geocode/json';
-const MAX_SUGERENCIAS = 5;
 
 @Injectable()
 export class GeoService {

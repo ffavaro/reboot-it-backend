@@ -8,10 +8,8 @@ import {
   linkGoogleMaps,
 } from './maps-links';
 import { MapaRuta, PuntoRuta, RutaCalculada, Configuracion, Parada } from '../../interfaces/ruta.types';
+import { CACHE_MS, KM_ALERTA_POR_DEFECTO, MAX_PARADAS_INTERMEDIAS } from '@app/utils/helpers';
 
-const MAX_PARADAS_INTERMEDIAS = 25;
-const CACHE_MS = 15 * 60 * 1000;
-const KM_ALERTA_POR_DEFECTO = 300;
 
 
 @Injectable()

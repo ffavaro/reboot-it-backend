@@ -75,11 +75,6 @@ export class CertificadoDisposicionService {
     return { message: 'CertificadoDisposicion desactivado' };
   }
 
-  /**
-   * Genera el número correlativo del certificado con el formato CERT-{año}-{secuencia}.
-   * La secuencia reinicia cada año y se calcula contando todos los certificados
-   * (activos e inactivos) ya emitidos ese año, para no repetir números ante bajas lógicas.
-   */
   private async generarNumeroCertificado(fecha: Date): Promise<string> {
     const anio = fecha.getFullYear();
     const prefijo = `CERT-${anio}-`;

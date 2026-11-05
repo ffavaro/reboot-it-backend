@@ -24,6 +24,12 @@ export const ESTADOS_HOJA = Object.values(ESTADO_HOJA);
 export const ESTADOS_TURNO_POR_RETIRAR = ['asignado', 'retiro confirmado'];
 
 export const MAX_DIAS_CONSULTA = 31;
+export const MAX_PARADAS_INTERMEDIAS = 25;
+export const CACHE_MS = 15 * 60 * 1000;
+export const KM_ALERTA_POR_DEFECTO = 300;
+export const MAX_SUGERENCIAS = 5;
+export const MIN_CARACTERES = 3;
+export const MAX_CARACTERES = 200;
 
 export function quedaPorRetirar(estadoTurno?: string | null): boolean {
   return ESTADOS_TURNO_POR_RETIRAR.includes((estadoTurno ?? '').toLowerCase());

@@ -10,7 +10,7 @@ import {
   ValidationOptions,
 } from 'class-validator';
 
-const normalizarEmail = ({ value }: { value: unknown }) =>
+const normalizarEmail = ({ value }: { value: any }) =>
   typeof value === 'string' ? value.trim().toLowerCase() : value;
 
 function IgualA(campo: string, opciones?: ValidationOptions) {
@@ -20,7 +20,7 @@ function IgualA(campo: string, opciones?: ValidationOptions) {
       constraints: [campo],
       validator: {
         validate: (valor, args) =>
-          valor === (args?.object as Record<string, unknown>)[campo],
+          valor === (args?.object as Record<string, any>)[campo],
       },
     },
     opciones,
@@ -40,7 +40,7 @@ export class RestablecerContrasenaDto {
   @IsEmail({}, { message: 'Ingresá un email válido' })
   email: string;
 
-  @Transform(({ value }: { value: unknown }) =>
+  @Transform(({ value }: { value: any }) =>
     typeof value === 'string' ? value.trim() : value,
   )
   @Matches(/^\d{6}$/, { message: 'El código tiene que ser de 6 dígitos' })

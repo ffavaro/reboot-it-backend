@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Coordenada, MapaRuta, ResultadoGoogle } from '../../interfaces/ruta.types';
+import { RespuestaGoogle, UbicacionGoogle } from '../../interfaces/geo.types';
 
 const ROUTES_URL = 'https://routes.googleapis.com/directions/v2:computeRoutes';
 const TIMEOUT_MS = 8000;
@@ -13,24 +14,6 @@ const CAMPOS = [
 ].join(',');
 
 export class GoogleRoutesError extends Error {}
-
-interface UbicacionGoogle {
-  latLng?: { latitude: number; longitude: number };
-}
-
-interface RespuestaGoogle {
-  routes?: Array<{
-    distanceMeters?: number;
-    duration?: string;
-    optimizedIntermediateWaypointIndex?: number[];
-    polyline?: { encodedPolyline?: string };
-    legs?: Array<{
-      startLocation?: UbicacionGoogle;
-      endLocation?: UbicacionGoogle;
-    }>;
-  }>;
-  error?: { status?: string; message?: string };
-}
 
 @Injectable()
 export class GoogleRoutesClient {

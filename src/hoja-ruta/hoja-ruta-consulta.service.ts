@@ -22,8 +22,11 @@ import {
 import { HojaRutaTurno } from './entities/hoja-ruta-turno.entity';
 import { HojaRuta } from './entities/hoja-ruta.entity';
 import {
+  DatosRetiro,
+  Grupo,
   HojaRutaDia,
   HojaRutaHistorico,
+  ParadaBase,
   ParadaHojaRuta,
   PuntoRecorrido,
   ResumenHoja,
@@ -45,19 +48,6 @@ const RELACIONES_TURNO_GUARDADO = [
   'turno.empleadoTransportista.empleado',
   'turno.empleadoTransportista.vehiculo',
 ];
-
-interface Grupo {
-  transportistaId: number;
-  fecha: string;
-  turnos: Turno[];
-}
-
-interface DatosRetiro {
-  direccionDe(turno: Turno): string;
-  constanciaDe(turno: Turno): number | null;
-}
-
-type ParadaBase = Omit<ParadaHojaRuta, 'orden' | 'sinDireccion'>;
 
 const claveDe = (transportistaId: number, fecha: string) =>
   `${transportistaId}|${fecha}`;
