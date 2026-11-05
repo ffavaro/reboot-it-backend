@@ -20,3 +20,21 @@ export interface RespuestaGeocode {
   error_message?: string;
 }
 
+
+export interface UbicacionGoogle {
+  latLng?: { latitude: number; longitude: number };
+}
+
+export interface RespuestaGoogle {
+  routes?: Array<{
+    distanceMeters?: number;
+    duration?: string;
+    optimizedIntermediateWaypointIndex?: number[];
+    polyline?: { encodedPolyline?: string };
+    legs?: Array<{
+      startLocation?: UbicacionGoogle;
+      endLocation?: UbicacionGoogle;
+    }>;
+  }>;
+  error?: { status?: string; message?: string };
+}

@@ -1,18 +1,16 @@
+import { Usuario } from '@app/usuarios/usuario.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Usuario } from '../../usuarios/usuario.entity';
 
-@Entity('logacceso')
-@Index('usuario_id', ['usuarioId', 'fechaHora'])
-export class LogAcceso {
+@Entity( 'logacceso' )
+export class Auditoria {
   @PrimaryGeneratedColumn()
   id: number;
 

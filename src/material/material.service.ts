@@ -64,7 +64,7 @@ export class MaterialService {
       const procesoData = this.procesoDestruccionRepository.create();
       procesoData.medioAlmacenamientoId = medio.id;
       procesoData.fecha = new Date();
-      procesoData.estadoId = 1; // Asignar estado inicial (ej. "Pendiente")
+      procesoData.estadoId = 1; 
       await this.procesoDestruccionRepository.save(procesoData);
     }
     return this.findOne(id);

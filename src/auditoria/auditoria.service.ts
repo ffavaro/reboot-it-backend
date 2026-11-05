@@ -1,88 +1,78 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { CreateAuditoriaDto } from './dto/create-auditoria.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt/dist/jwt.service';
+import { Repository } from 'typeorm/browser/repository/Repository.js';
+import { Auditoria } from './entities/auditoria.entity';
 import type { Request } from 'express';
-import { Repository } from 'typeorm';
 import {
-  ContextoRequest,
   EventoAuditoria,
-  UsuarioAuditado,
 } from '../interfaces/auditoria.types';
-import { ListarAuditoriaDto } from './dto/listar-auditoria.dto';
-import { LogAcceso } from './entities/auditoria.entity';
-
-const recortar = (valor: string | null | undefined, max: number) =>
-  valor ? valor.slice(0, max) : null;
 
 @Injectable()
 export class AuditoriaService {
   private readonly logger = new Logger(AuditoriaService.name);
 
-  constructor(
-    @InjectRepository(LogAcceso)
-    private readonly logRepository: Repository<LogAcceso>,
+   constructor(
+    @InjectRepository(Auditoria)
+    private readonly logRepository: Repository<Auditoria>,
     private readonly jwtService: JwtService,
   ) {}
 
-  contextoDe(req: Request): ContextoRequest {
-    const reenviada = req.headers['x-forwarded-for'];
-    const primera = Array.isArray(reenviada)
-      ? reenviada[0]
-      : reenviada?.split(',')[0];
+   obtenerRequest (req: Request) {
+    const request = req.headers['x-forwarded-for'];
+    const primera = request ? request[0] : request?.split(',')[0];
+    
     const ip = (primera || req.ip || req.socket?.remoteAddress || '')
       .trim()
       .replace(/^::ffff:/, '');
 
     return {
-      ip: recortar(ip, 45),
-      userAgent: recortar(req.headers['user-agent'], 255),
+      ip: ip? ip.slice(0, 45) : null,
+      userAgent: (req.headers['user-agent'] ?? '').slice(0, 255),
       metodo: req.method,
       ruta: (req.originalUrl ?? req.url ?? '').split('?')[0].slice(0, 255),
     };
-  }
+   } 
 
-  async usuarioDe(
-    req: Request & { user?: UsuarioAuditado },
-  ): Promise<UsuarioAuditado | null> {
-    if (req.user) return req.user;
-
-    const [tipo, token] = req.headers.authorization?.split(' ') ?? [];
-    if (tipo !== 'Bearer' || !token) return null;
+   obtenerUsuarioIntentado (req: Request & { user?: any}) {
+    if(req.user) return req.user;
+    
+    const [ tipo, token] = req.headers.authorization?.split(' ') ?? [];
+    if(tipo !== 'Bearer' || !token) return null;
 
     try {
-      return await this.jwtService.verifyAsync<UsuarioAuditado>(token);
-    } catch {
+      const payload = this.jwtService.verify(token);
+      return payload;
+    } catch (error) {
+      this.logger.error('Error al verificar el token JWT', error);
       return null;
     }
   }
-
-  async registrar(evento: EventoAuditoria): Promise<void> {
+ 
+  guardarAuditoria = async (evento: EventoAuditoria) => {
     try {
-      await this.logRepository.insert({
-        usuarioId: evento.usuarioId ?? null,
+       await this.logRepository.save({usuarioId: evento.usuarioId ?? null,
         fechaHora: new Date(),
         accion: evento.accion.slice(0, 100),
         resultado: evento.resultado,
-        ip: recortar(evento.ip, 45),
-        usuarioIntentado: recortar(evento.usuarioIntentado, 150),
-        rol: recortar(evento.rol, 50),
-        metodo: recortar(evento.metodo, 10),
-        ruta: recortar(evento.ruta, 255),
-        entidad: recortar(evento.entidad, 100),
+        ip: evento.ip?.slice(0, 45),
+        usuarioIntentado: evento.usuarioIntentado?.slice(0, 150),
+        rol: evento.rol?.slice(0, 50),
+        metodo: evento.metodo?.slice(0, 10),
+        ruta: evento.ruta?.slice(0, 255),
+        entidad: evento.entidad?.slice(0, 100),
         entidadId: evento.entidadId ?? null,
         codigoHttp: evento.codigoHttp ?? null,
-        userAgent: recortar(evento.userAgent, 255),
-      });
+        userAgent: evento.userAgent?.slice(0, 255),})
     } catch (error) {
-      this.logger.error(
-        `No se pudo guardar la auditoría (${evento.accion}): ${(error as Error).message}`,
-      );
+      this.logger.error('Error al guardar auditoría', error);
     }
   }
 
-  async buscar(filtros: ListarAuditoriaDto) {
-    const page = filtros.page ?? 1;
-    const limit = filtros.limit ?? 20;
+  findAcciones = async (filtros: CreateAuditoriaDto) => {
+    const page = Number(filtros.page) ?? 1;
+    const limit = Number(filtros.limit) ?? 20;
 
     const qb = this.logRepository
       .createQueryBuilder('l')
@@ -121,13 +111,13 @@ export class AuditoriaService {
     };
   }
 
-  async acciones(): Promise<string[]> {
-    const filas = await this.logRepository
+  obtenerAccionesUnicas = async (): Promise<string[]> => {
+    const acciones = await this.logRepository
       .createQueryBuilder('l')
       .select('DISTINCT l.accion', 'accion')
       .orderBy('l.accion', 'ASC')
-      .limit(300)
       .getRawMany<{ accion: string }>();
-    return filas.map((f) => f.accion);
+      return acciones.map((a) => a.accion);
   }
+
 }

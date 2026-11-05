@@ -1,3 +1,4 @@
+import { Turno } from '@app/turno/turno.entity';
 import { Coordenada, RolPunto } from './ruta.types';
 
 export interface ParadaHojaRuta {
@@ -76,3 +77,16 @@ export interface HojaRutaHistorico {
   fechaFin: Date | null;
   estado: string;
 }
+
+export interface Grupo {
+  transportistaId: number;
+  fecha: string;
+  turnos: Turno[];
+}
+
+export interface DatosRetiro {
+  direccionDe(turno: Turno): string;
+  constanciaDe(turno: Turno): number | null;
+}
+
+export type ParadaBase = Omit<ParadaHojaRuta, 'orden' | 'sinDireccion'>;

@@ -27,3 +27,8 @@ export interface EventoAuditoria extends Partial<ContextoRequest> {
   entidadId?: number | null;
   usuarioIntentado?: string | null;
 }
+
+export interface RespuestaConId {
+  id?: any;
+  hojaRuta?: { id?: any };
+}

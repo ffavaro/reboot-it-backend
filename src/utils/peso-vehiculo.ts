@@ -3,7 +3,7 @@ import { EntityManager } from 'typeorm';
 import { Donacion } from '../donacion/donacion.entity';
 import { Vehiculo } from '../vehiculos/vehiculo.entity';
 
-const aNumero = (valor: unknown) =>
+const aNumero = (valor: any) =>
   valor === null || valor === undefined ? null : Number(valor);
 
 export async function validarPesoDonacionVehiculo(

@@ -58,7 +58,7 @@ export class DonacionService {
         donanteId: dto.donanteId,
         donacionId: saved.id,
         estadoTurnoId: 1,
-        fechaHora: fechaHora as unknown as Date,
+        fechaHora: fechaHora as any as Date,
         descripcion: dto.descripcion,
         necesitaRetiro: dto.necesitaRetiro ?? false,
       })
