@@ -11,7 +11,7 @@ export class AuditoriaController {
     return this.auditoriaService.obtenerAccionesUnicas();
   }
   
-  @Get()
+  @Get('')
   listar(@Query() filtros: CreateAuditoriaDto) {
     return this.auditoriaService.findAcciones(filtros);
   }

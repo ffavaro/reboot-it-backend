@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CreateAuditoriaDto } from './dto/create-auditoria.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
-import { Repository } from 'typeorm/browser/repository/Repository.js';
+import { Repository } from 'typeorm';
 import { Auditoria } from './entities/auditoria.entity';
 import type { Request } from 'express';
 import {
