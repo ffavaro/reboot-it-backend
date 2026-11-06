@@ -24,6 +24,7 @@ export class RetiroService {
     return this.retiroRepository.find({
       where: { isActive: true },
       relations: ['donacion', 'empleadoTransportista', 'empleadoTransportista.empleado', 'vehiculo'],
+      order: { id: "DESC"}
     });
   }
 

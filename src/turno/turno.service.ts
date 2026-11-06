@@ -56,6 +56,7 @@ export class TurnoService {
     return this.turnoRepository.find({
       where: { isActive: true },
       relations: RELATIONS,
+      order: { id: "DESC"}
     });
   }
 

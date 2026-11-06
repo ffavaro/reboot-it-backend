@@ -21,6 +21,7 @@ export class MedioAlmacenamientoService {
     return this.medioAlmacenamientoRepository.find({
       where: { isActive: true },
       relations: ['material', 'tipo', 'marca', 'modelo'],
+      order: { id: "DESC"}
     });
   }
 

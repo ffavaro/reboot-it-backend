@@ -21,6 +21,7 @@ export class VehiculosService {
     return this.vehiculoRepository.find({
       where: { isActive: true },
       relations: ['tipoVehiculo'],
+      order: { id: "desc"}
     });
   }
 

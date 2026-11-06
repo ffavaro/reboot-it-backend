@@ -65,6 +65,7 @@ export class PalletService {
     return this.palletRepository.find({
       where: { isActive: true },
       relations: ['rack', 'lote'],
+      order: {id: "DESC"}
     });
   }
 

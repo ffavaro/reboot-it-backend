@@ -29,6 +29,7 @@ export class MaterialService {
     return this.materialRepository.find({
       where: { isActive: true },
       relations: ['lote', 'tipoMaterial', 'condicionMaterial'],
+      order: { id: "DESC"}
     });
   }
 

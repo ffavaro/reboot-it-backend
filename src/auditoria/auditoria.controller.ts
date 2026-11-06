@@ -15,5 +15,4 @@ export class AuditoriaController {
   listar(@Query() filtros: CreateAuditoriaDto) {
     return this.auditoriaService.findAcciones(filtros);
   }
-
 }

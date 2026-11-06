@@ -22,6 +22,7 @@ export class ProcesoDestruccionService {
     return this.procesoDestruccionRepository.find({
       where: { isActive: true },
       relations: ['medioAlmacenamiento', 'medioAlmacenamiento.material', 'medioAlmacenamiento.material.tipoMaterial', 'empleado', 'metodoDestruccion', 'estado'],
+      order: {id: "DESC"}
     });
   }
 

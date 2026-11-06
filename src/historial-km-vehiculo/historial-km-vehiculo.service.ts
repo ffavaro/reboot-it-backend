@@ -22,7 +22,9 @@ export class HistorialKmVehiculoService {
   }
 
   findAll() {
-    return this.historialRepository.find({});
+    return this.historialRepository.find({
+      order: {id: "DESC"}
+    });
   }
 
   findOne(id: number) {
