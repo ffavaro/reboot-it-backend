@@ -3,6 +3,7 @@ import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RestablecerContrasenaDto, SolicitarCodigoDto } from '../password-reset-code/dto/create-password-reset-code.dto';
 import { RecuperacionContrasenaService } from '../password-reset-code/password-reset-code.service';
+import { Public } from './public.decorator';
 
 const QUINCE_MINUTOS = 15 * 60_000;
 
@@ -14,18 +15,19 @@ export class AuthController {
         private readonly recuperacion: RecuperacionContrasenaService,
     ) { }
 
+    @Public()
     @HttpCode(HttpStatus.OK)
     @Post('login')
     signIn(@Body() signInDto: Record<string, any>) {
         return this.authService.signIn(signInDto.email, signInDto.password);
     }
-
+    @Public()
     @HttpCode(HttpStatus.CREATED)
     @Post('register')
     signUp(@Body() signUpDto: Record<string, any>) {
         return this.authService.signUp(signUpDto.name, signUpDto.email, signUpDto.password, signUpDto.cuitDni);
     }
-
+    @Public()
     @UseGuards(ThrottlerGuard)
     @Throttle({ default: { limit: 3, ttl: QUINCE_MINUTOS } })
     @HttpCode(HttpStatus.OK)
@@ -33,7 +35,7 @@ export class AuthController {
     solicitarCodigo(@Body() dto: SolicitarCodigoDto, @Ip() ip: string) {
         return this.recuperacion.solicitarCodigo(dto.email, ip);
     }
-
+    @Public()
     @UseGuards(ThrottlerGuard)
     @Throttle({ default: { limit: 10, ttl: QUINCE_MINUTOS } })
     @HttpCode(HttpStatus.OK)

@@ -10,6 +10,8 @@ import { MailModule } from '../mail/mail.module';
 import { Usuario } from '../usuarios/usuario.entity';
 import { PasswordResetCode } from '../password-reset-code/entities/password-reset-code.entity';
 import { RecuperacionContrasenaService } from '../password-reset-code/password-reset-code.service';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './jwt-auth.gard';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { RecuperacionContrasenaService } from '../password-reset-code/password-r
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, RecuperacionContrasenaService],
+  providers: [AuthService, RecuperacionContrasenaService,
+    { provide: APP_GUARD, useClass: JwtAuthGuard}
+  ],
 })
 export class AuthModule {}
