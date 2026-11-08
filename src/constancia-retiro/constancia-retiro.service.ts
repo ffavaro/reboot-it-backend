@@ -32,6 +32,7 @@ export class ConstanciaRetiroService {
     return this.constanciaRetiroRepository.find({
       where: { isActive: true },
       relations: ['retiro', 'tecnico'],
+      order: {id: "DESC"}
     });
   }
 

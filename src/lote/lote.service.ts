@@ -20,7 +20,8 @@ export class LoteService {
   findAll() {
     return this.loteRepository.find({
       where: { isActive: true },
-      relations: ['donacion'],
+      relations: ['donacion', 'donacion.donante'],
+      order: {id: "DESC"}
     });
   }
 

@@ -90,6 +90,7 @@ export class DonacionService {
     return this.donacionRepository.find({
       where: { isActive: true },
       relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial', 'detalles.condicionMaterial'],
+      order: { id : "DESC"}
     });
   }
 

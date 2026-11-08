@@ -21,6 +21,7 @@ export class EmpleadosService {
     return this.empleadoRepository.find({
       where: { isActive: true },
       relations: ['rol'],
+      order: { id: "DESC"}
     });
   }
 

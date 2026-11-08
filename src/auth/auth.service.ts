@@ -1,5 +1,5 @@
 import { UsuariosService } from '@app/usuarios/usuarios.service';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
@@ -15,6 +15,10 @@ export class AuthService {
         if (!user || !(await bcrypt.compare(pass, user.password))) {
             throw new UnauthorizedException('Credenciales inválidas');
         }
+
+        if (!user.isActive)
+            throw new ForbiddenException("'Tu usuario está desactivado. Contactá al administrador.")
+        
         const { password, ...result } = user;
         const access_token = this.jwtService.sign(result);
         return { access_token };
@@ -23,7 +27,7 @@ export class AuthService {
     async signUp(name: string, email: string, password: string, cuitDni: string): Promise<{access_token: string}> {
         const existingUser = await this.usersService.findByEmail(email);
         if (existingUser) {
-            throw new UnauthorizedException('Email ya registrado');
+            throw new ConflictException('Email ya registrado');
         }
         await this.usersService.create({ nombre: name, email, password, cuitDni, rolId: 7, isActive: true, empleadoId: undefined });
         const fullUser = await this.usersService.findByEmail(email);

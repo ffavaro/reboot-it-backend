@@ -21,6 +21,7 @@ export class DonantesService {
     return this.donanteRepository.find({
       where: { isActive: true },
       relations: ['tipoDonante'],
+      order: { id: "DESC"}
     });
   }
 

@@ -1,3 +1,4 @@
+import { IsOptional } from "class-validator";
 
 export class CreateAuditoriaDto {
     usuarioId?:number;
@@ -12,7 +13,9 @@ export class CreateAuditoriaDto {
 
     entidad?:string;
 
+    @IsOptional()
     page?:string | number;
-
+    
+    @IsOptional()
     limit?:string | number;
 }

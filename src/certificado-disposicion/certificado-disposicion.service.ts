@@ -51,6 +51,7 @@ export class CertificadoDisposicionService {
     return this.certificadoDisposicionRepository.find({
       where: { isActive: true },
       relations: ['lote', 'gestorAmbiental'],
+      order: { id: "DESC"}
     });
   }
 
