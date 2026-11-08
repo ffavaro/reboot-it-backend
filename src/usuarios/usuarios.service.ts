@@ -14,19 +14,17 @@ export class UsuariosService {
   constructor(
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
-  ) {}
+  ) { }
 
-  async create(dto: CreateUsuarioDto) {
+  create = async (dto: CreateUsuarioDto) => {
     try {
       const plainPassword = dto.password || DEFAULT_PASSWORD;
       const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
       const usuario = this.usuarioRepository.create({ ...dto, password: hashedPassword });
       return await this.usuarioRepository.save(usuario);
     } catch (error) {
-      if (error?.code === 'ER_DUP_ENTRY') {
-        throw new ConflictException('El email ya está registrado');
-      }
-      console.error('Error al crear usuario:', error);
+       const conflicto = this.conflictoPorDuplicado(error);
+       if (conflicto) throw conflicto
       throw new InternalServerErrorException('Error al crear usuario');
     }
   }
@@ -38,7 +36,7 @@ export class UsuariosService {
     });
   }
 
-  async findOne(id: number) {
+  findOne = async (id: number) => {
     const usuario = await this.usuarioRepository.findOne({
       where: { id },
       relations: ['rol', 'empleado'],
@@ -51,19 +49,36 @@ export class UsuariosService {
     return this.usuarioRepository.findOne({ where: { email }, relations: ['rol'] });
   }
 
-  async update(id: number, dto: UpdateUsuarioDto) {
+  update = async (id: number, dto: UpdateUsuarioDto) => {
     await this.findOne(id);
-    await this.usuarioRepository.update(id, dto);
+    try {
+      await this.usuarioRepository.update(id, dto);      
+    } catch (error) {
+      throw this.conflictoPorDuplicado(error) ?? error;
+    }
     return this.findOne(id);
   }
 
-  async updatePassword(id: number, hashedPassword: string) {
+  updatePassword = async (id: number, hashedPassword: string) => {
     await this.usuarioRepository.update(id, { password: hashedPassword });
   }
 
-  async remove(id: number) {
+  remove = async (id: number) => {
     await this.findOne(id);
     await this.usuarioRepository.update(id, { isActive: false });
     return { message: 'Usuario desactivado' };
+  }
+
+  private conflictoPorDuplicado(error: unknown): ConflictException | null {
+    const { code, sqlMessage } = (error ?? {}) as {
+      code?: string;
+      sqlMessage?: string;
+    };
+    if (code !== 'ER_DUP_ENTRY') return null;
+    return new ConflictException(
+      sqlMessage?.includes('cuit_dni')
+        ? 'El CUIT/DNI ya está registrado'
+        : 'El email ya está registrado',
+    );
   }
 }

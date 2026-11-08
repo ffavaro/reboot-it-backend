@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RolesModule } from './roles/roles.module';
@@ -44,6 +44,7 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { GeoModule } from './geo/geo.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AuditoriaModule } from './auditoria/auditoria.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -109,6 +110,7 @@ import { AuditoriaModule } from './auditoria/auditoria.module';
     AuditoriaModule,
     DashboardModule,
   ],
+  providers: [{ provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor}]
 })
 export class AppModule {}
 
