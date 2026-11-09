@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, ParseIntPipe, Put } from '@nestjs/common';
+import { Controller, Get, Body,  Param, Req, ParseIntPipe, Put } from '@nestjs/common';
 import { PermisosService } from './permisos.service';
 import type { RequestConUsuario } from '@app/interfaces/auth.type';
 import { GuardarPermisosDto } from './dto/create-permiso.dto';
@@ -23,9 +23,10 @@ export class PermisosController {
   }
 
   @Put('rol/:rolId')
-  actualizar(@Param('rolId') rolId: number,
+  async actualizar(@Param('rolId') rolId: number,
     @Body() dto: GuardarPermisosDto,
     @Req() req: RequestConUsuario) {
+    await this.permisosService.exigir(req.user?.rolId, ['roles'], 'editar')
     return this.permisosService.guardarMatriz(rolId, dto, req.user?.rolId)
   }
 }

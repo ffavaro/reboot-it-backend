@@ -105,6 +105,12 @@ export class PermisosService {
     }
   }
 
+  exigir = async (rolId: number | undefined, claves: string[], accion: Accion): Promise<void> => {
+    if (!(await this.alcanceConcedido(rolId, claves, accion))) {
+      throw new ForbiddenException('No tenés permisos para realizar esta acción.');
+    }
+  }
+
   rolIdPorCodigo = async (codigo: CodigoRol): Promise<number> => {
     const rol = await this.rolRepo.findOne({ where: { codigo, isActive: true } });
     if (!rol) throw new NotFoundException(`No existe el rol con código ${codigo}`);
