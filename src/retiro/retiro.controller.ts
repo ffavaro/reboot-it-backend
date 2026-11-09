@@ -4,7 +4,9 @@ import { RetiroService } from './retiro.service';
 import { CreateRetiroDto } from './dto/create-retiro.dto';
 import { UpdateRetiroDto } from './dto/update-retiro.dto';
 import { ReporteRetiroDto } from './dto/reporte-retiro.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('retiros')
 @ApiTags('retiro')
 @Controller('retiro')
 export class RetiroController {

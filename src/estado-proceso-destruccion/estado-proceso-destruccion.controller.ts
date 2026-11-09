@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EstadoProcesoDestruccionService } from './estado-proceso-destruccion.service';
 import { CreateEstadoProcesoDestruccionDto } from './dto/create-estado-proceso-destruccion.dto';
 import { UpdateEstadoProcesoDestruccionDto } from './dto/update-estado-proceso-destruccion.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('estado_proceso_destruccion')
 @ApiTags('estado-proceso-destruccion')
 @Controller('estado-proceso-destruccion')
 export class EstadoProcesoDestruccionController {

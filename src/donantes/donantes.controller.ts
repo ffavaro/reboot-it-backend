@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DonantesService } from './donantes.service';
 import { CreateDonanteDto } from './dto/create-donante.dto';
 import { UpdateDonanteDto } from './dto/update-donante.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('donantes')
 @ApiTags('donantes')
 @Controller('donantes')
 export class DonantesController {

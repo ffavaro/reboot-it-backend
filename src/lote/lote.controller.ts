@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoteService } from './lote.service';
 import { CreateLoteDto } from './dto/create-lote.dto';
 import { UpdateLoteDto } from './dto/update-lote.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('lotes')
 @ApiTags('lote')
 @Controller('lote')
 export class LoteController {

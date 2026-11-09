@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PalletService } from './pallet.service';
 import { CreatePalletDto } from './dto/create-pallet.dto';
 import { UpdatePalletDto } from './dto/update-pallet.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('pallets')
 @ApiTags('pallet')
 @Controller('pallet')
 export class PalletController {

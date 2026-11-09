@@ -11,6 +11,13 @@ export class Rol {
   @Column({ length: 255, nullable: true })
   descripcion: string;
 
+  @Column({ type: 'varchar', length: 30, nullable: true, unique: true })
+  codigo: string | null;
+
+  @Column({ name: 'es_sistema', type: 'boolean', default: false })
+  esSistema: boolean;
+
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 

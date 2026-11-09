@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GestorAmbientalService } from './gestor-ambiental.service';
 import { CreateGestorAmbientalDto } from './dto/create-gestor-ambiental.dto';
 import { UpdateGestorAmbientalDto } from './dto/update-gestor-ambiental.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('gestora_ambiental')
 @ApiTags('gestor-ambiental')
 @Controller('gestor-ambiental')
 export class GestorAmbientalController {

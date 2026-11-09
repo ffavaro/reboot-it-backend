@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CondicionMaterialService } from './condicion-material.service';
 import { CreateCondicionMaterialDto } from './dto/create-condicion-material.dto';
 import { UpdateCondicionMaterialDto } from './dto/update-condicion-material.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('condicion_material')
 @ApiTags('condicion-material')
 @Controller('condicion-material')
 export class CondicionMaterialController {

@@ -3,7 +3,9 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateRolDto } from './dto/create-rol.dto';
 import { UpdateRolDto } from './dto/update-rol.dto';
 import { RolesService } from './roles.service';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('roles')
 @ApiTags('roles')
 @Controller('roles')
 export class RolesController {

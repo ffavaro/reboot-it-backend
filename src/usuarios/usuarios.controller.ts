@@ -3,7 +3,9 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { UsuariosService } from './usuarios.service';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('usuarios')
 @ApiTags('usuarios')
 @Controller('usuarios')
 export class UsuariosController {

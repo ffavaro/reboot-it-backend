@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EstadoTurnoService } from './estado-turno.service';
 import { CreateEstadoTurnoDto } from './dto/create-estado-turno.dto';
 import { UpdateEstadoTurnoDto } from './dto/update-estado-turno.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('estado_turno')
 @ApiTags('estado-turno')
 @Controller('estado-turno')
 export class EstadoTurnoController {

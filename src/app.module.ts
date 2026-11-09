@@ -37,14 +37,13 @@ import { ModeloModule } from './modelo/modelo.module';
 import { UploadModule } from './upload/upload.module';
 import { HojaRutaModule } from './hoja-ruta/hoja-ruta.module';
 import { HistorialKmVehiculoModule } from './historial-km-vehiculo/historial-km-vehiculo.module';
-import { PantallaModule } from './pantalla/pantalla.module';
-import { RolPermisoModule } from './rol-permiso/rol-permiso.module';
 import { MailModule } from './mail/mail.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { GeoModule } from './geo/geo.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AuditoriaModule } from './auditoria/auditoria.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { PermisosModule } from './permisos/permisos.module';
 
 @Module({
   imports: [
@@ -102,13 +101,12 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     UploadModule,
     HojaRutaModule,
     HistorialKmVehiculoModule,
-    PantallaModule,
-    RolPermisoModule,
     MailModule,
     NotificacionesModule,
     GeoModule,
     AuditoriaModule,
     DashboardModule,
+    PermisosModule,
   ],
   providers: [{ provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor}]
 })

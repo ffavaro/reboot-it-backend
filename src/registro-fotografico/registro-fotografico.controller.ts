@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RegistroFotograficoService } from './registro-fotografico.service';
 import { CreateRegistroFotograficoDto } from './dto/create-registro-fotografico.dto';
 import { UpdateRegistroFotograficoDto } from './dto/update-registro-fotografico.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('registro_fotografico')
 @ApiTags('registro-fotografico')
 @Controller('registro-fotografico')
 export class RegistroFotograficoController {

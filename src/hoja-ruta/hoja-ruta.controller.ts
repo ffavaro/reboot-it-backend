@@ -17,7 +17,9 @@ import {
 } from './dto/hoja-ruta.dto';
 import { HojaRutaConsultaService } from './hoja-ruta-consulta.service';
 import { HojaRutaService } from './hoja-ruta.service';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('hoja_ruta')
 @ApiTags('hojas-ruta')
 @Controller('hojas-ruta')
 export class HojaRutaController {

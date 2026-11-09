@@ -3,7 +3,9 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 import { EmpleadosService } from './empleados.service';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('empleados')
 @ApiTags('empleados')
 @Controller('empleados')
 export class EmpleadosController {
