@@ -3,6 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TipoDonanteService } from './tipo-donante.service';
 import { CreateTipoDonanteDto } from './dto/create-tipo-donante.dto';
 import { UpdateTipoDonanteDto } from './dto/update-tipo-donante.dto';
+import { Public } from '../auth/public.decorator';
 
 @ApiTags('tipo-donante')
 @Controller('tipo-donante')
@@ -15,6 +16,7 @@ export class TipoDonanteController {
     return this.tipoDonanteService.create(dto);
   }
 
+  @Public()
   @Get()
   @ApiOperation({ summary: 'Listar todos los tipos de donante activos' })
   findAll() {

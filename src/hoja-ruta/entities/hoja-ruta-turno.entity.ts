@@ -16,10 +16,10 @@ export class HojaRutaTurno {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'hoja_ruta_id', type: 'int' })
+  @Column({ name: 'hoja_ruta_id', type: 'int', nullable: false })
   hojaRutaId: number;
 
-  @Column({ name: 'turno_id', type: 'int' })
+  @Column({ name: 'turno_id', type: 'int', nullable: false })
   turnoId: number;
 
   @CreateDateColumn({ name: 'created_at' })

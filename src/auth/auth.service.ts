@@ -10,7 +10,7 @@ export class AuthService {
         private readonly jwtService: JwtService
     ) { }
 
-    async signIn(email: string, pass: string): Promise<{access_token: string}> {
+    async signIn(email: string, pass: string): Promise<{ access_token: string }> {
         const user = await this.usersService.findByEmail(email);
         if (!user || !(await bcrypt.compare(pass, user.password))) {
             throw new UnauthorizedException('Credenciales inválidas');
@@ -18,18 +18,18 @@ export class AuthService {
 
         if (!user.isActive)
             throw new ForbiddenException("'Tu usuario está desactivado. Contactá al administrador.")
-        
+
         const { password, ...result } = user;
         const access_token = this.jwtService.sign(result);
         return { access_token };
     }
 
-    async signUp(name: string, email: string, password: string, cuitDni: string): Promise<{access_token: string}> {
+    async signUp(name: string, apellido: string, email: string, password: string, cuitDni: string): Promise<{ access_token: string }> {
         const existingUser = await this.usersService.findByEmail(email);
         if (existingUser) {
             throw new ConflictException('Email ya registrado');
         }
-        await this.usersService.create({ nombre: name, email, password, cuitDni, rolId: 7, isActive: true, empleadoId: undefined });
+        await this.usersService.create({ nombre: name, apellido: apellido, email, password, cuitDni, rolId: 5, isActive: true, empleadoId: undefined });
         const fullUser = await this.usersService.findByEmail(email);
         const { password: _, ...result } = fullUser!;
         const access_token = this.jwtService.sign(result);
