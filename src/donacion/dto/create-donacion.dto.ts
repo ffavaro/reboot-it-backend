@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 
 export class DetalleInlineDto {
   @ApiProperty({ example: 1 })
@@ -62,4 +62,12 @@ export class CreateDonacionDto {
   @IsOptional()
   @IsArray()
   detalles?: DetalleInlineDto[];
+
+  @ApiPropertyOptional({ type: [String], description: 'Fotos de los materiales, ya subidas con /upload (hasta 5)' })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5, { message: 'Se pueden cargar hasta 5 fotos' })
+  @IsString({ each: true })
+  @MaxLength(500, { each: true })
+  fotosUrls?: string[];
 }

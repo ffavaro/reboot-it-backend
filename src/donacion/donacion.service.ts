@@ -12,6 +12,11 @@ import { LoteService } from '../lote/lote.service';
 import { Turno } from '../turno/turno.entity';
 import { Retiro } from '../retiro/retiro.entity';
 import { NotificacionDonacionService } from '../notificaciones/notificacion-donacion.service';
+import { datosDePersona } from '@app/interfaces/donacion.type';
+import { ConstanciaRetiro } from '@app/constancia-retiro/constancia-retiro.entity';
+import { CertificadoDisposicion } from '@app/certificado-disposicion/certificado-disposicion.entity';
+import { RegistroFotografico } from '@app/registro-fotografico/registro-fotografico.entity';
+import { Lote } from '@app/lote/lote.entity';
 
 @Injectable()
 export class DonacionService {
@@ -190,4 +195,76 @@ export class DonacionService {
       retiro: retirosByDonacion.get(d.id) ?? null,
     }));
   }
+
+  async trazabilidad(id: number) {
+    const donacion = await this.findOne(id);
+    const repo = <T extends object>(entidad: new () => T) => this.donacionRepository.manager.getRepository(entidad);
+
+    const [turno, retiro, lote] = await Promise.all([
+      this.turnoRepository.findOne({
+        where: { donacionId: id, isActive: true },
+        relations: ['estadoTurno', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'],
+        order: { createdAt: 'DESC' },
+      }),
+      this.retiroRepository.findOne({ where: { donacionId: id, isActive: true }, order: { createdAt: 'DESC' } }),
+      repo(Lote).findOne({ where: { donacionId: id, isActive: true } }),
+    ]);
+
+    const [constancia, certificado, fotos] = await Promise.all([
+      retiro ? repo(ConstanciaRetiro).findOne({ where: { retiroId: retiro.id, isActive: true } }) : null,
+      lote ? repo(CertificadoDisposicion).findOne({ where: { loteId: lote.id, isActive: true }, relations: ['gestorAmbiental'] }) : null,
+      turno || lote
+        ? repo(RegistroFotografico).find({
+            where: [
+              ...(turno ? [{ turnoId: turno.id, isActive: true }] : []),
+              ...(lote ? [{ loteId: lote.id, isActive: true }] : []),
+            ],
+            order: { id: 'ASC' },
+          })
+        : [],
+    ]);
+
+    return {
+      id: donacion.id,
+      descripcion: donacion.descripcion,
+      createdAt: donacion.createdAt,
+      necesitaRetiro: donacion.necesitaRetiro,
+      direccionRetiro: donacion.direccionRetiro || retiro?.direccion || donacion.donante?.direccion || null,
+      pesoEstimadoKg: donacion.pesoEstimadoKg,
+      estado: donacion.estadoDonacion?.descripcion ?? null,
+      donante: { id: donacion.donanteId, nombre: donacion.donante?.nombre ?? null, razonSocial: donacion.donante?.razonSocial ?? null },
+      materiales: (donacion.detalles ?? [])
+        .filter((d) => d.isActive !== false)
+        .map((d) => ({
+          id: d.id,
+          tipo: d.tipoMaterial?.nombre ?? null,
+          condicion: d.condicionMaterial?.condicion ?? null,
+          cantidad: d.cantidadEstimada,
+        })),
+      turno: turno
+        ? {
+            id: turno.id,
+            fechaHora: turno.fechaHora,
+            estado: turno.estadoTurno?.descripcion ?? null,
+            empleado: datosDePersona(turno.empleado),
+            transportista: datosDePersona(turno.empleadoTransportista?.empleado),
+          }
+        : null,
+      retiro: retiro ? { id: retiro.id, fechaRetiro: retiro.fechaRetiro, direccion: retiro.direccion } : null,
+      constancia: constancia ? { id: constancia.id, fechaEmision: constancia.fechaEmision } : null,
+      lote: lote ? { id: lote.id, pesoBrutoKg: lote.pesoBrutoKg } : null,
+      certificado: certificado
+        ? {
+            id: certificado.id,
+            numero: certificado.numeroCertificado,
+            fechaEmision: certificado.fechaEmision,
+            gestor: certificado.gestorAmbiental?.razonSocial ?? null,
+            archivoFinalUrl: certificado.archivoFinalUrl,
+          }
+        : null,
+      fotos: [...new Map(fotos.map((f) => [f.id, f])).values()].map((f) => ({ id: f.id, url: f.urlImagen, fecha: f.fecha })),
+    };
+  }
+
+  
 }
