@@ -29,4 +29,16 @@ export class CreateDonanteDto {
   @IsString()
   @IsOptional()
   direccion?: string;
+
+  @IsString()
+  @IsOptional()
+  jurisdiccion?:string | null
+  
+  @IsString()
+  @IsOptional()
+  responsable?:string | null
+  
+  @IsString()
+  @IsOptional()
+  cargoResponsable?:string | null
 }

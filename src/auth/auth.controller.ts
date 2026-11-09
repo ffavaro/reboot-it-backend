@@ -25,8 +25,9 @@ export class AuthController {
     @HttpCode(HttpStatus.CREATED)
     @Post('register')
     signUp(@Body() signUpDto: Record<string, any>) {
-        return this.authService.signUp(signUpDto.name, signUpDto.email, signUpDto.password, signUpDto.cuitDni);
+        return this.authService.signUp(signUpDto.name, signUpDto.apellido, signUpDto.email, signUpDto.password, signUpDto.cuitDni);
     }
+    
     @Public()
     @UseGuards(ThrottlerGuard)
     @Throttle({ default: { limit: 3, ttl: QUINCE_MINUTOS } })
