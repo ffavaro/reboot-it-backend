@@ -22,6 +22,9 @@ export class CertificadoDisposicion {
   @Column({ name: 'terminos_condiciones', type: 'text', nullable: true })
   terminosCondiciones: string;
 
+ @Column({ name: 'archivo_final_url', type: 'varchar', length: 500, nullable: true })
+  archivoFinalUrl: string | null;
+
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   isActive: boolean;
 

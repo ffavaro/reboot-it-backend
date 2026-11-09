@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateCertificadoDisposicionDto {
   @ApiProperty({ example: 1, description: 'ID del lote' })
@@ -14,4 +14,7 @@ export class CreateCertificadoDisposicionDto {
   @IsString()
   @IsOptional()
   terminosCondiciones?: string;
+
+  @MaxLength(500)
+  archivoFinalUrl?: string;
 }

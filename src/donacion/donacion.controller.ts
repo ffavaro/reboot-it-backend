@@ -28,6 +28,12 @@ export class DonacionController {
     return this.donacionService.reporte(query);
   }
 
+  @Get(':id/detalle')
+  @ApiOperation({ summary: 'Recorrido completo de una donación: materiales, turno, fotos, retiro, constancia, lote y certificado' })
+  trazabilidad(@Param('id') id: string) {
+    return this.donacionService.trazabilidad(+id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una donación por ID' })
   findOne(@Param('id') id: string) {
