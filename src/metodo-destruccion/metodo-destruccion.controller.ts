@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MetodoDestruccionService } from './metodo-destruccion.service';
 import { CreateMetodoDestruccionDto } from './dto/create-metodo-destruccion.dto';
 import { UpdateMetodoDestruccionDto } from './dto/update-metodo-destruccion.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('metodos_destruccion')
 @ApiTags('metodo-destruccion')
 @Controller('metodo-destruccion')
 export class MetodoDestruccionController {

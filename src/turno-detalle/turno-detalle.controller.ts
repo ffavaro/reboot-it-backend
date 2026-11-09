@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TurnoDetalleService } from './turno-detalle.service';
 import { CreateTurnoDetalleDto } from './dto/create-turno-detalle.dto';
 import { UpdateTurnoDetalleDto } from './dto/update-turno-detalle.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('turnos')
 @ApiTags('turno-detalle')
 @Controller('turno-detalle')
 export class TurnoDetalleController {

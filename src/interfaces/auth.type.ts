@@ -1,3 +1,4 @@
+import { Accion, Alcance } from '@app/permisos/permisos.constants';
 import type { Request } from 'express';
 
 export interface UsuarioToken { 
@@ -11,4 +12,10 @@ export interface UsuarioToken {
     exp?:number
 }
 
-export type RequestConUsuario = Request & { user?: UsuarioToken };
+export interface Acceso {
+    pantallas: string[];
+    accion: Accion;
+    alcance: Alcance;
+}
+
+export type RequestConUsuario = Request & { user?: UsuarioToken; acceso: Acceso };

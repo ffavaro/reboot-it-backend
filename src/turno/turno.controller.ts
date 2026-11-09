@@ -4,7 +4,9 @@ import { TurnoService } from './turno.service';
 import { CreateTurnoDto } from './dto/create-turno.dto';
 import { UpdateTurnoDto } from './dto/update-turno.dto';
 import { AsignarEmpleadoDto } from './dto/asignar-empleado.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('turnos')
 @ApiTags('turno')
 @Controller('turno')
 export class TurnoController {

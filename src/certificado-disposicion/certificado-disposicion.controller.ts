@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CertificadoDisposicionService } from './certificado-disposicion.service';
 import { CreateCertificadoDisposicionDto } from './dto/create-certificado-disposicion.dto';
 import { UpdateCertificadoDisposicionDto } from './dto/update-certificado-disposicion.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('certificado_disposicion')
 @ApiTags('certificado-disposicion')
 @Controller('certificado-disposicion')
 export class CertificadoDisposicionController {

@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ConstanciaRetiroService } from './constancia-retiro.service';
 import { CreateConstanciaRetiroDto } from './dto/create-constancia-retiro.dto';
 import { UpdateConstanciaRetiroDto } from './dto/update-constancia-retiro.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('constancia_retiro')
 @ApiTags('constancia-retiro')
 @Controller('constancia-retiro')
 export class ConstanciaRetiroController {

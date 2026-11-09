@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MarcaService } from './marca.service';
 import { CreateMarcaDto } from './dto/create-marca.dto';
 import { UpdateMarcaDto } from './dto/update-marca.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('marcas')
 @ApiTags('marca')
 @Controller('marca')
 export class MarcaController {

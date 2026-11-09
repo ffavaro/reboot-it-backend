@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TipoMaterialService } from './tipo-material.service';
 import { CreateTipoMaterialDto } from './dto/create-tipo-material.dto';
 import { UpdateTipoMaterialDto } from './dto/update-tipo-material.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('tipos_material')
 @ApiTags('tipo-material')
 @Controller('tipo-material')
 export class TipoMaterialController {

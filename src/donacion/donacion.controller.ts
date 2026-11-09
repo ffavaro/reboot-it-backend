@@ -4,7 +4,9 @@ import { DonacionService } from './donacion.service';
 import { CreateDonacionDto } from './dto/create-donacion.dto';
 import { UpdateDonacionDto } from './dto/update-donacion.dto';
 import { ReporteDonacionDto } from './dto/reporte-donacion.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('donaciones')
 @ApiTags('donacion')
 @Controller('donacion')
 export class DonacionController {
