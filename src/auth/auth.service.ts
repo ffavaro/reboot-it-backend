@@ -17,7 +17,7 @@ export class AuthService {
         }
 
         if (!user.isActive)
-            throw new ForbiddenException("'Tu usuario está desactivado. Contactá al administrador.")
+            throw new ForbiddenException("Tu usuario está desactivado. Contactá al administrador.")
 
         const { password, ...result } = user;
         const access_token = this.jwtService.sign(result);

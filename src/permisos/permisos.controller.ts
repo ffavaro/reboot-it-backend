@@ -25,12 +25,13 @@ export class PermisosController {
     return this.permisosService.matrizDeRol(rolId)
   }
 
-  @Accion('editar')
+ @Accion('editar')
   @Put('rol/:rolId')
-  async actualizar(@Param('rolId') rolId: number,
+  actualizar(
+    @Param('rolId', ParseIntPipe) rolId: number,
     @Body() dto: GuardarPermisosDto,
-    @Req() req: RequestConUsuario) {
-    await this.permisosService.exigir(req.user?.rolId, ['roles'], 'editar')
-    return this.permisosService.guardarMatriz(rolId, dto, req.user?.rolId)
+    @Req() req: RequestConUsuario,
+  ) {
+    return this.permisosService.guardarMatriz(rolId, dto, req.user?.rolId);
   }
 }

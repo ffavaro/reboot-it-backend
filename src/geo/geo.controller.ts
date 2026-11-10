@@ -9,8 +9,10 @@ import { ApiTags } from '@nestjs/swagger';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { GeoService } from './geo.service';
 import { MIN_CARACTERES, MAX_CARACTERES } from '@app/utils/helpers';
+import { Public } from '@app/auth/public.decorator';
 const { NoAuditar } = require('../auditoria/entities/listado-acciones');
 
+@Public()
 @NoAuditar()
 @ApiTags('geo')
 @UseGuards(ThrottlerGuard)

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNumber, IsOptional } from 'class-validator';
+import { IsDateString, IsNumber, IsOptional, MaxLength } from 'class-validator';
 
 export class CreateEmpleadoTransportistaDto {
   @ApiProperty({ example: 1, description: 'ID del empleado' })
@@ -16,6 +16,7 @@ export class CreateEmpleadoTransportistaDto {
   fechaAsignacion?: string;
 
   @IsOptional()
+  @MaxLength(500)
   carnetUrl: string;
 
   @IsOptional()

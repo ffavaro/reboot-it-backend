@@ -16,7 +16,7 @@ export class EmpleadoTransportista {
   @Column({ name: 'fecha_asignacion', type: 'datetime', nullable: true })
   fechaAsignacion: Date;
 
-  @Column({ name: 'carnet_url', type: 'varchar', length: 100, nullable: true})
+  @Column({ name: 'carnet_url', type: 'varchar', length: 500, nullable: true})
   carnetUrl: string | null;
 
   @Column({name: 'carnet_vencimiento', type: 'date', nullable: true})

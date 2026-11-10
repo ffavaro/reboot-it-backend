@@ -12,6 +12,7 @@ import { PasswordResetCode } from '../password-reset-code/entities/password-rese
 import { RecuperacionContrasenaService } from '../password-reset-code/password-reset-code.service';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './jwt-auth.gard';
+import { PermisosGuard } from './permisos.guard';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { JwtAuthGuard } from './jwt-auth.gard';
   ],
   controllers: [AuthController],
   providers: [AuthService, RecuperacionContrasenaService,
-    { provide: APP_GUARD, useClass: JwtAuthGuard}
+    { provide: APP_GUARD, useClass: JwtAuthGuard},
+    {provide: APP_GUARD, useClass: PermisosGuard}
   ],
 })
 export class AuthModule {}
