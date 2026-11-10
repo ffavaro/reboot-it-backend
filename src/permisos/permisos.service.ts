@@ -111,9 +111,6 @@ export class PermisosService {
     return rol.id;
   }
 
-  invalidarCache(): void {
-    this.cache.clear();
-  }
 
   crearSinPermisos = async (rolId: number): Promise<void> => {
     const pantallas = await this.listarPantallas();

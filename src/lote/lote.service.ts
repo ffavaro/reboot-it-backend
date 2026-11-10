@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { Lote } from './lote.entity';
 import { CreateLoteDto } from './dto/create-lote.dto';
 import { UpdateLoteDto } from './dto/update-lote.dto';
@@ -17,9 +17,9 @@ export class LoteService {
     return this.loteRepository.save(lote);
   }
 
-  findAll() {
+  findAll(alcance: FindOptionsWhere<Lote> = {}) {
     return this.loteRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, ...alcance },
       relations: ['donacion', 'donacion.donante'],
       order: {id: "DESC"}
     });

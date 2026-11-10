@@ -4,7 +4,9 @@ import { TipoDonanteService } from './tipo-donante.service';
 import { CreateTipoDonanteDto } from './dto/create-tipo-donante.dto';
 import { UpdateTipoDonanteDto } from './dto/update-tipo-donante.dto';
 import { Public } from '../auth/public.decorator';
+import { Pantalla, SoloAutenticado } from '../auth/permisos.decorators';
 
+@Pantalla('donantes')
 @ApiTags('tipo-donante')
 @Controller('tipo-donante')
 export class TipoDonanteController {
@@ -23,6 +25,7 @@ export class TipoDonanteController {
     return this.tipoDonanteService.findAll();
   }
 
+  @SoloAutenticado()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un tipo de donante por ID' })
   findOne(@Param('id') id: string) {

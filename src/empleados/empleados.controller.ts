@@ -1,45 +1,59 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 import { EmpleadosService } from './empleados.service';
 import { Pantalla } from '../auth/permisos.decorators';
+import type { RequestConUsuario } from '../interfaces/auth.type';
+import { AlcanceService } from '../permisos/alcance.service';
+import { PermisosService } from '../permisos/permisos.service';
 
 @Pantalla('empleados')
 @ApiTags('empleados')
 @Controller('empleados')
 export class EmpleadosController {
-  constructor(private readonly empleadosService: EmpleadosService) {}
+  constructor(
+    private readonly empleadosService: EmpleadosService,
+    private readonly alcance: AlcanceService,
+    private readonly permisos: PermisosService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Crear un empleado' })
   @ApiResponse({ status: 201, description: 'Empleado creado exitosamente' })
-  create(@Body() dto: CreateEmpleadoDto) {
+  async create(@Body() dto: CreateEmpleadoDto, @Req() req: RequestConUsuario) {
+    await this.permisos.exigirPuedeAsignarRol(dto.rolId, req.user?.rolId);
     return this.empleadosService.create(dto);
   }
 
+  @Pantalla('empleados', 'empleado_transportista', 'hoja_ruta', 'usuarios', 'proceso_destruccion')
   @Get()
   @ApiOperation({ summary: 'Listar todos los empleados activos' })
-  findAll() {
-    return this.empleadosService.findAll();
+  findAll(@Req() req: RequestConUsuario) {
+    return this.empleadosService.findAll(this.alcance.condicion(req, 'empleados'));
   }
 
+  @Pantalla('empleados', 'empleado_transportista', 'hoja_ruta', 'usuarios')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un empleado por ID' })
   @ApiResponse({ status: 404, description: 'Empleado no encontrado' })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    await this.alcance.exigir(req, 'empleados', +id);
     return this.empleadosService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un empleado' })
-  update(@Param('id') id: string, @Body() dto: UpdateEmpleadoDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateEmpleadoDto, @Req() req: RequestConUsuario) {
+    await this.alcance.exigir(req, 'empleados', +id);
+    await this.permisos.exigirPuedeAsignarRol(dto.rolId, req.user?.rolId);
     return this.empleadosService.update(+id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un empleado (soft delete)' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @Req() req: RequestConUsuario) {
+    await this.alcance.exigir(req, 'empleados', +id);
     return this.empleadosService.remove(+id);
   }
 }

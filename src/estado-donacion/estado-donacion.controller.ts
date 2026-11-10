@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EstadoDonacionService } from './estado-donacion.service';
 import { CreateEstadoDonacionDto } from './dto/create-estado-donacion.dto';
 import { UpdateEstadoDonacionDto } from './dto/update-estado-donacion.dto';
+import { Pantalla, SoloAutenticado } from '../auth/permisos.decorators';
 
+@Pantalla('estado_turno')
 @ApiTags('estado-donacion')
 @Controller('estado-donacion')
 export class EstadoDonacionController {
@@ -15,12 +17,14 @@ export class EstadoDonacionController {
     return this.service.create(dto);
   }
 
+  @SoloAutenticado()
   @Get()
   @ApiOperation({ summary: 'Listar todos los estados de donación activos' })
   findAll() {
     return this.service.findAll();
   }
 
+  @SoloAutenticado()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un estado de donación por ID' })
   findOne(@Param('id') id: string) {

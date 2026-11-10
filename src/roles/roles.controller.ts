@@ -18,12 +18,14 @@ export class RolesController {
     return this.rolesService.create(dto);
   }
 
+  @Pantalla('roles', 'usuarios', 'empleados')
   @Get()
   @ApiOperation({ summary: 'Listar todos los roles activos' })
   findAll() {
     return this.rolesService.findAll();
   }
 
+  @Pantalla('roles', 'usuarios', 'empleados')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un rol por ID' })
   @ApiResponse({ status: 404, description: 'Rol no encontrado' })

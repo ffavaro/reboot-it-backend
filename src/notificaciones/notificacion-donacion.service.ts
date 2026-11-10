@@ -19,15 +19,6 @@ export class NotificacionDonacionService {
     private readonly config: ConfigService,
   ) {}
 
-  async obtenerEstado(donacionId: number): Promise<number | null> {
-    try {
-      const donacion = await this.donacionRepository.findOne({ where: { id: donacionId } });
-      return donacion?.estadoDonacionId ?? null;
-    } catch {
-      return null;
-    }
-  }
-
   async notificarSiCambio(donacionId: number, estadoPrevio: number | null): Promise<void> {
     try {
       const donacion = await this.donacionRepository.findOne({

@@ -17,12 +17,14 @@ export class MedioAlmacenamientoController {
     return this.medioAlmacenamientoService.create(dto);
   }
 
+  @Pantalla('medio_almacenamiento', 'proceso_destruccion')
   @Get()
   @ApiOperation({ summary: 'Listar todos los medios de almacenamiento activos' })
   findAll() {
     return this.medioAlmacenamientoService.findAll();
   }
 
+  @Pantalla('medio_almacenamiento', 'proceso_destruccion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un medio de almacenamiento por ID' })
   findOne(@Param('id') id: string) {

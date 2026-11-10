@@ -3,7 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EstadoTurnoService } from './estado-turno.service';
 import { CreateEstadoTurnoDto } from './dto/create-estado-turno.dto';
 import { UpdateEstadoTurnoDto } from './dto/update-estado-turno.dto';
-import { Pantalla } from '../auth/permisos.decorators';
+import { Pantalla, SoloAutenticado } from '../auth/permisos.decorators';
 
 @Pantalla('estado_turno')
 @ApiTags('estado-turno')
@@ -17,12 +17,14 @@ export class EstadoTurnoController {
     return this.estadoTurnoService.create(dto);
   }
 
+  @SoloAutenticado()
   @Get()
   @ApiOperation({ summary: 'Listar todos los estados de turno activos' })
   findAll() {
     return this.estadoTurnoService.findAll();
   }
 
+  @SoloAutenticado()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un estado de turno por ID' })
   findOne(@Param('id') id: string) {

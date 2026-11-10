@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { FindOptionsWhere, Like, Repository } from 'typeorm';
 import { CertificadoDisposicion } from './certificado-disposicion.entity';
 import { Lote } from '../lote/lote.entity';
 import { Donacion } from '../donacion/donacion.entity';
@@ -47,9 +47,9 @@ export class CertificadoDisposicionService {
     return saved;
   }
 
-  findAll() {
+  findAll(alcance: FindOptionsWhere<CertificadoDisposicion> = {}) {
     return this.certificadoDisposicionRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, ...alcance },
       relations: ['lote', 'gestorAmbiental'],
       order: { id: "DESC"}
     });

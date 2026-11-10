@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { FindOptionsWhere, Repository, SelectQueryBuilder } from 'typeorm';
 import { HistorialKmVehiculo } from './entities/historial-km-vehiculo.entity';
 import { Vehiculo } from '../vehiculos/vehiculo.entity';
 import { CreateHistorialKmVehiculoDto } from './dto/create-historial-km-vehiculo.dto';
@@ -21,8 +21,9 @@ export class HistorialKmVehiculoService {
     return this.historialRepository.save(this.historialRepository.create(dto));
   }
 
-  findAll() {
+  findAll(alcance: FindOptionsWhere<HistorialKmVehiculo> = {}) {
     return this.historialRepository.find({
+      where: alcance,
       order: {id: "DESC"}
     });
   }

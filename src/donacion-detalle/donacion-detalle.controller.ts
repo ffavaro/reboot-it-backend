@@ -3,9 +3,11 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DonacionDetalleService } from './donacion-detalle.service';
 import { CreateDonacionDetalleDto } from './dto/create-donacion-detalle.dto';
 import { UpdateDonacionDetalleDto } from './dto/update-donacion-detalle.dto';
-import { Pantalla } from '../auth/permisos.decorators';
+import { Accion, Pantalla, SoloAlcanceTotal } from '../auth/permisos.decorators';
 
 @Pantalla('donaciones')
+@SoloAlcanceTotal()
+@Accion('editar')
 @ApiTags('donacion-detalle')
 @Controller('donacion-detalle')
 export class DonacionDetalleController {

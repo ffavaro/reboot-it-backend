@@ -17,12 +17,14 @@ export class RackController {
     return this.rackService.create(dto);
   }
 
+  @Pantalla('racks', 'pallets')
   @Get()
   @ApiOperation({ summary: 'Listar todos los racks activos' })
   findAll() {
     return this.rackService.findAll();
   }
 
+  @Pantalla('racks', 'pallets')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un rack por ID' })
   findOne(@Param('id') id: string) {

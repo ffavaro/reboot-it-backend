@@ -48,20 +48,6 @@ export const redondear = (valor: number, decimales = 1) =>
 export const porcentaje = (parte: number, total: number) =>
   total > 0 ? Math.round((parte / total) * 100) : null;
 
-export function obtenerFiltros(
-  query: DashboardQueryDto,
-  hoy: Date = new Date(),
-): Filtros {
-  const inicio = new Date(hoy);
-  inicio.setMonth(inicio.getMonth() - MESES_POR_DEFECTO);
-
-  return {
-    desde: aFechaLocal(inicio),
-    hasta: aFechaLocal(hoy),
-    donantes: (query.donanteIds ?? '').split(',').filter(Boolean).map(Number),
-  };
-}
-
 export function entreFecha(columna: string, filtro: Filtros): Condicion {
   return {
     sql: `DATE(${columna}) BETWEEN ? AND ?`,

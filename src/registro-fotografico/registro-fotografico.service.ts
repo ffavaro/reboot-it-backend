@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { RegistroFotografico } from './registro-fotografico.entity';
 import { CreateRegistroFotograficoDto } from './dto/create-registro-fotografico.dto';
 import { UpdateRegistroFotograficoDto } from './dto/update-registro-fotografico.dto';
@@ -17,9 +17,9 @@ export class RegistroFotograficoService {
     return this.registroFotograficoRepository.save(registroFotografico);
   }
 
-  findAll() {
+  findAll(alcance: FindOptionsWhere<RegistroFotografico> = {}) {
     return this.registroFotograficoRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, ...alcance },
       relations: ['lote', 'turno'],
     });
   }

@@ -17,12 +17,14 @@ export class MarcaController {
     return this.marcaService.create(dto);
   }
 
+  @Pantalla('marcas', 'medio_almacenamiento', 'modelos')
   @Get()
   @ApiOperation({ summary: 'Listar todas las marcas activas' })
   findAll() {
     return this.marcaService.findAll();
   }
 
+  @Pantalla('marcas', 'medio_almacenamiento', 'modelos')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una marca por ID' })
   findOne(@Param('id') id: string) {
