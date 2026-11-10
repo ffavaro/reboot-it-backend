@@ -3,7 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TipoMaterialService } from './tipo-material.service';
 import { CreateTipoMaterialDto } from './dto/create-tipo-material.dto';
 import { UpdateTipoMaterialDto } from './dto/update-tipo-material.dto';
-import { Pantalla } from '../auth/permisos.decorators';
+import { Pantalla, SoloAutenticado } from '../auth/permisos.decorators';
 
 @Pantalla('tipos_material')
 @ApiTags('tipo-material')
@@ -17,12 +17,14 @@ export class TipoMaterialController {
     return this.tipoMaterialService.create(dto);
   }
 
+  @SoloAutenticado()
   @Get()
   @ApiOperation({ summary: 'Listar todos los tipos de material activos' })
   findAll() {
     return this.tipoMaterialService.findAll();
   }
 
+  @SoloAutenticado()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un tipo de material por ID' })
   findOne(@Param('id') id: string) {

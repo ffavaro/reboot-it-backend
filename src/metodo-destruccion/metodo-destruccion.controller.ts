@@ -17,12 +17,14 @@ export class MetodoDestruccionController {
     return this.service.create(dto);
   }
 
+  @Pantalla('metodos_destruccion', 'proceso_destruccion')
   @Get()
   @ApiOperation({ summary: 'Listar todos los métodos de destrucción activos' })
   findAll() {
     return this.service.findAll();
   }
 
+  @Pantalla('metodos_destruccion', 'proceso_destruccion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un método de destrucción por ID' })
   findOne(@Param('id') id: string) {

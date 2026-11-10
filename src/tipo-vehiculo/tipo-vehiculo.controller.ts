@@ -3,7 +3,9 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TipoVehiculoService } from './tipo-vehiculo.service';
 import { CreateTipoVehiculoDto } from './dto/create-tipo-vehiculo.dto';
 import { UpdateTipoVehiculoDto } from './dto/update-tipo-vehiculo.dto';
+import { Pantalla } from '../auth/permisos.decorators';
 
+@Pantalla('vehiculos')
 @ApiTags('tipo-vehiculo')
 @Controller('tipo-vehiculo')
 export class TipoVehiculoController {

@@ -2,12 +2,15 @@ import { UsuariosService } from '@app/usuarios/usuarios.service';
 import { ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { ROL } from '@app/permisos/permisos.constants';
+import { PermisosService } from '@app/permisos/permisos.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly usersService: UsuariosService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly permisos: PermisosService,
     ) { }
 
     async signIn(email: string, pass: string): Promise<{ access_token: string }> {
@@ -17,7 +20,7 @@ export class AuthService {
         }
 
         if (!user.isActive)
-            throw new ForbiddenException("'Tu usuario está desactivado. Contactá al administrador.")
+            throw new ForbiddenException("Tu usuario está desactivado. Contactá al administrador.")
 
         const { password, ...result } = user;
         const access_token = this.jwtService.sign(result);
@@ -29,7 +32,8 @@ export class AuthService {
         if (existingUser) {
             throw new ConflictException('Email ya registrado');
         }
-        await this.usersService.create({ nombre: name, apellido: apellido, email, password, cuitDni, rolId: 5, isActive: true, empleadoId: undefined });
+        const rolId = await this.permisos.rolIdPorCodigo(ROL.DONANTE);
+        await this.usersService.create({ nombre: name, apellido, email, password, cuitDni, rolId, isActive: true, empleadoId: undefined });
         const fullUser = await this.usersService.findByEmail(email);
         const { password: _, ...result } = fullUser!;
         const access_token = this.jwtService.sign(result);

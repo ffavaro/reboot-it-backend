@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { And, DataSource, Equal, FindOperator, FindOptionsWhere, ObjectLiteral, Raw } from 'typeorm';
+import { And, DataSource, Equal, FindOperator, ObjectLiteral, Raw } from 'typeorm';
 import type { EntityTarget } from 'typeorm';
 import { CertificadoDisposicion } from '../certificado-disposicion/certificado-disposicion.entity';
 import { ConstanciaRetiro } from '../constancia-retiro/constancia-retiro.entity';
@@ -20,6 +20,8 @@ import { ESTADO_EN_CLASIFICACION } from '../utils/helpers';
 import { CONSULTAS_POR_RECURSO } from './alcance.consultas';
 import { ocultarDatosDelTransportista } from './ocultar-transportista';
 import type { Recurso } from './alcance.consultas';
+
+export type CondicionDeAlcance = { id?: FindOperator<number> };
 
 const ESTADOS_EN_PLANTA = [ESTADO_EN_CLASIFICACION, 'Finalizado'];
 
@@ -53,9 +55,9 @@ export class AlcanceService {
     return req.acceso?.alcance === 'PROPIOS';
   }
 
-  condicion<T extends { id: number }>(req: RequestConUsuario, recurso: Recurso): FindOptionsWhere<T> {
+  condicion(req: RequestConUsuario, recurso: Recurso): CondicionDeAlcance {
     const filtro = this.filtroDeIds(req, recurso);
-    return (filtro ? { id: filtro } : {}) as FindOptionsWhere<T>;
+    return filtro ? { id: filtro } : {};
   }
 
   async exigir(req: RequestConUsuario, recurso: Recurso, id: number | null | undefined): Promise<void> {

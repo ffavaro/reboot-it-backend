@@ -24,6 +24,7 @@ export class ProcesoDestruccionController {
     return this.procesoDestruccionService.findAll();
   }
 
+  @Pantalla('reporte_procesos_destruccion')
   @Get('reporte')
   @ApiOperation({ summary: 'Generar reporte de procesos de destrucción con filtros' })
   reporte(@Query() query: ReporteProcesoDestruccionDto) {

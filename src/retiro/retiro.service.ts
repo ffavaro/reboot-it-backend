@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { Retiro } from './retiro.entity';
 import { CreateRetiroDto } from './dto/create-retiro.dto';
 import { UpdateRetiroDto } from './dto/update-retiro.dto';
@@ -20,9 +20,9 @@ export class RetiroService {
     return this.retiroRepository.save(retiro);
   }
 
-  findAll() {
+  findAll(alcance: FindOptionsWhere<Retiro> = {}) {
     return this.retiroRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, ...alcance },
       relations: ['donacion', 'empleadoTransportista', 'empleadoTransportista.empleado', 'vehiculo'],
       order: { id: "DESC"}
     });

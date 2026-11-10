@@ -17,6 +17,7 @@ export class ModeloController {
     return this.modeloService.create(dto);
   }
 
+  @Pantalla('modelos', 'medio_almacenamiento')
   @Get()
   @ApiOperation({ summary: 'Listar todos los modelos activos (opcionalmente filtrar por marca o tipo)' })
   @ApiQuery({ name: 'marcaId', required: false, type: Number })
@@ -27,6 +28,7 @@ export class ModeloController {
     return this.modeloService.findAll();
   }
 
+  @Pantalla('modelos', 'medio_almacenamiento')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un modelo por ID' })
   findOne(@Param('id') id: string) {

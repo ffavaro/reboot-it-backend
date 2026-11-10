@@ -17,12 +17,14 @@ export class TipoController {
     return this.tipoService.create(dto);
   }
 
+  @Pantalla('tipos', 'medio_almacenamiento')
   @Get()
   @ApiOperation({ summary: 'Listar todos los tipos activos' })
   findAll() {
     return this.tipoService.findAll();
   }
 
+  @Pantalla('tipos', 'medio_almacenamiento')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un tipo por ID' })
   findOne(@Param('id') id: string) {

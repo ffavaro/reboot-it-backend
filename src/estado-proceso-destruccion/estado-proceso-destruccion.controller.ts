@@ -17,12 +17,14 @@ export class EstadoProcesoDestruccionController {
     return this.service.create(dto);
   }
 
+  @Pantalla('estado_proceso_destruccion', 'proceso_destruccion', 'reporte_procesos_destruccion')
   @Get()
   @ApiOperation({ summary: 'Listar todos los estados de proceso de destrucción activos' })
   findAll() {
     return this.service.findAll();
   }
 
+  @Pantalla('estado_proceso_destruccion', 'proceso_destruccion', 'reporte_procesos_destruccion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un estado de proceso de destrucción por ID' })
   findOne(@Param('id') id: string) {

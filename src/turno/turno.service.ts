@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { Turno } from './turno.entity';
 import { CreateTurnoDto } from './dto/create-turno.dto';
 import { UpdateTurnoDto } from './dto/update-turno.dto';
@@ -52,9 +52,9 @@ export class TurnoService {
     return this.turnoRepository.save(turno);
   }
 
-  findAll() {
+  findAll(alcance: FindOptionsWhere<Turno> = {}) {
     return this.turnoRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, ...alcance },
       relations: RELATIONS,
       order: { id: "DESC"}
     });

@@ -7,6 +7,8 @@ const DATOS_PRIVADOS = [
   'email',
   'direccion',
   'cuitDni',
+   'carnetUrl',
+  'carnetVencimiento',
 ];
 
 const CLAVES_DEL_TRANSPORTISTA = new Set([

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateDonanteDto {
   @ApiPropertyOptional({ example: 1, description: 'ID del usuario asociado' })
@@ -32,13 +32,16 @@ export class CreateDonanteDto {
 
   @IsString()
   @IsOptional()
+  @IsIn(['Nacional', 'Provincial', 'Municipal'])
   jurisdiccion?:string | null
   
   @IsString()
   @IsOptional()
+  @MaxLength(100)
   responsable?:string | null
   
   @IsString()
   @IsOptional()
+  @MaxLength(100)
   cargoResponsable?:string | null
 }

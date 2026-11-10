@@ -17,12 +17,14 @@ export class GestorAmbientalController {
     return this.gestorAmbientalService.create(dto);
   }
 
+  @Pantalla('gestora_ambiental', 'certificado_disposicion', 'proceso_destruccion')
   @Get()
   @ApiOperation({ summary: 'Listar todos los gestores ambientales activos' })
   findAll() {
     return this.gestorAmbientalService.findAll();
   }
 
+  @Pantalla('gestora_ambiental', 'certificado_disposicion', 'proceso_destruccion')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un gestor ambiental por ID' })
   findOne(@Param('id') id: string) {

@@ -12,11 +12,6 @@ export interface ContextoRequest {
   ruta: string;
 }
 
-export interface UsuarioAuditado {
-  id: number;
-  rol?: { nombre?: string } | null;
-}
-
 export interface EventoAuditoria extends Partial<ContextoRequest> {
   accion: string;
   resultado: Resultado;

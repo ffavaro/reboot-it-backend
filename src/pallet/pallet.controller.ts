@@ -17,12 +17,14 @@ export class PalletController {
     return this.palletService.create(dto);
   }
 
+  @Pantalla('pallets', 'racks', 'lotes')
   @Get()
   @ApiOperation({ summary: 'Listar todos los pallets activos' })
   findAll() {
     return this.palletService.findAll();
   }
 
+  @Pantalla('pallets', 'racks', 'lotes')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un pallet por ID' })
   findOne(@Param('id') id: string) {

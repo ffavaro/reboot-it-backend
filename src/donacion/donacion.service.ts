@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { Donacion } from './donacion.entity';
 import { CreateDonacionDto } from './dto/create-donacion.dto';
 import { UpdateDonacionDto } from './dto/update-donacion.dto';
@@ -91,9 +91,9 @@ export class DonacionService {
     return this.findOne(saved.id);
   }
 
-  findAll() {
+  findAll(alcance: FindOptionsWhere<Donacion> = {}) {
     return this.donacionRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, ...alcance },
       relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial', 'detalles.condicionMaterial'],
       order: { id : "DESC"}
     });

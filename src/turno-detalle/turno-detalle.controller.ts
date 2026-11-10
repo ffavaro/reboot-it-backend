@@ -3,9 +3,11 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TurnoDetalleService } from './turno-detalle.service';
 import { CreateTurnoDetalleDto } from './dto/create-turno-detalle.dto';
 import { UpdateTurnoDetalleDto } from './dto/update-turno-detalle.dto';
-import { Pantalla } from '../auth/permisos.decorators';
+import { Accion, Pantalla, SoloAlcanceTotal } from '../auth/permisos.decorators';
 
 @Pantalla('turnos')
+@SoloAlcanceTotal()
+@Accion('editar')
 @ApiTags('turno-detalle')
 @Controller('turno-detalle')
 export class TurnoDetalleController {

@@ -19,18 +19,21 @@ export class MaterialController {
     return this.materialService.create(dto);
   }
 
+  @Pantalla('materiales', 'dashboard', 'proceso_destruccion', 'lotes')
   @Get()
   @ApiOperation({ summary: 'Listar todos los materiales activos' })
   findAll() {
     return this.materialService.findAll();
   }
 
+  @Pantalla('reporte_inventario', 'dashboard')
   @Get('reporte')
   @ApiOperation({ summary: 'Generar reporte de inventario (materiales) con filtros' })
   reporte(@Query() query: ReporteMaterialDto) {
     return this.materialService.reporte(query);
   }
 
+  @Pantalla('materiales', 'dashboard', 'proceso_destruccion', 'lotes')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un material por ID' })
   findOne(@Param('id') id: string) {

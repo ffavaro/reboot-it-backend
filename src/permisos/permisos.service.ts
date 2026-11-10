@@ -96,18 +96,12 @@ export class PermisosService {
 
     const rol = await this.buscarRol(rolId);
 
-    if ( rol.codigo !== ROL.ADMIN){
+    if ( rol.codigo === ROL.ADMIN){
        const solicitante = rolIdSolicitante ? await this.rolRepo.findOne({ where: { id: rolIdSolicitante}}) : null;
 
      if (solicitante?.codigo !== ROL.ADMIN) {
       throw new ForbiddenException('Solo el SysAdmin puede asignar el rol Admin.');
     }
-    }
-  }
-
-  exigir = async (rolId: number | undefined, claves: string[], accion: Accion): Promise<void> => {
-    if (!(await this.alcanceConcedido(rolId, claves, accion))) {
-      throw new ForbiddenException('No tenés permisos para realizar esta acción.');
     }
   }
 
@@ -117,8 +111,13 @@ export class PermisosService {
     return rol.id;
   }
 
-  invalidarCache(): void {
-    this.cache.clear();
+
+  crearSinPermisos = async (rolId: number): Promise<void> => {
+    const pantallas = await this.listarPantallas();
+    if (pantallas.length) {
+      await this.permisoRepo.insert(pantallas.map((p) => ({ rolId, pantallaId: p.id, ...SIN_PERMISOS })));
+    }
+    this.cache.delete(rolId);
   }
 
    private async permisosCacheados(rolId: number): Promise<PermisosPorClave> {

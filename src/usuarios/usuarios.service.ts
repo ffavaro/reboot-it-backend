@@ -59,9 +59,6 @@ export class UsuariosService {
     return this.findOne(id);
   }
 
-  updatePassword = async (id: number, hashedPassword: string) => {
-    await this.usuarioRepository.update(id, { password: hashedPassword });
-  }
 
   remove = async (id: number) => {
     await this.findOne(id);

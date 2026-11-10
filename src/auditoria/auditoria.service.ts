@@ -71,8 +71,8 @@ export class AuditoriaService {
   }
 
   findAcciones = async (filtros: CreateAuditoriaDto) => {
-    const page = Number(filtros.page) ?? 1;
-    const limit = Number(filtros.limit) ?? 20;
+    const page = Number(filtros.page) || 1;
+    const limit = Number(filtros.limit) || 20;
 
     const qb = this.logRepository
       .createQueryBuilder('l')
