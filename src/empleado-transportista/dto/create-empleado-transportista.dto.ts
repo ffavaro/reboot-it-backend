@@ -14,4 +14,10 @@ export class CreateEmpleadoTransportistaDto {
   @IsDateString()
   @IsOptional()
   fechaAsignacion?: string;
+
+  @IsOptional()
+  carnetUrl: string;
+
+  @IsOptional()
+  carnetVencimiento: string
 }
