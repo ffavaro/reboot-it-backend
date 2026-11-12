@@ -44,6 +44,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { AuditoriaModule } from './auditoria/auditoria.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { PermisosModule } from './permisos/permisos.module';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
@@ -108,6 +109,7 @@ import { PermisosModule } from './permisos/permisos.module';
     DashboardModule,
     PermisosModule,
   ],
+  controllers: [HealthController],
   providers: [{ provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor}]
 })
 export class AppModule {}
