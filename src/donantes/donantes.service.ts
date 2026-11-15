@@ -1,48 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CrudService } from '@app/common/crud/crud-service';
 import { Donante } from './donante.entity';
 import { CreateDonanteDto } from './dto/create-donante.dto';
 import { UpdateDonanteDto } from './dto/update-donante.dto';
 
 @Injectable()
-export class DonantesService {
-  constructor(
-    @InjectRepository(Donante)
-    private readonly donanteRepository: Repository<Donante>,
-  ) {}
-
-  create(dto: CreateDonanteDto) {
-    const donante = this.donanteRepository.create(dto);
-    return this.donanteRepository.save(donante);
-  }
-
-  findAll(alcance: FindOptionsWhere<Donante> = {}) {
-    return this.donanteRepository.find({
-      where: { isActive: true, ...alcance },
-      relations: ['tipoDonante'],
-      order: { id: "DESC"}
-    });
-  }
-
-  async findOne(id: number) {
-    const donante = await this.donanteRepository.findOne({
-      where: { id },
-      relations: ['tipoDonante'],
-    });
-    if (!donante) throw new NotFoundException(`Donante ${id} no encontrado`);
-    return donante;
-  }
-
-  async update(id: number, dto: UpdateDonanteDto) {
-    await this.findOne(id);
-    await this.donanteRepository.update(id, dto);
-    return this.findOne(id);
-  }
-
-  async remove(id: number) {
-    await this.findOne(id);
-    await this.donanteRepository.update(id, { isActive: false });
-    return { message: 'Donante desactivado' };
+export class DonantesService extends CrudService<Donante, CreateDonanteDto, UpdateDonanteDto> {
+  constructor(@InjectRepository(Donante) repo: Repository<Donante>) {
+    super(repo, { etiqueta: 'Donante', genero: 'm', relations: ['tipoDonante'], order: { id: 'DESC' } });
   }
 }

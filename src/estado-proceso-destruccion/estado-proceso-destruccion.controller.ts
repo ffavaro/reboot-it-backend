@@ -1,45 +1,20 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller } from '@nestjs/common';
 import { EstadoProcesoDestruccionService } from './estado-proceso-destruccion.service';
 import { CreateEstadoProcesoDestruccionDto } from './dto/create-estado-proceso-destruccion.dto';
 import { UpdateEstadoProcesoDestruccionDto } from './dto/update-estado-proceso-destruccion.dto';
-import { Pantalla } from '../auth/permisos.decorators';
+import { createCrudController } from '@app/common/crud/crud.controller';
 
-@Pantalla('estado_proceso_destruccion')
-@ApiTags('estado-proceso-destruccion')
 @Controller('estado-proceso-destruccion')
-export class EstadoProcesoDestruccionController {
-  constructor(private readonly service: EstadoProcesoDestruccionService) {}
-
-  @Post()
-  @ApiOperation({ summary: 'Crear un estado de proceso de destrucción' })
-  create(@Body() dto: CreateEstadoProcesoDestruccionDto) {
-    return this.service.create(dto);
-  }
-
-  @Pantalla('estado_proceso_destruccion', 'proceso_destruccion', 'reporte_procesos_destruccion')
-  @Get()
-  @ApiOperation({ summary: 'Listar todos los estados de proceso de destrucción activos' })
-  findAll() {
-    return this.service.findAll();
-  }
-
-  @Pantalla('estado_proceso_destruccion', 'proceso_destruccion', 'reporte_procesos_destruccion')
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtener un estado de proceso de destrucción por ID' })
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(+id);
-  }
-
-  @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar un estado de proceso de destrucción' })
-  update(@Param('id') id: string, @Body() dto: UpdateEstadoProcesoDestruccionDto) {
-    return this.service.update(+id, dto);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Desactivar un estado de proceso de destrucción (soft delete)' })
-  remove(@Param('id') id: string) {
-    return this.service.remove(+id);
+export class EstadoProcesoDestruccionController extends createCrudController({
+  path: 'estado-proceso-destruccion',
+  pantalla: 'estado_proceso_destruccion',
+  sustantivo: "estado-proceso-destruccion",
+  plural: "estados-procesos-destruccion",
+  createDto: CreateEstadoProcesoDestruccionDto,
+  updateDto: UpdateEstadoProcesoDestruccionDto,
+  lectura: ['estado_proceso_destruccion', 'proceso_destruccion'],
+}) {
+  constructor(service: EstadoProcesoDestruccionService) {
+    super(service)
   }
 }

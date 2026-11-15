@@ -1,40 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EstadoProcesoDestruccion } from './estado-proceso-destruccion.entity';
 import { CreateEstadoProcesoDestruccionDto } from './dto/create-estado-proceso-destruccion.dto';
 import { UpdateEstadoProcesoDestruccionDto } from './dto/update-estado-proceso-destruccion.dto';
+import { CrudService } from '@app/common/crud/crud-service';
 
 @Injectable()
-export class EstadoProcesoDestruccionService {
+export class EstadoProcesoDestruccionService extends CrudService<EstadoProcesoDestruccion, CreateEstadoProcesoDestruccionDto, UpdateEstadoProcesoDestruccionDto> {
   constructor(
-    @InjectRepository(EstadoProcesoDestruccion)
-    private readonly repo: Repository<EstadoProcesoDestruccion>,
-  ) {}
-
-  create(dto: CreateEstadoProcesoDestruccionDto) {
-    return this.repo.save(this.repo.create(dto));
+    @InjectRepository(EstadoProcesoDestruccion) repo: Repository<EstadoProcesoDestruccion>,
+  ) {
+    super(repo, { etiqueta: 'EstadoProcesoDestruccion', genero: 'f'})
   }
 
-  findAll() {
-    return this.repo.find({ where: { isActive: true } });
-  }
-
-  async findOne(id: number) {
-    const estado = await this.repo.findOne({ where: { id } });
-    if (!estado) throw new NotFoundException(`EstadoProcesoDestruccion ${id} no encontrado`);
-    return estado;
-  }
-
-  async update(id: number, dto: UpdateEstadoProcesoDestruccionDto) {
-    await this.findOne(id);
-    await this.repo.update(id, dto);
-    return this.findOne(id);
-  }
-
-  async remove(id: number) {
-    await this.findOne(id);
-    await this.repo.update(id, { isActive: false });
-    return { message: 'EstadoProcesoDestruccion desactivado' };
-  }
 }

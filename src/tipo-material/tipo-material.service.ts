@@ -4,38 +4,13 @@ import { Repository } from 'typeorm';
 import { TipoMaterial } from './tipo-material.entity';
 import { CreateTipoMaterialDto } from './dto/create-tipo-material.dto';
 import { UpdateTipoMaterialDto } from './dto/update-tipo-material.dto';
+import { CrudService } from '@app/common/crud/crud-service';
 
 @Injectable()
-export class TipoMaterialService {
+export class TipoMaterialService extends CrudService<TipoMaterial, CreateTipoMaterialDto, UpdateTipoMaterialDto> {
   constructor(
-    @InjectRepository(TipoMaterial)
-    private readonly tipoMaterialRepository: Repository<TipoMaterial>,
-  ) {}
-
-  create(dto: CreateTipoMaterialDto) {
-    const tipoMaterial = this.tipoMaterialRepository.create(dto);
-    return this.tipoMaterialRepository.save(tipoMaterial);
-  }
-
-  findAll() {
-    return this.tipoMaterialRepository.find({ where: { isActive: true } });
-  }
-
-  async findOne(id: number) {
-    const tipoMaterial = await this.tipoMaterialRepository.findOne({ where: { id } });
-    if (!tipoMaterial) throw new NotFoundException(`TipoMaterial ${id} no encontrado`);
-    return tipoMaterial;
-  }
-
-  async update(id: number, dto: UpdateTipoMaterialDto) {
-    await this.findOne(id);
-    await this.tipoMaterialRepository.update(id, dto);
-    return this.findOne(id);
-  }
-
-  async remove(id: number) {
-    await this.findOne(id);
-    await this.tipoMaterialRepository.update(id, { isActive: false });
-    return { message: 'TipoMaterial desactivado' };
+    @InjectRepository(TipoMaterial) repo: Repository<TipoMaterial>,
+  ) {
+     super(repo, { etiqueta: 'TipoMaterial', genero: 'f'})
   }
 }

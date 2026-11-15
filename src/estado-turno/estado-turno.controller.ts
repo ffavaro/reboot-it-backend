@@ -1,45 +1,20 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller } from '@nestjs/common';
 import { EstadoTurnoService } from './estado-turno.service';
 import { CreateEstadoTurnoDto } from './dto/create-estado-turno.dto';
 import { UpdateEstadoTurnoDto } from './dto/update-estado-turno.dto';
-import { Pantalla, SoloAutenticado } from '../auth/permisos.decorators';
+import { createCrudController } from '@app/common/crud/crud.controller';
 
-@Pantalla('estado_turno')
-@ApiTags('estado-turno')
 @Controller('estado-turno')
-export class EstadoTurnoController {
-  constructor(private readonly estadoTurnoService: EstadoTurnoService) {}
-
-  @Post()
-  @ApiOperation({ summary: 'Crear un estado de turno' })
-  create(@Body() dto: CreateEstadoTurnoDto) {
-    return this.estadoTurnoService.create(dto);
-  }
-
-  @SoloAutenticado()
-  @Get()
-  @ApiOperation({ summary: 'Listar todos los estados de turno activos' })
-  findAll() {
-    return this.estadoTurnoService.findAll();
-  }
-
-  @SoloAutenticado()
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtener un estado de turno por ID' })
-  findOne(@Param('id') id: string) {
-    return this.estadoTurnoService.findOne(+id);
-  }
-
-  @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar un estado de turno' })
-  update(@Param('id') id: string, @Body() dto: UpdateEstadoTurnoDto) {
-    return this.estadoTurnoService.update(+id, dto);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Desactivar un estado de turno (soft delete)' })
-  remove(@Param('id') id: string) {
-    return this.estadoTurnoService.remove(+id);
+export class EstadoTurnoController extends createCrudController({
+  path: 'estado-turno',
+  pantalla: 'estado_turno',
+  sustantivo: 'estado-turno',
+  plural: 'estados-turnos',
+  createDto: CreateEstadoTurnoDto,
+  updateDto: UpdateEstadoTurnoDto,
+   lectura: ['estados'],
+}) {
+  constructor(estadoTurnoService: EstadoTurnoService) {
+    super(estadoTurnoService)
   }
 }
