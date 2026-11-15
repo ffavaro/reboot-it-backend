@@ -5,50 +5,27 @@ import { ProcesoDestruccion } from './proceso-destruccion.entity';
 import { CreateProcesoDestruccionDto } from './dto/create-proceso-destruccion.dto';
 import { UpdateProcesoDestruccionDto } from './dto/update-proceso-destruccion.dto';
 import { ReporteProcesoDestruccionDto } from './dto/reporte-proceso-destruccion.dto';
+import { CrudService } from '@app/common/crud/crud-service';
+
+const RELATIONS = [
+  'medioAlmacenamiento',
+  'medioAlmacenamiento.material',
+  'medioAlmacenamiento.material.tipoMaterial',
+  'empleado',
+  'metodoDestruccion',
+  'estado',
+];
 
 @Injectable()
-export class ProcesoDestruccionService {
-  constructor(
-    @InjectRepository(ProcesoDestruccion)
-    private readonly procesoDestruccionRepository: Repository<ProcesoDestruccion>,
-  ) {}
-
-  create(dto: CreateProcesoDestruccionDto) {
-    const procesoDestruccion = this.procesoDestruccionRepository.create(dto);
-    return this.procesoDestruccionRepository.save(procesoDestruccion);
-  }
-
-  findAll() {
-    return this.procesoDestruccionRepository.find({
-      where: { isActive: true },
-      relations: ['medioAlmacenamiento', 'medioAlmacenamiento.material', 'medioAlmacenamiento.material.tipoMaterial', 'empleado', 'metodoDestruccion', 'estado'],
-      order: {id: "DESC"}
-    });
-  }
-
-  async findOne(id: number) {
-    const procesoDestruccion = await this.procesoDestruccionRepository.findOne({
-      where: { id },
-      relations: ['medioAlmacenamiento', 'medioAlmacenamiento.material', 'medioAlmacenamiento.material.tipoMaterial', 'empleado', 'metodoDestruccion', 'estado'],
-    });
-    if (!procesoDestruccion) throw new NotFoundException(`ProcesoDestruccion ${id} no encontrado`);
-    return procesoDestruccion;
-  }
-
-  async update(id: number, dto: UpdateProcesoDestruccionDto) {
-    await this.findOne(id);
-    await this.procesoDestruccionRepository.update(id, dto);
-    return this.findOne(id);
-  }
-
-  async remove(id: number) {
-    await this.findOne(id);
-    await this.procesoDestruccionRepository.update(id, { isActive: false });
-    return { message: 'ProcesoDestruccion desactivado' };
+export class ProcesoDestruccionService extends CrudService<
+  ProcesoDestruccion, CreateProcesoDestruccionDto, UpdateProcesoDestruccionDto
+> {
+  constructor(@InjectRepository(ProcesoDestruccion) repo: Repository<ProcesoDestruccion>) {
+    super(repo, { etiqueta: 'ProcesoDestruccion', genero: 'm', relations: RELATIONS, order: { id: 'DESC' } });
   }
 
   async reporte(query: ReporteProcesoDestruccionDto) {
-    const qb = this.procesoDestruccionRepository
+    const qb = this.repo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.medioAlmacenamiento', 'medio')
       .leftJoinAndSelect('medio.material', 'material')

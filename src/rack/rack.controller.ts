@@ -1,45 +1,20 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller} from '@nestjs/common';
 import { RackService } from './rack.service';
 import { CreateRackDto } from './dto/create-rack.dto';
 import { UpdateRackDto } from './dto/update-rack.dto';
-import { Pantalla } from '../auth/permisos.decorators';
+import { createCrudController } from '@app/common/crud/crud.controller';
 
-@Pantalla('racks')
-@ApiTags('rack')
 @Controller('rack')
-export class RackController {
-  constructor(private readonly rackService: RackService) {}
-
-  @Post()
-  @ApiOperation({ summary: 'Crear un rack' })
-  create(@Body() dto: CreateRackDto) {
-    return this.rackService.create(dto);
-  }
-
-  @Pantalla('racks', 'pallets')
-  @Get()
-  @ApiOperation({ summary: 'Listar todos los racks activos' })
-  findAll() {
-    return this.rackService.findAll();
-  }
-
-  @Pantalla('racks', 'pallets')
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtener un rack por ID' })
-  findOne(@Param('id') id: string) {
-    return this.rackService.findOne(+id);
-  }
-
-  @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar un rack' })
-  update(@Param('id') id: string, @Body() dto: UpdateRackDto) {
-    return this.rackService.update(+id, dto);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Desactivar un rack (soft delete)' })
-  remove(@Param('id') id: string) {
-    return this.rackService.remove(+id);
+export class RackController extends createCrudController({
+  path: 'rack',
+  pantalla: 'racks',
+  sustantivo: 'rack',
+  plural: 'racks',
+  createDto: CreateRackDto,
+  updateDto: UpdateRackDto,
+   lectura: ['rack'],
+}) {
+  constructor( rackService: RackService) {
+    super(rackService)
   }
 }

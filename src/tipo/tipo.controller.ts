@@ -1,45 +1,20 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller } from '@nestjs/common';
 import { TipoService } from './tipo.service';
 import { CreateTipoDto } from './dto/create-tipo.dto';
 import { UpdateTipoDto } from './dto/update-tipo.dto';
-import { Pantalla } from '../auth/permisos.decorators';
+import { createCrudController } from '@app/common/crud/crud.controller';
 
-@Pantalla('tipos')
-@ApiTags('tipo')
 @Controller('tipo')
-export class TipoController {
-  constructor(private readonly tipoService: TipoService) {}
-
-  @Post()
-  @ApiOperation({ summary: 'Crear un tipo de dispositivo' })
-  create(@Body() dto: CreateTipoDto) {
-    return this.tipoService.create(dto);
-  }
-
-  @Pantalla('tipos', 'medio_almacenamiento')
-  @Get()
-  @ApiOperation({ summary: 'Listar todos los tipos activos' })
-  findAll() {
-    return this.tipoService.findAll();
-  }
-
-  @Pantalla('tipos', 'medio_almacenamiento')
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtener un tipo por ID' })
-  findOne(@Param('id') id: string) {
-    return this.tipoService.findOne(+id);
-  }
-
-  @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar un tipo' })
-  update(@Param('id') id: string, @Body() dto: UpdateTipoDto) {
-    return this.tipoService.update(+id, dto);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Desactivar un tipo (soft delete)' })
-  remove(@Param('id') id: string) {
-    return this.tipoService.remove(+id);
+export class TipoController extends createCrudController({
+  path: 'tipo',
+  pantalla: 'tipos',
+  sustantivo: 'tipo',
+  plural: 'tipos',
+  createDto: CreateTipoDto,
+  updateDto: UpdateTipoDto,
+   lectura: ['tipos'],
+}){
+  constructor(services: TipoService) {
+    super(services)
   }
 }

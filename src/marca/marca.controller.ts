@@ -1,45 +1,20 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {  Controller } from '@nestjs/common';
 import { MarcaService } from './marca.service';
 import { CreateMarcaDto } from './dto/create-marca.dto';
 import { UpdateMarcaDto } from './dto/update-marca.dto';
-import { Pantalla } from '../auth/permisos.decorators';
+import { createCrudController } from '@app/common/crud/crud.controller';
 
-@Pantalla('marcas')
-@ApiTags('marca')
 @Controller('marca')
-export class MarcaController {
-  constructor(private readonly marcaService: MarcaService) {}
-
-  @Post()
-  @ApiOperation({ summary: 'Crear una marca' })
-  create(@Body() dto: CreateMarcaDto) {
-    return this.marcaService.create(dto);
-  }
-
-  @Pantalla('marcas', 'medio_almacenamiento', 'modelos')
-  @Get()
-  @ApiOperation({ summary: 'Listar todas las marcas activas' })
-  findAll() {
-    return this.marcaService.findAll();
-  }
-
-  @Pantalla('marcas', 'medio_almacenamiento', 'modelos')
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtener una marca por ID' })
-  findOne(@Param('id') id: string) {
-    return this.marcaService.findOne(+id);
-  }
-
-  @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar una marca' })
-  update(@Param('id') id: string, @Body() dto: UpdateMarcaDto) {
-    return this.marcaService.update(+id, dto);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Desactivar una marca (soft delete)' })
-  remove(@Param('id') id: string) {
-    return this.marcaService.remove(+id);
+export class MarcaController extends createCrudController({
+  path: 'marca',
+  pantalla: 'marcas',
+  sustantivo: 'marca',
+  plural: 'marcas',
+  createDto: CreateMarcaDto,
+  updateDto: UpdateMarcaDto,
+   lectura: ['marcas', 'medio_almacenamiento', 'modelos'],
+}){
+  constructor(marcaService: MarcaService) {
+    super(marcaService)
   }
 }
