@@ -161,53 +161,32 @@ export class RutaService {
     };
   }
 
-  private armarLinks(
-    enOrden: string[],
-    conf: Configuracion,
-  ): { mapsUrl: string; embedUrl: string } {
-    if (conf.base) {
-      return {
-        mapsUrl: linkGoogleMaps(enOrden, conf.base),
-        embedUrl: linkEmbebido(conf.base, enOrden, conf.base, conf.embedKey),
-      };
-    }
-    const destino = enOrden[enOrden.length - 1];
+  private armarLinks(enOrden: string[], { base, embedKey }: Configuracion) {
+    const destino = base || enOrden[enOrden.length - 1];
     return {
-      mapsUrl: linkGoogleMaps(enOrden.slice(0, -1), destino),
-      embedUrl: linkEmbebido(
-        enOrden[0],
-        enOrden.slice(1, -1),
-        destino,
-        conf.embedKey,
-      ),
+      mapsUrl: linkGoogleMaps(base ? enOrden : enOrden.slice(0, -1), destino),
+      embedUrl: base
+        ? linkEmbebido(base, enOrden, base, embedKey)
+        : linkEmbebido(enOrden[0], enOrden.slice(1, -1), destino, embedKey),
     };
   }
 
-  private armarPuntos(
-    orden: number[],
-    direcciones: string[],
-    base: string,
-  ): PuntoRuta[] {
-    const parada = (indice: number): PuntoRuta => ({
-      rol: 'parada',
+  private armarPuntos(orden: number[], direcciones: string[], base: string): PuntoRuta[] {
+    const parada = (indice: number, rol: PuntoRuta['rol'] = 'parada'): PuntoRuta => ({
+      rol,
       indice,
       direccion: direcciones[indice].trim(),
     });
-
     if (base) {
       return [
         { rol: 'origen', indice: null, direccion: base },
-        ...orden.map(parada),
+        ...orden.map((i) => parada(i)),
         { rol: 'destino', indice: null, direccion: base },
       ];
     }
-
-    return orden.map((indice, pos) => {
-      const esUltima = pos === orden.length - 1;
-      return {
-        ...parada(indice),
-        rol: esUltima ? 'destino' : pos === 0 ? 'origen' : 'parada',
-      };
-    });
+    return orden.map((i, pos) =>
+      parada(i, pos === orden.length - 1 ? 'destino' : pos === 0 ? 'origen' : 'parada'),
+    );
   }
+
 }
