@@ -22,6 +22,11 @@ import { HojaRuta } from './entities/hoja-ruta.entity';
 import { HojaRutaDia } from '../interfaces/hoja-ruta.types';
 import { RetiroConfirmado } from '@app/interfaces/ruta.types';
 
+const contarPendientes = async (repo: Repository<HojaRutaTurno>, hojaRutaId: number) =>
+  (
+    await repo.find({ where: { hojaRutaId }, relations: ['turno', 'turno.estadoTurno'] })
+  ).filter((f) => quedaPorRetirar(f.turno?.estadoTurno?.descripcion)).length;
+
 @Injectable()
 export class HojaRutaService {
   constructor(
@@ -33,8 +38,6 @@ export class HojaRutaService {
     private readonly vehiculoRepository: Repository<Vehiculo>,
     @InjectRepository(HistorialKmVehiculo)
     private readonly historialRepository: Repository<HistorialKmVehiculo>,
-    @InjectRepository(Retiro)
-    private readonly retiroRepository: Repository<Retiro>,
     @InjectRepository(ConstanciaRetiro)
     private readonly constanciaRepository: Repository<ConstanciaRetiro>,
     private readonly dataSource: DataSource,
@@ -135,36 +138,20 @@ export class HojaRutaService {
         fila.turno.empleadoTransportista,
       );
 
-      const pendientes = await m.getRepository(HojaRutaTurno).find({
-        where: { hojaRutaId: fila.hojaRutaId },
-        relations: ['turno', 'turno.estadoTurno'],
-      });
-      if (
-        pendientes.some((f) =>
-          quedaPorRetirar(f.turno?.estadoTurno?.descripcion),
-        )
-      ) {
+      if (await contarPendientes(m.getRepository(HojaRutaTurno), fila.hojaRutaId)) {
         return { turnoId, constanciaId, hojaFinalizada: false };
       }
-
-      const hojaFinalizada = await this.finalizarHoja(m, fila.hojaRuta);
-      return { turnoId, constanciaId, hojaFinalizada };
+      return { turnoId, constanciaId, hojaFinalizada: await this.finalizarHoja(m, fila.hojaRuta) };
     });
   }
 
-  async constanciaDeTurno(turnoId: number) {
-    const turno = await this.turnoService.findOne(turnoId);
-    const retiro = turno.donacionId
-      ? await this.retiroRepository.findOne({
-          where: { donacionId: turno.donacionId, isActive: true },
-        })
-      : null;
-    const constancia = retiro
+   async constanciaDeTurno(turnoId: number) {
+    const { donacionId } = await this.turnoService.findOne(turnoId);
+    const constancia = donacionId
       ? await this.constanciaRepository.findOne({
-          where: { retiroId: retiro.id, isActive: true },
+          where: { isActive: true, retiro: { donacionId, isActive: true } },
         })
       : null;
-
     if (!constancia) {
       throw new NotFoundException(
         'Este turno todavía no tiene constancia de retiro: confirmá el retiro primero',
@@ -175,25 +162,13 @@ export class HojaRutaService {
 
   private async verificarHojasAbiertas(empleadoTransportistaId: number) {
     const abiertas = await this.hojaRepository.find({
-      where: {
-        empleadoTransportistaId,
-        estado: ESTADO_HOJA.EN_PROCESO,
-        isActive: true,
-      },
+      where: { empleadoTransportistaId, estado: ESTADO_HOJA.EN_PROCESO, isActive: true },
     });
 
-    const conPendientes: { id: number; fecha: string; pendientes: number }[] =
-      [];
+    const conPendientes: { id: number; fecha: string; pendientes: number }[] = [];
     for (const hoja of abiertas) {
-      const filas = await this.hojaTurnoRepository.find({
-        where: { hojaRutaId: hoja.id },
-        relations: ['turno', 'turno.estadoTurno'],
-      });
-      const pendientes = filas.filter((f) =>
-        quedaPorRetirar(f.turno?.estadoTurno?.descripcion),
-      ).length;
-      if (pendientes)
-        conPendientes.push({ id: hoja.id, fecha: hoja.fecha, pendientes });
+      const pendientes = await contarPendientes(this.hojaTurnoRepository, hoja.id);
+      if (pendientes) conPendientes.push({ id: hoja.id, fecha: hoja.fecha, pendientes });
     }
 
     if (conPendientes.length) {
@@ -201,8 +176,7 @@ export class HojaRutaService {
         {
           statusCode: HttpStatus.CONFLICT,
           code: 'HOJA_INICIADA_PENDIENTE',
-          message:
-            'Tenés otra hoja de ruta iniciada con turnos pendientes de retiro.',
+          message: 'Tenés otra hoja de ruta iniciada con turnos pendientes de retiro.',
           hojas: conPendientes,
         },
         HttpStatus.CONFLICT,
@@ -251,23 +225,22 @@ export class HojaRutaService {
     return existente;
   }
 
-  private async emitirConstancia(
+ private async emitirConstancia(
     m: EntityManager,
     donacionId: number | null,
     transportista: EmpleadoTransportista | null,
   ): Promise<number | null> {
-    if (!donacionId) return null;
-    const retiro = await m
-      .getRepository(Retiro)
-      .findOne({ where: { donacionId, isActive: true } });
+    const retiro = donacionId
+      ? await m.findOne(Retiro, { where: { donacionId, isActive: true } })
+      : null;
     if (!retiro) return null;
 
     const ahora = new Date();
     await m.update(Retiro, retiro.id, { fechaRetiro: ahora });
 
-    const existente = await m
-      .getRepository(ConstanciaRetiro)
-      .findOne({ where: { retiroId: retiro.id, isActive: true } });
+    const existente = await m.findOne(ConstanciaRetiro, {
+      where: { retiroId: retiro.id, isActive: true },
+    });
     if (existente) return existente.id;
 
     const nueva = await m.save(

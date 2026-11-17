@@ -177,4 +177,8 @@ export function armarFiltros(
   };
 }
 
-
+export function filtrar(colFecha: string, colDonante: string, filtro: Filtros): Condicion {
+  const f = entreFecha(colFecha, filtro);
+  const d = filtrarDonantes(colDonante, filtro);
+  return { sql: f.sql + d.sql, params: [...f.params, ...d.params] };
+}
