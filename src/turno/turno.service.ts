@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CrudService } from '@app/common/crud/crud-service';
 import { Turno } from './turno.entity';
 import { CreateTurnoDto } from './dto/create-turno.dto';
 import { UpdateTurnoDto } from './dto/update-turno.dto';
@@ -17,111 +18,49 @@ import { Lote } from '../lote/lote.entity';
 import { Retiro } from '../retiro/retiro.entity';
 import { validarPesoDonacionVehiculo } from '../utils/peso-vehiculo';
 import { CONDICION_PENDIENTE, ESTADO_ASIGNADO, ESTADO_DONACION_EN_PROCESO, ESTADO_EN_CLASIFICACION } from '@app/utils/helpers';
-
-const RELATIONS = ['donante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'];
+import { exigirActivo, buscarActivo } from '@app/utils/catalogo';
 
 @Injectable()
-export class TurnoService {
-  constructor(
-    @InjectRepository(Turno)
-    private readonly turnoRepository: Repository<Turno>,
-    @InjectRepository(EstadoTurno)
-    private readonly estadoTurnoRepository: Repository<EstadoTurno>,
-    @InjectRepository(Empleado)
-    private readonly empleadoRepository: Repository<Empleado>,
-    @InjectRepository(EmpleadoTransportista)
-    private readonly transportistaRepository: Repository<EmpleadoTransportista>,
-    @InjectRepository(RegistroFotografico)
-    private readonly registroFotograficoRepository: Repository<RegistroFotografico>,
-    @InjectRepository(Material)
-    private readonly materialRepository: Repository<Material>,
-    @InjectRepository(CondicionMaterial)
-    private readonly condicionMaterialRepository: Repository<CondicionMaterial>,
-    @InjectRepository(Donacion)
-    private readonly donacionRepository: Repository<Donacion>,
-    @InjectRepository(EstadoDonacion)
-    private readonly estadoDonacionRepository: Repository<EstadoDonacion>,
-    @InjectRepository(Lote)
-    private readonly loteRepository: Repository<Lote>,
-    @InjectRepository(Retiro)
-    private readonly retiroRepository: Repository<Retiro>,
-  ) {}
-
-  create(dto: CreateTurnoDto) {
-    const turno = this.turnoRepository.create(dto);
-    return this.turnoRepository.save(turno);
-  }
-
-  findAll(alcance: FindOptionsWhere<Turno> = {}) {
-    return this.turnoRepository.find({
-      where: { isActive: true, ...alcance },
-      relations: RELATIONS,
-      order: { id: "DESC"}
+export class TurnoService extends CrudService<Turno, CreateTurnoDto, UpdateTurnoDto> {
+  constructor(@InjectRepository(Turno) repo: Repository<Turno>) {
+    super(repo, {
+      etiqueta: 'Turno',
+      genero: 'm',
+      relations: ['donante', 'estadoTurno', 'detalles', 'detalles.tipoMaterial', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'],
+      order: { id: 'DESC' },
     });
-  }
-
-  async findOne(id: number) {
-    const turno = await this.turnoRepository.findOne({
-      where: { id },
-      relations: RELATIONS,
-    });
-    if (!turno) throw new NotFoundException(`Turno ${id} no encontrado`);
-    return turno;
-  }
-
-  async update(id: number, dto: UpdateTurnoDto) {
-    await this.findOne(id);
-    await this.turnoRepository.update(id, dto);
-    const updated = await this.findOne(id);
-    
-    return updated;
   }
 
   async asignarEmpleado(id: number, dto: AsignarEmpleadoDto) {
     const turno = await this.findOne(id);
+    const m = this.repo.manager;
 
     if (turno.necesitaRetiro) {
       if (!dto.empleadoTransportistaId) {
         throw new BadRequestException('El turno requiere retiro: debe asignarse un empleado transportista.');
       }
-      const transportista = await this.transportistaRepository.findOne({
-        where: { id: dto.empleadoTransportistaId, isActive: true },
-      });
-      if (!transportista) throw new NotFoundException('Empleado transportista no encontrado.');
-      await validarPesoDonacionVehiculo(this.turnoRepository.manager, turno.donacionId, transportista.vehiculoId);
+      const transportista = await exigirActivo(m, EmpleadoTransportista, { id: dto.empleadoTransportistaId }, 'Empleado transportista no encontrado.');
+      await validarPesoDonacionVehiculo(m, turno.donacionId, transportista.vehiculoId);
     } else {
-      if (!dto.empleadoId) {
-        throw new BadRequestException('Debe asignarse un empleado.');
-      }
-      const empleado = await this.empleadoRepository.findOne({
-        where: { id: dto.empleadoId, isActive: true },
-      });
-      if (!empleado) throw new NotFoundException('Empleado no encontrado.');
+      if (!dto.empleadoId) throw new BadRequestException('Debe asignarse un empleado.');
+      await exigirActivo(m, Empleado, { id: dto.empleadoId }, 'Empleado no encontrado.');
     }
 
-    const estadoAsignado = await this.estadoTurnoRepository.findOne({
-      where: { descripcion: ESTADO_ASIGNADO, isActive: true },
-    });
-    if (!estadoAsignado) throw new NotFoundException(`Estado "${ESTADO_ASIGNADO}" no encontrado en la base de datos.`);
+    const estadoAsignado = await exigirActivo(m, EstadoTurno, { descripcion: ESTADO_ASIGNADO }, `Estado "${ESTADO_ASIGNADO}" no encontrado en la base de datos.`);
 
-    await this.turnoRepository.update(id, {
+    await this.repo.update(id, {
       empleadoId: turno.necesitaRetiro ? null : dto.empleadoId,
       empleadoTransportistaId: turno.necesitaRetiro ? dto.empleadoTransportistaId : null,
       estadoTurnoId: estadoAsignado.id,
     });
 
-    const estadoEnProceso = await this.estadoDonacionRepository.findOne({
-      where: { descripcion: ESTADO_DONACION_EN_PROCESO, isActive: true },
-    });
-    
+    const estadoEnProceso = await buscarActivo(m, EstadoDonacion, { descripcion: ESTADO_DONACION_EN_PROCESO });
     if (estadoEnProceso) {
-      const donacion = await this.donacionRepository.findOne({
+      const donacion = await m.findOne(Donacion, {
         where: { donanteId: turno.donanteId, isActive: true },
         order: { createdAt: 'DESC' },
       });
-      if (donacion) {
-        await this.donacionRepository.update(donacion.id, { estadoDonacionId: estadoEnProceso.id });
-      }
+      if (donacion) await m.update(Donacion, donacion.id, { estadoDonacionId: estadoEnProceso.id });
     }
 
     return this.findOne(id);
@@ -129,38 +68,25 @@ export class TurnoService {
 
   async finalizarTurno(id: number) {
     const turno = await this.findOne(id);
+    const m = this.repo.manager;
 
-    const cantFotos = await this.registroFotograficoRepository.count({
-      where: { turnoId: id, isActive: true },
-    });
+    const cantFotos = await m.count(RegistroFotografico, { where: { turnoId: id, isActive: true } });
     if (cantFotos === 0) {
       throw new BadRequestException('Debe registrar al menos una foto de los materiales antes de finalizar el turno.');
     }
 
-    const estadoEnClasificacion = await this.estadoTurnoRepository.findOne({
-      where: { descripcion: ESTADO_EN_CLASIFICACION, isActive: true },
-    });
-    if (!estadoEnClasificacion) throw new NotFoundException(`Estado "${ESTADO_EN_CLASIFICACION}" no encontrado en la base de datos.`);
+    const estadoEnClasificacion = await exigirActivo(m, EstadoTurno, { descripcion: ESTADO_EN_CLASIFICACION }, `Estado "${ESTADO_EN_CLASIFICACION}" no encontrado en la base de datos.`);
+    const condicionPendiente = await exigirActivo(m, CondicionMaterial, { condicion: CONDICION_PENDIENTE }, `Condición "${CONDICION_PENDIENTE}" no encontrada en la base de datos.`);
 
-    const condicionPendiente = await this.condicionMaterialRepository.findOne({
-      where: { condicion: CONDICION_PENDIENTE, isActive: true },
-    });
-    if (!condicionPendiente) throw new NotFoundException(`Condición "${CONDICION_PENDIENTE}" no encontrada en la base de datos.`);
-
-    await this.turnoRepository.update(id, { estadoTurnoId: estadoEnClasificacion.id });
+    await this.repo.update(id, { estadoTurnoId: estadoEnClasificacion.id });
 
     if (turno.donacionId && turno.empleadoTransportistaId) {
-      const transportista = await this.transportistaRepository.findOne({
-        where: { id: turno.empleadoTransportistaId },
-      });
+      const transportista = await m.findOne(EmpleadoTransportista, { where: { id: turno.empleadoTransportistaId } });
       if (!transportista?.vehiculoId) throw new BadRequestException('El empleado transportista no tiene un vehículo asignado.');
 
-      const retiroExistente = await this.retiroRepository.findOne({
-        where: { donacionId: turno.donacionId, isActive: true },
-      });
-      if (!retiroExistente) {
-        await this.retiroRepository.save(
-          this.retiroRepository.create({
+      if (!(await buscarActivo(m, Retiro, { donacionId: turno.donacionId }))) {
+        await m.save(
+          m.create(Retiro, {
             donacionId: turno.donacionId,
             empleadoTransportistaId: turno.empleadoTransportistaId,
             vehiculoId: transportista.vehiculoId,
@@ -172,14 +98,11 @@ export class TurnoService {
     }
 
     if (turno.detalles?.length) {
-      const lote = turno.donacionId
-        ? await this.loteRepository.findOne({ where: { donacionId: turno.donacionId, isActive: true } })
-        : null;
-
+      const lote = turno.donacionId ? await buscarActivo(m, Lote, { donacionId: turno.donacionId }) : null;
       await Promise.all(
         turno.detalles.map((detalle) =>
-          this.materialRepository.save(
-            this.materialRepository.create({
+          m.save(
+            m.create(Material, {
               tipoMaterialId: detalle.tipoMaterialId,
               condicionMaterialId: condicionPendiente.id,
               descripcion: detalle.descripcion ?? undefined,
@@ -191,11 +114,5 @@ export class TurnoService {
     }
 
     return this.findOne(id);
-  }
-
-  async remove(id: number) {
-    await this.findOne(id);
-    await this.turnoRepository.update(id, { isActive: false });
-    return { message: 'Turno desactivado' };
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CrudService } from '@app/common/crud/crud-service';
 import { ConstanciaRetiro } from './constancia-retiro.entity';
 import { Retiro } from '../retiro/retiro.entity';
 import { CreateConstanciaRetiroDto } from './dto/create-constancia-retiro.dto';
@@ -11,43 +12,29 @@ import { DonacionDetalle } from '../donacion-detalle/donacion-detalle.entity';
 import { Usuario } from '../usuarios/usuario.entity';
 
 @Injectable()
-export class ConstanciaRetiroService {
-  constructor(
-    @InjectRepository(ConstanciaRetiro)
-    private readonly constanciaRetiroRepository: Repository<ConstanciaRetiro>,
-    @InjectRepository(Retiro)
-    private readonly retiroRepository: Repository<Retiro>,
-  ) {}
+export class ConstanciaRetiroService extends CrudService<ConstanciaRetiro, CreateConstanciaRetiroDto, UpdateConstanciaRetiroDto> {
+  constructor(@InjectRepository(ConstanciaRetiro) repo: Repository<ConstanciaRetiro>) {
+    super(repo, { etiqueta: 'ConstanciaRetiro', genero: 'f', relations: ['retiro', 'tecnico'], order: { id: 'DESC' } });
+  }
 
   async create(dto: CreateConstanciaRetiroDto) {
-    const constanciaRetiro = this.constanciaRetiroRepository.create(dto);
-    const saved = await this.constanciaRetiroRepository.save(constanciaRetiro);
-    await this.retiroRepository.update(dto.retiroId, {
-      fechaRetiro: new Date(dto.fechaEmision ?? new Date()),
-    });
+    const saved = await super.create(dto);
+    await this.repo.manager.update(Retiro, dto.retiroId, { fechaRetiro: new Date(dto.fechaEmision ?? new Date()) });
     return saved;
   }
 
-  findAll(alcance: FindOptionsWhere<ConstanciaRetiro> = {}) {
-    return this.constanciaRetiroRepository.find({
-      where: { isActive: true, ...alcance },
-      relations: ['retiro', 'tecnico'],
-      order: {id: "DESC"}
-    });
-  }
-
-  async findOne(id: number) {
-    const constanciaRetiro = await this.constanciaRetiroRepository.findOne({
-      where: { id },
-      relations: ['retiro', 'tecnico'],
-    });
-    if (!constanciaRetiro) throw new NotFoundException(`ConstanciaRetiro ${id} no encontrada`);
-    return constanciaRetiro;
+  async update(id: number, dto: UpdateConstanciaRetiroDto) {
+    const existing = await this.findOne(id);
+    await this.repo.update(id, dto);
+    if (dto.fechaEmision !== undefined) {
+      await this.repo.manager.update(Retiro, existing.retiroId, { fechaRetiro: new Date(dto.fechaEmision) });
+    }
+    return this.findOne(id);
   }
 
   async datosDocumento(id: number) {
     const constancia = await this.findOne(id);
-    const manager = this.constanciaRetiroRepository.manager;
+    const manager = this.repo.manager;
 
     const retiro = await manager.findOne(Retiro, {
       where: { id: constancia.retiroId },
@@ -133,22 +120,5 @@ export class ConstanciaRetiroService {
       pesoEstimadoKg: peso ?? null,
       materiales,
     };
-  }
-
-  async update(id: number, dto: UpdateConstanciaRetiroDto) {
-    const existing = await this.findOne(id);
-    await this.constanciaRetiroRepository.update(id, dto);
-    if (dto.fechaEmision !== undefined) {
-      await this.retiroRepository.update(existing.retiroId, {
-        fechaRetiro: new Date(dto.fechaEmision),
-      });
-    }
-    return this.findOne(id);
-  }
-
-  async remove(id: number) {
-    await this.findOne(id);
-    await this.constanciaRetiroRepository.update(id, { isActive: false });
-    return { message: 'ConstanciaRetiro desactivada' };
   }
 }

@@ -1,6 +1,7 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CrudService } from '@app/common/crud/crud-service';
 import { Rol } from './rol.entity';
 import { CreateRolDto } from './dto/create-rol.dto';
 import { UpdateRolDto } from './dto/update-rol.dto';
@@ -9,55 +10,29 @@ import { Empleado } from '@app/empleados/empleado.entity';
 import { PermisosService } from '@app/permisos/permisos.service';
 
 @Injectable()
-export class RolesService {
-  constructor(
-    @InjectRepository(Rol)
-    private readonly rolRepository: Repository<Rol>,
-    @InjectRepository(Usuario)
-    private readonly usuarioRepository: Repository<Usuario>,
-    @InjectRepository(Empleado)
-    private readonly empleadoRepository: Repository<Empleado>,
-    private readonly permisos: PermisosService
+export class RolesService extends CrudService<Rol, CreateRolDto, UpdateRolDto> {
+  constructor(@InjectRepository(Rol) repo: Repository<Rol>, private readonly permisos: PermisosService) {
+    super(repo, { etiqueta: 'Rol', genero: 'm' });
+  }
 
-  ) { }
-
-  create = async (dto: CreateRolDto) => {
-    const rol = await this.rolRepository.save(this.rolRepository.create(dto));
+  async create(dto: CreateRolDto) {
+    const rol = await super.create(dto);
     await this.permisos.crearSinPermisos(rol.id);
     return rol;
   }
 
-  findAll() {
-    return this.rolRepository.find({ where: { isActive: true } });
-  }
-
-  async findOne(id: number) {
-    const rol = await this.rolRepository.findOne({ where: { id } });
-    if (!rol) throw new NotFoundException(`Rol ${id} no encontrado`);
-    return rol;
-  }
-
-  async update(id: number, dto: UpdateRolDto) {
-    await this.findOne(id);
-    await this.rolRepository.update(id, dto);
-    return this.findOne(id);
-  }
-
-  remove = async (id: number) => {
+  async remove(id: number) {
     const rol = await this.findOne(id);
-    if (rol.esSistema) {
-      throw new ForbiddenException('Los roles del sistema no se pueden dar de baja.');
-    }
+    if (rol.esSistema) throw new ForbiddenException('Los roles del sistema no se pueden dar de baja.');
 
     const [usuarios, empleados] = await Promise.all([
-      this.usuarioRepository.count({ where: { rolId: id, isActive: true } }),
-      this.empleadoRepository.count({ where: { rolId: id, isActive: true } }),
+      this.repo.manager.count(Usuario, { where: { rolId: id, isActive: true } }),
+      this.repo.manager.count(Empleado, { where: { rolId: id, isActive: true } }),
     ]);
     if (usuarios || empleados) {
       throw new ConflictException('El rol tiene usuarios o empleados asignados: reasignalos antes de darlo de baja.');
     }
 
-    await this.rolRepository.update(id, { isActive: false });
-    return { message: 'Rol desactivado' };
+    return super.remove(id);
   }
 }

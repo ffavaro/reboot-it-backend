@@ -8,6 +8,5 @@ import { ProcesoDestruccionService } from './proceso-destruccion.service';
   imports: [TypeOrmModule.forFeature([ProcesoDestruccion])],
   controllers: [ProcesoDestruccionController],
   providers: [ProcesoDestruccionService],
-  exports: [ProcesoDestruccionService],
 })
 export class ProcesoDestruccionModule {}

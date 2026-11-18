@@ -8,6 +8,5 @@ import { EstadoProcesoDestruccionService } from './estado-proceso-destruccion.se
   imports: [TypeOrmModule.forFeature([EstadoProcesoDestruccion])],
   controllers: [EstadoProcesoDestruccionController],
   providers: [EstadoProcesoDestruccionService],
-  exports: [EstadoProcesoDestruccionService],
 })
 export class EstadoProcesoDestruccionModule {}

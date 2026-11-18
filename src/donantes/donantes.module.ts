@@ -8,6 +8,5 @@ import { DonantesService } from './donantes.service';
   imports: [TypeOrmModule.forFeature([Donante])],
   controllers: [DonantesController],
   providers: [DonantesService],
-  exports: [DonantesService],
 })
 export class DonantesModule {}

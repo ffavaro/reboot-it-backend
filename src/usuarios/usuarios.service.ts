@@ -1,81 +1,49 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { CrudService } from '@app/common/crud/crud-service';
 import { Usuario } from './usuario.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 
-const DEFAULT_PASSWORD = 'reboot2024_it';
-const SALT_ROUNDS = 10;
-
 @Injectable()
-export class UsuariosService {
-  constructor(
-    @InjectRepository(Usuario)
-    private readonly usuarioRepository: Repository<Usuario>,
-  ) { }
+export class UsuariosService extends CrudService<Usuario, CreateUsuarioDto, UpdateUsuarioDto> {
+  constructor(@InjectRepository(Usuario) repo: Repository<Usuario>) {
+    super(repo, { etiqueta: 'Usuario', genero: 'm', relations: ['rol', 'empleado'] });
+  }
 
-  create = async (dto: CreateUsuarioDto) => {
+  async create(dto: CreateUsuarioDto) {
     try {
-      const plainPassword = dto.password || DEFAULT_PASSWORD;
-      const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
-      const usuario = this.usuarioRepository.create({ ...dto, password: hashedPassword });
-      return await this.usuarioRepository.save(usuario);
+      const password = await this.hashear(dto.password || 'reboot2024_it');
+      return await this.repo.save(this.repo.create({ ...dto, password }));
     } catch (error) {
-       const conflicto = this.conflictoPorDuplicado(error);
-       if (conflicto) throw conflicto
-      throw new InternalServerErrorException('Error al crear usuario');
+      throw this.conflictoPorDuplicado(error) ?? new InternalServerErrorException('Error al crear usuario');
     }
   }
 
-  findAll() {
-    return this.usuarioRepository.find({
-      where: { isActive: true },
-      relations: ['rol', 'empleado'],
-    });
-  }
-
-  findOne = async (id: number) => {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id },
-      relations: ['rol', 'empleado'],
-    });
-    if (!usuario) throw new NotFoundException(`Usuario ${id} no encontrado`);
-    return usuario;
-  }
-
   findByEmail(email: string) {
-    return this.usuarioRepository.findOne({ where: { email }, relations: ['rol'] });
+    return this.repo.findOne({ where: { email }, relations: ['rol'] });
   }
 
-  update = async (id: number, dto: UpdateUsuarioDto) => {
+  async update(id: number, dto: UpdateUsuarioDto) {
     await this.findOne(id);
+    const datos = dto.password ? { ...dto, password: await this.hashear(dto.password) } : dto;
     try {
-      await this.usuarioRepository.update(id, dto);      
+      await this.repo.update(id, datos);
     } catch (error) {
       throw this.conflictoPorDuplicado(error) ?? error;
     }
     return this.findOne(id);
   }
 
-
-  remove = async (id: number) => {
-    await this.findOne(id);
-    await this.usuarioRepository.update(id, { isActive: false });
-    return { message: 'Usuario desactivado' };
+  private hashear(password: string) {
+    return bcrypt.hash(password, 10);
   }
 
   private conflictoPorDuplicado(error: unknown): ConflictException | null {
-    const { code, sqlMessage } = (error ?? {}) as {
-      code?: string;
-      sqlMessage?: string;
-    };
+    const { code, sqlMessage } = (error ?? {}) as { code?: string; sqlMessage?: string };
     if (code !== 'ER_DUP_ENTRY') return null;
-    return new ConflictException(
-      sqlMessage?.includes('cuit_dni')
-        ? 'El CUIT/DNI ya está registrado'
-        : 'El email ya está registrado',
-    );
+    return new ConflictException(sqlMessage?.includes('cuit_dni') ? 'El CUIT/DNI ya está registrado' : 'El email ya está registrado');
   }
 }

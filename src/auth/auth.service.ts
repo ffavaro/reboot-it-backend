@@ -1,42 +1,49 @@
 import { UsuariosService } from '@app/usuarios/usuarios.service';
-import { ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { ROL } from '@app/permisos/permisos.constants';
 import { PermisosService } from '@app/permisos/permisos.service';
+import { Usuario } from '@app/usuarios/usuario.entity';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private readonly usersService: UsuariosService,
-        private readonly jwtService: JwtService,
-        private readonly permisos: PermisosService,
-    ) { }
+  constructor(
+    private readonly usersService: UsuariosService,
+    private readonly jwtService: JwtService,
+    private readonly permisos: PermisosService,
+  ) {}
 
-    async signIn(email: string, pass: string): Promise<{ access_token: string }> {
-        const user = await this.usersService.findByEmail(email);
-        if (!user || !(await bcrypt.compare(pass, user.password))) {
-            throw new UnauthorizedException('Credenciales inválidas');
-        }
-
-        if (!user.isActive)
-            throw new ForbiddenException("Tu usuario está desactivado. Contactá al administrador.")
-
-        const { password, ...result } = user;
-        const access_token = this.jwtService.sign(result);
-        return { access_token };
+  async signIn(email: string, pass: string): Promise<{ access_token: string }> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user || !(await bcrypt.compare(pass, user.password))) {
+      throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    async signUp(name: string, apellido: string, email: string, password: string, cuitDni: string): Promise<{ access_token: string }> {
-        const existingUser = await this.usersService.findByEmail(email);
-        if (existingUser) {
-            throw new ConflictException('Email ya registrado');
-        }
-        const rolId = await this.permisos.rolIdPorCodigo(ROL.DONANTE);
-        await this.usersService.create({ nombre: name, apellido, email, password, cuitDni, rolId, isActive: true, empleadoId: undefined });
-        const fullUser = await this.usersService.findByEmail(email);
-        const { password: _, ...result } = fullUser!;
-        const access_token = this.jwtService.sign(result);
-        return { access_token };
+    if (!user.isActive)
+      throw new ForbiddenException(
+        'Tu usuario está desactivado. Contactá al administrador.',
+      );
+
+    return this.firmar(user);
+  }
+
+  async signUp(name: string, apellido: string, email: string, password: string, cuitDni: string, ): Promise<{ access_token: string }> {
+    const existingUser = await this.usersService.findByEmail(email);
+    if (existingUser) {
+      throw new ConflictException('Email ya registrado');
     }
+    const rolId = await this.permisos.rolIdPorCodigo(ROL.DONANTE);
+    await this.usersService.create({nombre: name, apellido, email, password, cuitDni, rolId, isActive: true, empleadoId: undefined,});
+    return this.firmar((await this.usersService.findByEmail(email))!);
+  }
+
+  private firmar({ password, ...datos }: Usuario) {
+    return { access_token: this.jwtService.sign(datos) };
+  }
 }

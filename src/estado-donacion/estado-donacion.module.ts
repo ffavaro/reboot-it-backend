@@ -8,6 +8,5 @@ import { EstadoDonacionService } from './estado-donacion.service';
   imports: [TypeOrmModule.forFeature([EstadoDonacion])],
   controllers: [EstadoDonacionController],
   providers: [EstadoDonacionService],
-  exports: [EstadoDonacionService],
 })
 export class EstadoDonacionModule {}

@@ -8,6 +8,5 @@ import { MetodoDestruccionService } from './metodo-destruccion.service';
   imports: [TypeOrmModule.forFeature([MetodoDestruccion])],
   controllers: [MetodoDestruccionController],
   providers: [MetodoDestruccionService],
-  exports: [MetodoDestruccionService],
 })
 export class MetodoDestruccionModule {}

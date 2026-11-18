@@ -8,6 +8,5 @@ import { TipoVehiculoService } from './tipo-vehiculo.service';
   imports: [TypeOrmModule.forFeature([TipoVehiculo])],
   controllers: [TipoVehiculoController],
   providers: [TipoVehiculoService],
-  exports: [TipoVehiculoService],
 })
 export class TipoVehiculoModule {}

@@ -1,20 +1,5 @@
 import type { Alcance } from './permisos.constants';
 
-export type Recurso =
-  | 'donantes'
-  | 'donaciones'
-  | 'turnos'
-  | 'retiros'
-  | 'lotes'
-  | 'certificados'
-  | 'constancias'
-  | 'fotos'
-  | 'vehiculos'
-  | 'historialKm'
-  | 'transportistas'
-  | 'empleados'
-  | 'usuarios';
-
 type Restringido = Exclude<Alcance, 'TODOS'>;
 type Consultas = Partial<Record<Restringido, string>>;
 
@@ -50,14 +35,12 @@ function derivada(plantilla: (origen: string) => string, origen: Consultas): Con
 
 const lotes = derivada((sql) => `SELECT id FROM lote WHERE donacion_id IN (${sql})`, donaciones);
 
-const vehiculos: Consultas = {
-  ASIGNADOS: `SELECT vehiculo_id FROM empleado_transportista WHERE id IN (${FICHA_DEL_EMPLEADO})`,
-  PROPIOS: `SELECT vehiculo_id FROM empleado_transportista WHERE id IN (${FICHA_DEL_EMPLEADO})`,
-};
+const VEHICULO_DEL_EMPLEADO = `SELECT vehiculo_id FROM empleado_transportista WHERE id IN (${FICHA_DEL_EMPLEADO})`;
+const vehiculos: Consultas = { ASIGNADOS: VEHICULO_DEL_EMPLEADO, PROPIOS: VEHICULO_DEL_EMPLEADO };
 
 const DEL_PROPIO_EMPLEADO = `SELECT e.id FROM empleado e WHERE e.id = :alcanceEmpleadoId`;
 
-export const CONSULTAS_POR_RECURSO: Record<Recurso, Consultas> = {
+const consultas = {
   donaciones,
   turnos,
   retiros,
@@ -86,3 +69,6 @@ export const CONSULTAS_POR_RECURSO: Record<Recurso, Consultas> = {
   empleados: { PROPIOS: DEL_PROPIO_EMPLEADO, ASIGNADOS: DEL_PROPIO_EMPLEADO },
   usuarios: { PROPIOS: `SELECT u.id FROM usuario u WHERE u.id = :alcanceUsuarioId` },
 };
+
+export type Recurso = keyof typeof consultas;
+export const CONSULTAS_POR_RECURSO: Record<Recurso, Consultas> = consultas;

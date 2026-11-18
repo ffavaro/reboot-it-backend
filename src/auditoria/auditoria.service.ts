@@ -21,8 +21,8 @@ export class AuditoriaService {
 
    obtenerRequest (req: Request) {
     const request = req.headers['x-forwarded-for'];
-    const primera = request ? request[0] : request?.split(',')[0];
-    
+    const primera = Array.isArray(request) ? request[0] : request?.split(',')[0];
+
     const ip = (primera || req.ip || req.socket?.remoteAddress || '')
       .trim()
       .replace(/^::ffff:/, '');

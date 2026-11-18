@@ -8,6 +8,5 @@ import { CondicionMaterialService } from './condicion-material.service';
   imports: [TypeOrmModule.forFeature([CondicionMaterial])],
   controllers: [CondicionMaterialController],
   providers: [CondicionMaterialService],
-  exports: [CondicionMaterialService],
 })
 export class CondicionMaterialModule {}

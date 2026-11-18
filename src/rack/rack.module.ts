@@ -8,6 +8,5 @@ import { RackService } from './rack.service';
   imports: [TypeOrmModule.forFeature([Rack])],
   controllers: [RackController],
   providers: [RackService],
-  exports: [RackService],
 })
 export class RackModule {}

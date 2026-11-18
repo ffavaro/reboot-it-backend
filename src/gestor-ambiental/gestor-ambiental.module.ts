@@ -8,6 +8,5 @@ import { GestorAmbientalService } from './gestor-ambiental.service';
   imports: [TypeOrmModule.forFeature([GestorAmbiental])],
   controllers: [GestorAmbientalController],
   providers: [GestorAmbientalService],
-  exports: [GestorAmbientalService],
 })
 export class GestorAmbientalModule {}

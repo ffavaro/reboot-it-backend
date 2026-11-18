@@ -12,7 +12,7 @@ export class RackController extends createCrudController({
   plural: 'racks',
   createDto: CreateRackDto,
   updateDto: UpdateRackDto,
-   lectura: ['rack'],
+   lectura: ['racks'],
 }) {
   constructor( rackService: RackService) {
     super(rackService)

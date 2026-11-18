@@ -8,6 +8,5 @@ import { ModeloController } from './modelo.controller';
   imports: [TypeOrmModule.forFeature([Modelo])],
   controllers: [ModeloController],
   providers: [ModeloService],
-  exports: [TypeOrmModule],
 })
 export class ModeloModule {}

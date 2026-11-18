@@ -8,6 +8,5 @@ import { TipoDonanteService } from './tipo-donante.service';
   imports: [TypeOrmModule.forFeature([TipoDonante])],
   controllers: [TipoDonanteController],
   providers: [TipoDonanteService],
-  exports: [TipoDonanteService],
 })
 export class TipoDonanteModule {}

@@ -8,6 +8,5 @@ import { MarcaController } from './marca.controller';
   imports: [TypeOrmModule.forFeature([Marca])],
   controllers: [MarcaController],
   providers: [MarcaService],
-  exports: [TypeOrmModule],
 })
 export class MarcaModule {}

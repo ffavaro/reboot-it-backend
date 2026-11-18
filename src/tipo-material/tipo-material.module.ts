@@ -8,6 +8,5 @@ import { TipoMaterialService } from './tipo-material.service';
   imports: [TypeOrmModule.forFeature([TipoMaterial])],
   controllers: [TipoMaterialController],
   providers: [TipoMaterialService],
-  exports: [TipoMaterialService],
 })
 export class TipoMaterialModule {}

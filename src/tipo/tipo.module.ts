@@ -8,6 +8,5 @@ import { TipoController } from './tipo.controller';
   imports: [TypeOrmModule.forFeature([Tipo])],
   controllers: [TipoController],
   providers: [TipoService],
-  exports: [TypeOrmModule],
 })
 export class TipoModule {}

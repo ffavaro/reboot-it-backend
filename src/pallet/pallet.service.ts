@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CrudService } from '@app/common/crud/crud-service';
 import { Pallet } from './pallet.entity';
 import { Lote } from '../lote/lote.entity';
 import { Turno } from '../turno/turno.entity';
@@ -9,84 +10,31 @@ import { EstadoDonacion } from '../estado-donacion/estado-donacion.entity';
 import { EstadoTurno } from '../estado-turno/estado-turno.entity';
 import { CreatePalletDto } from './dto/create-pallet.dto';
 import { UpdatePalletDto } from './dto/update-pallet.dto';
-
-const ESTADO_TURNO_FINALIZADO = 'Finalizado';
-const ESTADO_DONACION_PENDIENTE_CERT = 'Pendiente de emision certificado';
+import { buscarActivo } from '../utils/catalogo';
 
 @Injectable()
-export class PalletService {
-  constructor(
-    @InjectRepository(Pallet)
-    private readonly palletRepository: Repository<Pallet>,
-    @InjectRepository(Lote)
-    private readonly loteRepository: Repository<Lote>,
-    @InjectRepository(Turno)
-    private readonly turnoRepository: Repository<Turno>,
-    @InjectRepository(Donacion)
-    private readonly donacionRepository: Repository<Donacion>,
-    @InjectRepository(EstadoDonacion)
-    private readonly estadoDonacionRepository: Repository<EstadoDonacion>,
-    @InjectRepository(EstadoTurno)
-    private readonly estadoTurnoRepository: Repository<EstadoTurno>,
-  ) {}
+export class PalletService extends CrudService<Pallet, CreatePalletDto, UpdatePalletDto> {
+  constructor(@InjectRepository(Pallet) repo: Repository<Pallet>) {
+    super(repo, { etiqueta: 'Pallet', genero: 'm', relations: ['rack', 'lote'], order: { id: 'DESC' } });
+  }
 
   async create(dto: CreatePalletDto) {
-    const pallet = this.palletRepository.create(dto);
-    const saved = await this.palletRepository.save(pallet);
+    const saved = await super.create(dto);
+    const m = this.repo.manager;
+    const lote = dto.loteId ? await m.findOne(Lote, { where: { id: dto.loteId } }) : null;
+    if (!lote) return saved;
 
-    if (dto.loteId) {
-      const lote = await this.loteRepository.findOne({ where: { id: dto.loteId } });
-      if (lote) {
-        const [estadoTurno, estadoDonacion] = await Promise.all([
-          this.estadoTurnoRepository.findOne({ where: { descripcion: ESTADO_TURNO_FINALIZADO, isActive: true } }),
-          this.estadoDonacionRepository.findOne({ where: { descripcion: ESTADO_DONACION_PENDIENTE_CERT, isActive: true } }),
-        ]);
+    const [estadoTurno, estadoDonacion, turno] = await Promise.all([
+      buscarActivo(m, EstadoTurno, { descripcion: 'Finalizado' }),
+      buscarActivo(m, EstadoDonacion, { descripcion: 'Pendiente de emision certificado' }),
+      m.findOne(Turno, { where: { donacionId: lote.donacionId, isActive: true }, order: { createdAt: 'DESC' } }),
+    ]);
 
-        const turno = await this.turnoRepository.findOne({
-          where: { donacionId: lote.donacionId, isActive: true },
-          order: { createdAt: 'DESC' },
-        });
-
-        await Promise.all([
-          turno && estadoTurno
-            ? this.turnoRepository.update(turno.id, { estadoTurnoId: estadoTurno.id })
-            : Promise.resolve(),
-          estadoDonacion
-            ? this.donacionRepository.update(lote.donacionId, { estadoDonacionId: estadoDonacion.id })
-            : Promise.resolve(),
-        ]);
-      }
-    }
+    await Promise.all([
+      turno && estadoTurno && m.update(Turno, turno.id, { estadoTurnoId: estadoTurno.id }),
+      estadoDonacion && m.update(Donacion, lote.donacionId, { estadoDonacionId: estadoDonacion.id }),
+    ]);
 
     return saved;
-  }
-
-  findAll() {
-    return this.palletRepository.find({
-      where: { isActive: true },
-      relations: ['rack', 'lote'],
-      order: {id: "DESC"}
-    });
-  }
-
-  async findOne(id: number) {
-    const pallet = await this.palletRepository.findOne({
-      where: { id },
-      relations: ['rack', 'lote'],
-    });
-    if (!pallet) throw new NotFoundException(`Pallet ${id} no encontrado`);
-    return pallet;
-  }
-
-  async update(id: number, dto: UpdatePalletDto) {
-    await this.findOne(id);
-    await this.palletRepository.update(id, dto);
-    return this.findOne(id);
-  }
-
-  async remove(id: number) {
-    await this.findOne(id);
-    await this.palletRepository.update(id, { isActive: false });
-    return { message: 'Pallet desactivado' };
   }
 }

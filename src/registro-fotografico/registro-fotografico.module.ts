@@ -8,6 +8,5 @@ import { RegistroFotograficoService } from './registro-fotografico.service';
   imports: [TypeOrmModule.forFeature([RegistroFotografico])],
   controllers: [RegistroFotograficoController],
   providers: [RegistroFotograficoService],
-  exports: [RegistroFotograficoService],
 })
 export class RegistroFotograficoModule {}

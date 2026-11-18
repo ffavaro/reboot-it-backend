@@ -8,6 +8,5 @@ import { MedioAlmacenamientoService } from './medio-almacenamiento.service';
   imports: [TypeOrmModule.forFeature([MedioAlmacenamiento])],
   controllers: [MedioAlmacenamientoController],
   providers: [MedioAlmacenamientoService],
-  exports: [MedioAlmacenamientoService],
 })
 export class MedioAlmacenamientoModule {}
