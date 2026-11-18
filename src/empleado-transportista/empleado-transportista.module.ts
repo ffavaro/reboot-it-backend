@@ -8,6 +8,5 @@ import { EmpleadoTransportistaService } from './empleado-transportista.service';
   imports: [TypeOrmModule.forFeature([EmpleadoTransportista])],
   controllers: [EmpleadoTransportistaController],
   providers: [EmpleadoTransportistaService],
-  exports: [EmpleadoTransportistaService],
 })
 export class EmpleadoTransportistaModule {}

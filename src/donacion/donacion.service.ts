@@ -1,6 +1,7 @@
-import { BadRequestException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, In, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
+import { CrudService } from '@app/common/crud/crud-service';
 import { Donacion } from './donacion.entity';
 import { CreateDonacionDto } from './dto/create-donacion.dto';
 import { UpdateDonacionDto } from './dto/update-donacion.dto';
@@ -18,27 +19,33 @@ import { CertificadoDisposicion } from '@app/certificado-disposicion/certificado
 import { RegistroFotografico } from '@app/registro-fotografico/registro-fotografico.entity';
 import { Lote } from '@app/lote/lote.entity';
 
+const relanzar = (Excepcion: new (mensaje: string) => HttpException, mensaje: string) => (err: unknown): never => {
+  if (err instanceof HttpException) throw err;
+  throw new Excepcion(mensaje);
+};
+
 @Injectable()
-export class DonacionService {
+export class DonacionService extends CrudService<Donacion, CreateDonacionDto, UpdateDonacionDto> {
   constructor(
-    @InjectRepository(Donacion)
-    private readonly donacionRepository: Repository<Donacion>,
-    @InjectRepository(Turno)
-    private readonly turnoRepository: Repository<Turno>,
-    @InjectRepository(Retiro)
-    private readonly retiroRepository: Repository<Retiro>,
+    @InjectRepository(Donacion) repo: Repository<Donacion>,
     private readonly turnoService: TurnoService,
     private readonly donacionDetalleService: DonacionDetalleService,
     private readonly turnoDetalleService: TurnoDetalleService,
     private readonly loteService: LoteService,
     private readonly notificacionDonacionService: NotificacionDonacionService,
-  ) {}
+  ) {
+    super(repo, {
+      etiqueta: 'Donacion',
+      genero: 'f',
+      relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial', 'detalles.condicionMaterial'],
+      order: { id: 'DESC' },
+    });
+  }
 
   async create(dto: CreateDonacionDto) {
     const { fechaHora, detalles, ...donacionData } = dto;
 
-    const donacion = this.donacionRepository.create(donacionData);
-    const saved = await this.donacionRepository.save(donacion).catch((error:any) => {
+    const saved = await this.repo.save(this.repo.create(donacionData)).catch((error: any) => {
       console.log('Error al guardar donación', { error });
       throw new InternalServerErrorException('No se pudo registrar la donación. Intentá nuevamente.');
     });
@@ -48,14 +55,8 @@ export class DonacionService {
     });
 
     const savedDetalles = detalles?.length
-      ? await Promise.all(
-          detalles.map((d) =>
-            this.donacionDetalleService.create({ ...d, donacionId: saved.id }),
-          ),
-        ).catch((err) => {
-          if (err instanceof HttpException) throw err;
-          throw new BadRequestException('Error al guardar los materiales de la donación.');
-        })
+      ? await Promise.all(detalles.map((d) => this.donacionDetalleService.create({ ...d, donacionId: saved.id })))
+          .catch(relanzar(BadRequestException, 'Error al guardar los materiales de la donación.'))
       : [];
 
     const turno = await this.turnoService
@@ -67,10 +68,7 @@ export class DonacionService {
         descripcion: dto.descripcion,
         necesitaRetiro: dto.necesitaRetiro ?? false,
       })
-      .catch((err) => {
-        if (err instanceof HttpException) throw err;
-        throw new BadRequestException('No se pudo crear el turno para el horario seleccionado.');
-      });
+      .catch(relanzar(BadRequestException, 'No se pudo crear el turno para el horario seleccionado.'));
 
     if (savedDetalles.length) {
       await Promise.all(
@@ -82,37 +80,17 @@ export class DonacionService {
             cantidadConfirmada: detalle.cantidadEstimada ?? undefined,
           }),
         ),
-      ).catch((err) => {
-        if (err instanceof HttpException) throw err;
-        throw new InternalServerErrorException('Error al vincular los materiales con el turno.');
-      });
+      ).catch(relanzar(InternalServerErrorException, 'Error al vincular los materiales con el turno.'));
     }
 
     return this.findOne(saved.id);
-  }
-
-  findAll(alcance: FindOptionsWhere<Donacion> = {}) {
-    return this.donacionRepository.find({
-      where: { isActive: true, ...alcance },
-      relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial', 'detalles.condicionMaterial'],
-      order: { id : "DESC"}
-    });
-  }
-
-  async findOne(id: number) {
-    const donacion = await this.donacionRepository.findOne({
-      where: { id },
-      relations: ['donante', 'estadoDonacion', 'detalles', 'detalles.tipoMaterial', 'detalles.condicionMaterial'],
-    });
-    if (!donacion) throw new NotFoundException(`Donacion ${id} no encontrada`);
-    return donacion;
   }
 
   async update(id: number, dto: UpdateDonacionDto) {
     const actual = await this.findOne(id);
     const { detalles, ...donacionData } = dto;
     if (Object.keys(donacionData).length) {
-      await this.donacionRepository.update(id, donacionData);
+      await this.repo.update(id, donacionData);
       if (donacionData.estadoDonacionId !== undefined) {
         void this.notificacionDonacionService.notificarSiCambio(id, actual.estadoDonacionId);
       }
@@ -121,24 +99,14 @@ export class DonacionService {
     if (detalles !== undefined) {
       const existing = await this.donacionDetalleService.findByDonacion(id);
       await Promise.all(existing.map((d) => this.donacionDetalleService.remove(d.id)));
-      await Promise.all(
-        detalles.map((d) =>
-          this.donacionDetalleService.create({ ...d, donacionId: id }),
-        ),
-      );
+      await Promise.all(detalles.map((d) => this.donacionDetalleService.create({ ...d, donacionId: id })));
     }
 
     return this.findOne(id);
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
-    await this.donacionRepository.update(id, { isActive: false });
-    return { message: 'Donacion desactivada' };
-  }
-
   async reporte(query: ReporteDonacionDto) {
-    const qb = this.donacionRepository
+    const qb = this.repo
       .createQueryBuilder('d')
       .leftJoinAndSelect('d.donante', 'donante')
       .leftJoinAndSelect('d.estadoDonacion', 'estadoDonacion')
@@ -147,40 +115,22 @@ export class DonacionService {
       .leftJoinAndSelect('detalles.condicionMaterial', 'condicionMaterial')
       .where('d.isActive = :active', { active: true });
 
-    if (query.donanteId) {
-      qb.andWhere('d.donanteId = :donanteId', { donanteId: query.donanteId });
-    }
-    if (query.estadoDonacionId !== undefined) {
-      qb.andWhere('d.estadoDonacionId = :estadoDonacionId', { estadoDonacionId: query.estadoDonacionId });
-    }
-    if (query.necesitaRetiro !== undefined) {
-      qb.andWhere('d.necesitaRetiro = :necesitaRetiro', { necesitaRetiro: query.necesitaRetiro });
-    }
-    if (query.fechaDesde) {
-      qb.andWhere('d.createdAt >= :fechaDesde', { fechaDesde: query.fechaDesde });
-    }
-    if (query.fechaHasta) {
-      qb.andWhere('d.createdAt <= :fechaHasta', { fechaHasta: `${query.fechaHasta}T23:59:59` });
-    }
+    if (query.donanteId) qb.andWhere('d.donanteId = :donanteId', { donanteId: query.donanteId });
+    if (query.estadoDonacionId !== undefined) qb.andWhere('d.estadoDonacionId = :estadoDonacionId', { estadoDonacionId: query.estadoDonacionId });
+    if (query.necesitaRetiro !== undefined) qb.andWhere('d.necesitaRetiro = :necesitaRetiro', { necesitaRetiro: query.necesitaRetiro });
+    if (query.fechaDesde) qb.andWhere('d.createdAt >= :fechaDesde', { fechaDesde: query.fechaDesde });
+    if (query.fechaHasta) qb.andWhere('d.createdAt <= :fechaHasta', { fechaHasta: `${query.fechaHasta}T23:59:59` });
 
     let donaciones = await qb.getMany();
-
-    if (query.tieneMateriales === true) {
-      donaciones = donaciones.filter((d) => d.detalles?.length > 0);
-    } else if (query.tieneMateriales === false) {
-      donaciones = donaciones.filter((d) => !d.detalles?.length);
+    if (typeof query.tieneMateriales === 'boolean') {
+      donaciones = donaciones.filter((d) => !!d.detalles?.length === query.tieneMateriales);
     }
-
     if (!donaciones.length) return [];
 
     const ids = donaciones.map((d) => d.id);
-
     const [turnos, retiros] = await Promise.all([
-      this.turnoRepository.find({
-        where: { donacionId: In(ids), isActive: true },
-        relations: ['estadoTurno'],
-      }),
-      this.retiroRepository.find({
+      this.repo.manager.find(Turno, { where: { donacionId: In(ids), isActive: true }, relations: ['estadoTurno'] }),
+      this.repo.manager.find(Retiro, {
         where: { donacionId: In(ids), isActive: true },
         relations: ['empleadoTransportista', 'empleadoTransportista.empleado', 'vehiculo'],
       }),
@@ -198,23 +148,23 @@ export class DonacionService {
 
   async trazabilidad(id: number) {
     const donacion = await this.findOne(id);
-    const repo = <T extends object>(entidad: new () => T) => this.donacionRepository.manager.getRepository(entidad);
+    const m = this.repo.manager;
 
     const [turno, retiro, lote] = await Promise.all([
-      this.turnoRepository.findOne({
+      m.findOne(Turno, {
         where: { donacionId: id, isActive: true },
         relations: ['estadoTurno', 'empleado', 'empleadoTransportista', 'empleadoTransportista.empleado'],
         order: { createdAt: 'DESC' },
       }),
-      this.retiroRepository.findOne({ where: { donacionId: id, isActive: true }, order: { createdAt: 'DESC' } }),
-      repo(Lote).findOne({ where: { donacionId: id, isActive: true } }),
+      m.findOne(Retiro, { where: { donacionId: id, isActive: true }, order: { createdAt: 'DESC' } }),
+      m.findOne(Lote, { where: { donacionId: id, isActive: true } }),
     ]);
 
     const [constancia, certificado, fotos] = await Promise.all([
-      retiro ? repo(ConstanciaRetiro).findOne({ where: { retiroId: retiro.id, isActive: true } }) : null,
-      lote ? repo(CertificadoDisposicion).findOne({ where: { loteId: lote.id, isActive: true }, relations: ['gestorAmbiental'] }) : null,
+      retiro ? m.findOne(ConstanciaRetiro, { where: { retiroId: retiro.id, isActive: true } }) : null,
+      lote ? m.findOne(CertificadoDisposicion, { where: { loteId: lote.id, isActive: true }, relations: ['gestorAmbiental'] }) : null,
       turno || lote
-        ? repo(RegistroFotografico).find({
+        ? m.find(RegistroFotografico, {
             where: [
               ...(turno ? [{ turnoId: turno.id, isActive: true }] : []),
               ...(lote ? [{ loteId: lote.id, isActive: true }] : []),
@@ -223,6 +173,7 @@ export class DonacionService {
           })
         : [],
     ]);
+
 
     return {
       id: donacion.id,
@@ -264,7 +215,5 @@ export class DonacionService {
         : null,
       fotos: [...new Map(fotos.map((f) => [f.id, f])).values()].map((f) => ({ id: f.id, url: f.urlImagen, fecha: f.fecha })),
     };
-  }
-
-  
+  }  
 }

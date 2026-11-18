@@ -53,7 +53,7 @@ export class IndicadoresService {
   };
 
   reutilizacion = async (f: Filtros) => {
-    const w = filtrar('m.created_at', 'd.id', f);
+    const w = filtrar('m.created_at', 'd.donante_id', f);
     const filas = await this.consultar(
       `SELECT c.condicion, COUNT(*) n
        FROM material m
@@ -79,7 +79,7 @@ export class IndicadoresService {
   };
 
   kgProcesados = async (f: Filtros) => {
-    const w = filtrar('l.created_at', 'd.id', f);
+    const w = filtrar('l.created_at', 'd.donante_id', f);
     const [fila] = await this.consultar(
       `SELECT COALESCE(SUM(l.peso_bruto_kg), 0) kg
        FROM lote l
@@ -91,7 +91,7 @@ export class IndicadoresService {
   };
 
   mediosDestruidos = async (f: Filtros) => {
-    const w = filtrar('p.created_at', 'd.id', f);
+    const w = filtrar('p.created_at', 'd.donante_id', f);
     const [fila] = await this.consultar(
       `SELECT COALESCE(SUM(e.nombre REGEXP 'finaliz|complet'), 0) finalizados, COUNT(*) total
        FROM proceso_destruccion p
@@ -107,7 +107,7 @@ export class IndicadoresService {
   };
 
   donantesRecurrentes = async (f: Filtros) => {
-    const w = filtrar('d.created_at', 'd.id', f);
+    const w = filtrar('d.created_at', 'd.donante_id', f);
     const filas = await this.consultar(
       `SELECT COUNT(*) n
        FROM donacion d

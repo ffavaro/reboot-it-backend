@@ -8,6 +8,5 @@ import { RetiroService } from './retiro.service';
   imports: [TypeOrmModule.forFeature([Retiro])],
   controllers: [RetiroController],
   providers: [RetiroService],
-  exports: [RetiroService],
 })
 export class RetiroModule {}

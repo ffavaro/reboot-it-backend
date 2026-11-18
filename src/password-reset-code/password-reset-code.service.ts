@@ -13,15 +13,6 @@ const SALT_ROUNDS = 10;
 const MINUTOS_VALIDEZ_POR_DEFECTO = 15;
 const INTENTOS_POR_DEFECTO = 5;
 
-export const CODIGO_ENVIADO =
-  'Si el email está registrado, vas a recibir un código para restablecer tu contraseña.';
-export const CONTRASENA_ACTUALIZADA =
-  'Tu contraseña fue actualizada correctamente.';
-export const CODIGO_INVALIDO =
-  'El código es inválido o expiró. Solicitá uno nuevo.';
-export const DEMASIADOS_INTENTOS =
-  'Superaste la cantidad de intentos. Solicitá un nuevo código.';
-
 @Injectable()
 export class RecuperacionContrasenaService {
   constructor(
@@ -38,7 +29,7 @@ export class RecuperacionContrasenaService {
     ip?: string | null,
   ): Promise<{ message: string }> {
     const usuario = await this.usuarioActivo(email);
-    if (!usuario) return { message: CODIGO_ENVIADO };
+    if (!usuario) return { message: 'Si el email está registrado, vas a recibir un código para restablecer tu contraseña.' };
 
     await this.codigoRepository.update(
       { userId: usuario.id, usedAt: IsNull() },
@@ -46,7 +37,10 @@ export class RecuperacionContrasenaService {
     );
 
     const codigo = String(randomInt(0, 1_000_000)).padStart(6, '0');
-    const minutos = this.minutosValidez();
+    const minutos = this.numeroConfig(
+      'RESET_CODE_TTL_MINUTES',
+      MINUTOS_VALIDEZ_POR_DEFECTO,
+    );
 
     await this.codigoRepository.save(
       this.codigoRepository.create({
@@ -65,14 +59,14 @@ export class RecuperacionContrasenaService {
       codigo,
       minutos,
     );
-    return { message: CODIGO_ENVIADO };
+    return { message: 'Si el email está registrado, vas a recibir un código para restablecer tu contraseña.' };
   }
 
   async restablecer(
     dto: RestablecerContrasenaDto,
   ): Promise<{ message: string }> {
     const usuario = await this.usuarioActivo(dto.email);
-    if (!usuario) throw new BadRequestException(CODIGO_INVALIDO);
+    if (!usuario) throw new BadRequestException('El código es inválido o expiró. Solicitá uno nuevo.');
 
     const vigente = await this.codigoRepository.findOne({
       where: {
@@ -82,17 +76,17 @@ export class RecuperacionContrasenaService {
       },
       order: { id: 'DESC' },
     });
-    if (!vigente) throw new BadRequestException(CODIGO_INVALIDO);
+    if (!vigente) throw new BadRequestException('El código es inválido o expiró. Solicitá uno nuevo.');
 
-    if (vigente.attempts >= this.maxIntentos()) {
+    if (vigente.attempts >= this.numeroConfig('RESET_CODE_MAX_ATTEMPTS', INTENTOS_POR_DEFECTO)) {
       await this.codigoRepository.update(vigente.id, { usedAt: new Date() });
-      throw new BadRequestException(DEMASIADOS_INTENTOS);
+      throw new BadRequestException('Superaste la cantidad de intentos. Solicitá un nuevo código.');
     }
 
     const coincide = await bcrypt.compare(dto.code, vigente.codeHash);
     if (!coincide) {
       await this.codigoRepository.increment({ id: vigente.id }, 'attempts', 1);
-      throw new BadRequestException(CODIGO_INVALIDO);
+      throw new BadRequestException('El código es inválido o expiró. Solicitá uno nuevo.');
     }
 
     const ahora = new Date();
@@ -107,7 +101,7 @@ export class RecuperacionContrasenaService {
       usuario.nombre,
       ahora,
     );
-    return { message: CONTRASENA_ACTUALIZADA };
+    return { message: 'Tu contraseña fue actualizada correctamente.' };
   }
 
   private async usuarioActivo(email: string): Promise<Usuario | null> {
@@ -115,16 +109,7 @@ export class RecuperacionContrasenaService {
     return usuario?.isActive ? usuario : null;
   }
 
-  private minutosValidez(): number {
-    return (
-      Number(this.config.get('RESET_CODE_TTL_MINUTES')) ||
-      MINUTOS_VALIDEZ_POR_DEFECTO
-    );
-  }
-
-  private maxIntentos(): number {
-    return (
-      Number(this.config.get('RESET_CODE_MAX_ATTEMPTS')) || INTENTOS_POR_DEFECTO
-    );
+  private numeroConfig(clave: string, porDefecto: number): number {
+    return Number(this.config.get(clave)) || porDefecto;
   }
 }

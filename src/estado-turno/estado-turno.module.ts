@@ -8,6 +8,5 @@ import { EstadoTurnoService } from './estado-turno.service';
   imports: [TypeOrmModule.forFeature([EstadoTurno])],
   controllers: [EstadoTurnoController],
   providers: [EstadoTurnoService],
-  exports: [EstadoTurnoService],
 })
 export class EstadoTurnoModule {}

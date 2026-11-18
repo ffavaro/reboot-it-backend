@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { CrudService } from '@app/common/crud/crud-service';
 import { Retiro } from './retiro.entity';
 import { CreateRetiroDto } from './dto/create-retiro.dto';
 import { UpdateRetiroDto } from './dto/update-retiro.dto';
@@ -8,56 +9,32 @@ import { ReporteRetiroDto } from './dto/reporte-retiro.dto';
 import { validarPesoDonacionVehiculo } from '../utils/peso-vehiculo';
 
 @Injectable()
-export class RetiroService {
-  constructor(
-    @InjectRepository(Retiro)
-    private readonly retiroRepository: Repository<Retiro>,
-  ) {}
+export class RetiroService extends CrudService<Retiro, CreateRetiroDto, UpdateRetiroDto> {
+  constructor(@InjectRepository(Retiro) repo: Repository<Retiro>) {
+    super(repo, {
+      etiqueta: 'Retiro',
+      genero: 'm',
+      relations: ['donacion', 'empleadoTransportista', 'empleadoTransportista.empleado', 'vehiculo'],
+      order: { id: 'DESC' },
+    });
+  }
 
   async create(dto: CreateRetiroDto) {
-    await validarPesoDonacionVehiculo(this.retiroRepository.manager, dto.donacionId, dto.vehiculoId);
-    const retiro = this.retiroRepository.create(dto);
-    return this.retiroRepository.save(retiro);
-  }
-
-  findAll(alcance: FindOptionsWhere<Retiro> = {}) {
-    return this.retiroRepository.find({
-      where: { isActive: true, ...alcance },
-      relations: ['donacion', 'empleadoTransportista', 'empleadoTransportista.empleado', 'vehiculo'],
-      order: { id: "DESC"}
-    });
-  }
-
-  async findOne(id: number) {
-    const retiro = await this.retiroRepository.findOne({
-      where: { id },
-      relations: ['donacion', 'empleadoTransportista', 'empleadoTransportista.empleado', 'vehiculo'],
-    });
-    if (!retiro) throw new NotFoundException(`Retiro ${id} no encontrado`);
-    return retiro;
+    await validarPesoDonacionVehiculo(this.repo.manager, dto.donacionId, dto.vehiculoId);
+    return super.create(dto);
   }
 
   async update(id: number, dto: UpdateRetiroDto) {
     const actual = await this.findOne(id);
     if (dto.donacionId !== undefined || dto.vehiculoId !== undefined) {
-      await validarPesoDonacionVehiculo(
-        this.retiroRepository.manager,
-        dto.donacionId ?? actual.donacionId,
-        dto.vehiculoId ?? actual.vehiculoId,
-      );
+      await validarPesoDonacionVehiculo(this.repo.manager, dto.donacionId ?? actual.donacionId, dto.vehiculoId ?? actual.vehiculoId);
     }
-    await this.retiroRepository.update(id, dto);
+    await this.repo.update(id, dto);
     return this.findOne(id);
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
-    await this.retiroRepository.update(id, { isActive: false });
-    return { message: 'Retiro desactivado' };
-  }
-
   async reporte(query: ReporteRetiroDto) {
-    const qb = this.retiroRepository
+    const qb = this.repo
       .createQueryBuilder('r')
       .leftJoinAndSelect('r.donacion', 'donacion')
       .leftJoinAndSelect('donacion.donante', 'donante')
@@ -67,25 +44,11 @@ export class RetiroService {
       .leftJoinAndSelect('r.vehiculo', 'vehiculo')
       .where('r.isActive = :active', { active: true });
 
-    if (query.donanteId) {
-      qb.andWhere('donacion.donanteId = :donanteId', { donanteId: query.donanteId });
-    }
-    if (query.empleadoTransportistaId) {
-      qb.andWhere('r.empleadoTransportistaId = :empleadoTransportistaId', {
-        empleadoTransportistaId: query.empleadoTransportistaId,
-      });
-    }
-    if (query.estadoDonacionId) {
-      qb.andWhere('donacion.estadoDonacionId = :estadoDonacionId', {
-        estadoDonacionId: query.estadoDonacionId,
-      });
-    }
-    if (query.fechaDesde) {
-      qb.andWhere('r.fechaInicio >= :fechaDesde', { fechaDesde: query.fechaDesde });
-    }
-    if (query.fechaHasta) {
-      qb.andWhere('r.fechaInicio <= :fechaHasta', { fechaHasta: `${query.fechaHasta}T23:59:59` });
-    }
+    if (query.donanteId) qb.andWhere('donacion.donanteId = :donanteId', { donanteId: query.donanteId });
+    if (query.empleadoTransportistaId) qb.andWhere('r.empleadoTransportistaId = :empleadoTransportistaId', { empleadoTransportistaId: query.empleadoTransportistaId });
+    if (query.estadoDonacionId) qb.andWhere('donacion.estadoDonacionId = :estadoDonacionId', { estadoDonacionId: query.estadoDonacionId });
+    if (query.fechaDesde) qb.andWhere('r.fechaInicio >= :fechaDesde', { fechaDesde: query.fechaDesde });
+    if (query.fechaHasta) qb.andWhere('r.fechaInicio <= :fechaHasta', { fechaHasta: `${query.fechaHasta}T23:59:59` });
 
     return qb.orderBy('r.fechaInicio', 'DESC').getMany();
   }
